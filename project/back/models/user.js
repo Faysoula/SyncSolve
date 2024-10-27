@@ -49,19 +49,4 @@ const User = db.define(
   }
 );
 
-User.hasMany(Problem, {
-  foreignKey: "created_by",
-  onDelete: "SET NULL",
-});
-
-User.hasMany(TeamMember, {
-  foreignKey: "user_id",
-  onDelete: "CASCADE",
-});
-
-User.belongsToMany(Team, {
-  through: TeamMember,
-  foreignKey: "user_id",
-  otherKey: "team_id",
-});
 module.exports = User;

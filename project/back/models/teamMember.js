@@ -36,7 +36,4 @@ const TeamMember = db.define(
   }
 );
 
-TeamMember.belongsTo(Team, { foreignKey: "team_id" });
-TeamMember.belongsTo(User, { foreignKey: "user_id" });
-
 module.exports = TeamMember;

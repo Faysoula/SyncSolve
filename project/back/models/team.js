@@ -26,12 +26,5 @@ const Team = db.define(
   }
 );
 
-Team.hasMany(TeamMember, { foreignKey: "team_id", onDelete: "CASCADE" });
-
-Team.belongsToMany(User, {
-  through: TeamMember,
-  foreignKey: "team_id",
-  otherKey: "user_id",
-});
 
 module.exports = Team;

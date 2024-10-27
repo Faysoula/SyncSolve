@@ -9,8 +9,10 @@ const {
 const express = require("express");
 const router = express.Router();
 
+const auth = require("../middleware/auth");
+
 // Add a new problem
-router.post("/addProblem", addProblemController);
+router.post("/addProblem", auth ,addProblemController);
 
 // Get all problems
 router.get("/getAllProblems", getAllProblemsController);
@@ -19,9 +21,9 @@ router.get("/getAllProblems", getAllProblemsController);
 router.get("/getProblemBYDifficulty/:difficulty", getProblemBYDifficultyController);
 
 // Update a problem
-router.put("/updateProblem/:id", updateProblemController);
+router.put("/updateProblem/:id", auth, updateProblemController);
 
 // Delete a problem
-router.delete("/deleteProblem/:id", deleteProblemController);
+router.delete("/deleteProblem/:id", auth, deleteProblemController);
 
 module.exports = router;
