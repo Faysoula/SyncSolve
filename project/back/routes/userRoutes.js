@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/auth');
 
 const {
     registerController,
+    loginController,
     getAllUsersController,
     getUserByIdController,
     getUserByUsernameController,
@@ -15,19 +17,22 @@ const {
 // Route for registering a new user
 router.post("/register", registerController);
 
+// Route for logging in a user
+router.post("/login", loginController);
+
 // Route for getting all users
-router.get("/", getAllUsersController);
+router.get("/", auth ,getAllUsersController);
 
 // Route for getting a user by ID
-router.get("/:id", getUserByIdController);
+router.get("/:id", auth, getUserByIdController);
 
 // Route for getting a user by username
-router.get("/username/:username", getUserByUsernameController);
+router.get("/username/:username", auth, getUserByUsernameController);
 
 // Route for updating a user by ID
-router.put("/:id", updateUserController);
+router.put("/:id", auth, updateUserController);
 
 // Route for deleting a user by ID
-router.delete("/:id", deleteUserController);
+router.delete("/:id", auth ,deleteUserController);
 
 module.exports = router;

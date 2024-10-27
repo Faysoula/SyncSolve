@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const SALT_ROUNDS = 10;
 
 const registerUser = async (username, email, password, name, last_name) => {
@@ -23,14 +24,38 @@ const registerUser = async (username, email, password, name, last_name) => {
     const user = await User.create({
       username,
       email,
-      password: hashedPass,
+      password_hash: hashedPass,
       name,
       last_name,
     });
 
-    return user;
+    const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET, {
+      expiresIn: "5h",
+    });
+    return { user, token };
   } catch (err) {
     throw new Error(`Error registering user: ${err.message}`);
+  }
+};
+
+const loginUser = async (email, password) => {
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) {
+      throw new Error("Incorrect password");
+    }
+
+    const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET, {
+      expiresIn: "5h",
+    });
+    return { token, user };
+  } catch (err) {
+    throw new Error(`Error logging in: ${err.message}`);
   }
 };
 
@@ -76,7 +101,7 @@ const updateUser = async (
   try {
     const haseshPass = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const updatedUser = await User.update(
+    const [affectedrows] = await User.update(
       {
         username,
         email,
@@ -91,6 +116,11 @@ const updateUser = async (
       }
     );
 
+    if (affectedrows === 0) {
+        throw new Error("User not found");
+    }
+
+    const updatedUser = await User.findByPk(user_id);
     return updatedUser;
   } catch (err) {
     throw new Error(`Error updating user: ${err.message}`);
@@ -113,6 +143,7 @@ const deleteUser = async (user_id) => {
 
 module.exports = {
   registerUser,
+  loginUser,
   getAllUsers,
   getUserById,
   getUserByUsername,

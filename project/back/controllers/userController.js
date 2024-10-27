@@ -1,5 +1,6 @@
 const {
   registerUser,
+  loginUser,
   getAllUsers,
   getUserById,
   getUserByUsername,
@@ -11,10 +12,32 @@ const registerController = async (req, res) => {
   const { username, email, password, name, last_name } = req.body;
 
   try {
-    const user = await registerUser(username, email, password, name, last_name);
-    res.status(201).json({ message: "User registered successfully",user });
+    const { user, token } = await registerUser(
+      username,
+      email,
+      password,
+      name,
+      last_name
+    );
+    res.status(201).json({
+      message: "User registered successfully",
+      user,
+      token,
+    });
   } catch (err) {
     console.error("Error registering user:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const loginController = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await loginUser(email, password);
+    res.status(200).json({ message: "User logged in successfully", user });
+  } catch (err) {
+    console.error("Error logging in user:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -44,7 +67,7 @@ const getUserByUsernameController = async (req, res) => {
   const { username } = req.params;
   try {
     const user = await getUserByUsername(username);
-    res.status(200).json({user});
+    res.status(200).json({ user });
   } catch (err) {
     console.error("Error getting user by username:", err.message);
     res.status(500).json({ message: err.message });
@@ -52,7 +75,7 @@ const getUserByUsernameController = async (req, res) => {
 };
 
 const updateUserController = async (req, res) => {
-  const { username, email, name, last_name } = req.body;
+  const { username, email, password, name, last_name } = req.body;
   const user_id = req.params.id;
 
   if (!user_id) {
@@ -60,8 +83,17 @@ const updateUserController = async (req, res) => {
   }
 
   try {
-    const newUser = await updateUser(user_id, username, email, name, last_name);
-    return res.status(200).json({message:"user updated successfully" ,newUser});
+    const newUser = await updateUser(
+      user_id,
+      username,
+      email,
+      password,
+      name,
+      last_name
+    );
+    return res
+      .status(200)
+      .json({ message: "user updated successfully", user: newUser });
   } catch (err) {
     console.error("error updating user", err.message);
     res.status(500).json({ error: err?.message });
@@ -69,20 +101,22 @@ const updateUserController = async (req, res) => {
 };
 
 const deleteUserController = async (req, res) => {
-    const user_id = req.params.id;
-    try {
-        const user = await deleteUser(user_id);
-        res.status(200).json({ message: "User deleted successfully", user });
-    } catch (err) {
-        console.error("Error deleting user:", err.message);
-        res.status(500).json({ message: err.message });
-    }
-}
+  const user_id = req.params.id;
+  try {
+    const user = await deleteUser(user_id);
+    res.status(200).json({ message: "User deleted successfully", user });
+  } catch (err) {
+    console.error("Error deleting user:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
 
 module.exports = {
   registerController,
+  loginController,
   getAllUsersController,
   getUserByIdController,
   getUserByUsernameController,
   updateUserController,
+  deleteUserController,
 };
