@@ -129,13 +129,12 @@ const updateUser = async (
 
 const deleteUser = async (user_id) => {
   try {
-    const deletedUser = await User.destroy({
-      where: {
-        user_id,
-      },
-    });
-
-    return deletedUser;
+    const toDelete = await User.findByPk(user_id);
+    if(!toDelete){
+        throw new Error("User not found");
+    }
+    await toDelete.destroy();
+     return { message: "User deleted successfully" };
   } catch (err) {
     throw new Error(`Error deleting user: ${err.message}`);
   }

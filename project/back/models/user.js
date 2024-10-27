@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
+const Problem = require("./problems");
 
 const User = db.define("User", {
   user_id: {
@@ -40,6 +41,11 @@ const User = db.define("User", {
  }, {
     tableName: "users",
     timestamps: false,//alr have them in the columns
+});
+
+User.hasMany(Problem, {
+  foreignKey: 'created_by',
+  onDelete: 'SET NULL',
 });
 
 module.exports = User;
