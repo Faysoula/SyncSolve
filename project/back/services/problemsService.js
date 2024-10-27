@@ -78,7 +78,7 @@ const updateProblem = async (problem_id, title, description, difficulty) => {
 };
 const deleteProblem = async (problem_id) => {
   try {
-    const toDelete = await User.findByPk(problem_id);
+    const toDelete = await Problems.findByPk(problem_id);
     if (!toDelete) {
       throw new Error("Problem not found");
     }
