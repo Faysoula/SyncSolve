@@ -2,6 +2,7 @@ const Team = require("./team");
 const User = require("./user");
 const TeamMember = require("./TeamMember");
 const Problem = require("./problems");
+const Session = require("./session");
 
 // Set up associations
 Team.hasMany(TeamMember, { foreignKey: "team_id", onDelete: "CASCADE" });
@@ -27,8 +28,27 @@ User.hasMany(Problem, {
   onDelete: "SET NULL",
 });
 
+Problem.hasMany(Session, {
+  foreignKey: "problem_id",
+  onDelete: "CASCADE",
+});
+Session.belongsTo(Problem, {
+  foreignKey: "problem_id",
+});
+
+// Team has many Sessions
+Team.hasMany(Session, {
+  foreignKey: "team_id",
+  onDelete: "CASCADE",
+});
+Session.belongsTo(Team, {
+  foreignKey: "team_id",
+});
+
 module.exports = {
   Team,
   User,
   TeamMember,
+  Problem,
+  Session,
 };

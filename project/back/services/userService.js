@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { generateToken } = require("../utils/generateToken");
 const SALT_ROUNDS = 10;
 
 const registerUser = async (username, email, password, name, last_name) => {
@@ -29,9 +30,7 @@ const registerUser = async (username, email, password, name, last_name) => {
       last_name,
     });
 
-    const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET, {
-      expiresIn: "5h",
-    });
+    const token = generateToken(user.user_id);
     return { user, token };
   } catch (err) {
     throw new Error(`Error registering user: ${err.message}`);
@@ -50,9 +49,7 @@ const loginUser = async (email, password) => {
       throw new Error("Incorrect password");
     }
 
-    const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET, {
-      expiresIn: "5h",
-    });
+    const token = generateToken(user.user_id);
     return { token, user };
   } catch (err) {
     throw new Error(`Error logging in: ${err.message}`);

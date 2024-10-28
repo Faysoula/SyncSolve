@@ -51,6 +51,18 @@ const getProblemBYDifficulty = async (difficulty) => {
   }
 };
 
+const getProblemById = async (problem_id) => {
+  try {
+    const problem = await Problems.findByPk(problem_id);
+    if (!problem) {
+      throw new Error("Problem not found");
+    }
+    return problem;
+  } catch (err) {
+    throw new Error(`Error getting problem by id: ${err.message}`);
+  }
+}
+
 const updateProblem = async (problem_id, title, description, difficulty) => {
   try {
     const [affectedrows] = await Problems.update(
@@ -93,6 +105,7 @@ module.exports = {
   addProblem,
   getAllProblems,
   getProblemBYDifficulty,
+  getProblemById,
   deleteProblem,
   updateProblem,
 };

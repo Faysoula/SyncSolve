@@ -4,21 +4,43 @@ const User = require("../models/user");
 
 const addTeamMember = async (team_id, user_id, role) => {
   try {
+    const newRole = role.toLowerCase();
+    const team = await Team.findByPk(team_id);
+    if (!team) {
+      throw new Error("Team not found");
+    }
+    
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    const count = await TeamMember.count({
+      where: {
+        team_id,
+      },
+    });
+    
+    if (count >= 3) {
+      throw new Error("Team is full");
+    }
+    
+    if(newRole === "admin"){
+      const countAdmin = await TeamMember.count({
+        where: {
+          team_id,
+          role: "admin",
+        },
+      })
+      if(countAdmin > 0){
+        throw new Error("Team already has an admin");
+      }
+    }
     const teamMember = await TeamMember.create({
       team_id,
       user_id,
-      role,
+      role: newRole,
     });
-
-    const team = await Team.findByPk(team_id);
-    if (!team) {
-        throw new Error("Team not found");
-    }
-
-    const user = await User.findByPk(user_id);
-    if (!user) {
-        throw new Error("User not found");
-    }
 
     return teamMember;
   } catch (err) {
@@ -86,11 +108,11 @@ const removeTeamMember = async (team_member_id) => {
   } catch (err) {
     throw new Error(`Error removing team member: ${err.message}`);
   }
-}
+};
 
 module.exports = {
-    addTeamMember,
-    getTeamMembers,
-    updateTeamMemberRole,
-    removeTeamMember,
+  addTeamMember,
+  getTeamMembers,
+  updateTeamMemberRole,
+  removeTeamMember,
 };

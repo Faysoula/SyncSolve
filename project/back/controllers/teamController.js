@@ -3,6 +3,7 @@ const {
     getTeams,
     getTeamByName,
     getTeamMembers,
+    getTeamById,
     updateTeamName,
     deleteTeam,
 } = require("../services/teamService");
@@ -15,6 +16,17 @@ const createTeamController = async (req, res) => {
         res.status(201).json({ message: "Team created successfully", team });
     } catch (err) {
         console.error("Error creating team:", err.message);
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const getTeamByIdController = async (req, res) => {
+    const team_id = req.params.id;
+    try {
+        const team = await getTeamById(team_id);
+        res.status(200).json(team);
+    } catch (err) {
+        console.error("Error getting team by id:", err.message);
         res.status(500).json({ message: err.message });
     }
 }
@@ -76,6 +88,7 @@ const deleteTeamController = async (req, res) => {
 
 module.exports = {
     createTeamController,
+    getTeamByIdController,
     getTeamsController,
     getTeamByNameController,
     getTeamMembersController,

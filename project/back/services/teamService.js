@@ -77,6 +77,18 @@ const getTeamMembers = async (team_id) => {
   }
 };
 
+const getTeamById = async (team_id) => {
+  try {
+    const team = await Team.findByPk(team_id);
+    if (!team) {
+      throw new Error("Team not found");
+    }
+    return team;
+  } catch (err) {
+    throw new Error(`Error getting team by id: ${err.message}`);
+  }
+}
+
 const updateTeamName = async (team_id, team_name) => {
   const [updatedRows] = await Team.update(
     { team_name },
@@ -106,6 +118,7 @@ module.exports = {
     getTeams,
     getTeamByName,
     getTeamMembers,
+    getTeamById,
     updateTeamName,
     deleteTeam,
     };
