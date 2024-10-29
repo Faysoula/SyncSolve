@@ -3,6 +3,7 @@ const User = require("./user");
 const TeamMember = require("./TeamMember");
 const Problem = require("./problems");
 const Session = require("./session");
+const TerminalSession = require("./terminal_sessions");
 
 // Set up associations
 Team.hasMany(TeamMember, { foreignKey: "team_id", onDelete: "CASCADE" });
@@ -43,6 +44,14 @@ Team.hasMany(Session, {
 });
 Session.belongsTo(Team, {
   foreignKey: "team_id",
+});
+
+Session.hasMany(TerminalSession, {
+  foreignKey: "session_id",
+  onDelete: "CASCADE",
+});
+TerminalSession.belongsTo(Session, {
+  foreignKey: "session_id",
 });
 
 module.exports = {
