@@ -17,6 +17,7 @@ const problemRoutes = require('./routes/problemsRoutes');
 const teamRoutes = require('./routes/teamRoute');
 const teamMemberRoutes = require('./routes/teamMembersRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const terminalRoutes = require('./routes/terminalRoutes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/problems', problemRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/team-members', teamMemberRoutes);
 app.use('/api/sessions', sessionRoutes);
+app.use('/api/terminal', terminalRoutes);
 
 app.get("/", (req, res) => {
   res.send("api running yay");

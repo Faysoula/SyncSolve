@@ -1,5 +1,6 @@
 const TerminalSession = require("../models/terminal_sessions");
 const { getSessionById } = require("./sessionService");
+const Session = require("../models/session");
 
 const SUPPORTED_LANGUAGES = ["Cpp", "Java", "Python"];
 
