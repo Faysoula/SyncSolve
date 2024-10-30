@@ -12,6 +12,7 @@ const {
   Session,
   TerminalSession,
   SessionSnapshot,
+  Execution,
 } = require("./models/associations");
 
 const userRoutes = require("./routes/userRoutes");
@@ -21,6 +22,7 @@ const teamMemberRoutes = require("./routes/teamMembersRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const terminalRoutes = require("./routes/terminalRoutes");
 const sessionSnapshot = require("./routes/sessionSnapRoutes");
+const ExecutionRoutes = require("./routes/executionRoutes");
 
 const app = express();
 
@@ -37,6 +39,7 @@ app.use("/api/team-members", teamMemberRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/terminal", terminalRoutes);
 app.use("/api/snapshots", sessionSnapshot);
+app.use("/api/executions", ExecutionRoutes);
 
 app.get("/", (req, res) => {
   res.send("api running yay");

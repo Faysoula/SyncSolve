@@ -5,6 +5,7 @@ const Problem = require("./problems");
 const Session = require("./session");
 const TerminalSession = require("./terminal_sessions");
 const SessionSnapshot = require("./sessionSnapshots");
+const Execution = require("./executions");
 
 // Set up associations
 Team.hasMany(TeamMember, { foreignKey: "team_id", onDelete: "CASCADE" });
@@ -65,7 +66,35 @@ SessionSnapshot.belongsTo(Session, {
   onDelete: "CASCADE",
 });
 
+// Execution belongs to Session
+Session.hasMany(Execution, {
+  foreignKey: "session_id",
+  onDelete: "CASCADE",
+});
+Execution.belongsTo(Session, {
+  foreignKey: "session_id",
+  onDelete: "CASCADE",
+});
 
+// Execution belongs to User
+User.hasMany(Execution, {
+  foreignKey: "user_id",
+  onDelete: "SET NULL",
+});
+Execution.belongsTo(User, {
+  foreignKey: "user_id",
+  onDelete: "SET NULL",
+});
+
+// Execution belongs to TerminalSession
+TerminalSession.hasMany(Execution, {
+  foreignKey: "terminal_id",
+  onDelete: "SET NULL", 
+});
+Execution.belongsTo(TerminalSession, {
+  foreignKey: "terminal_id",
+  onDelete: "SET NULL",
+});
 
 module.exports = {
   Team,
@@ -75,4 +104,5 @@ module.exports = {
   Session,
   TerminalSession,
   SessionSnapshot,
+  Execution,
 };
