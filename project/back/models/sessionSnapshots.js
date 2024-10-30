@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const {db} = require('../config/db');
 
-const SessionSnapshot = db.define("session_snapshots"  {
+const SessionSnapshot = db.define("session_snapshots", {
     snapshot_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -19,7 +19,8 @@ const SessionSnapshot = db.define("session_snapshots"  {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
-    }, {
+    }, 
+    {
     tableName: "session_snapshots",
     timestamps: false,
 })
