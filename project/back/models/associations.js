@@ -66,16 +66,6 @@ SessionSnapshot.belongsTo(Session, {
   onDelete: "CASCADE",
 });
 
-// Execution belongs to Session
-Session.hasMany(Execution, {
-  foreignKey: "session_id",
-  onDelete: "CASCADE",
-});
-Execution.belongsTo(Session, {
-  foreignKey: "session_id",
-  onDelete: "CASCADE",
-});
-
 // Execution belongs to User
 User.hasMany(Execution, {
   foreignKey: "user_id",

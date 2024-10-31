@@ -9,10 +9,6 @@ const Execution = db.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    session_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     user_id: {
       type: DataTypes.INTEGER,
     },

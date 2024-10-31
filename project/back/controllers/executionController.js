@@ -8,12 +8,10 @@ const {
   deleteExecution,
 } = require("../services/executionService");
 
-// POST /api/executions
 const createExecutionController = async (req, res) => {
-  const { session_id, user_id, code, terminal_id } = req.body; // Using terminal_id instead of language here
+  const { user_id, code, terminal_id } = req.body;
   try {
     const execution = await createExecution(
-      session_id,
       user_id,
       code,
       terminal_id
@@ -24,7 +22,6 @@ const createExecutionController = async (req, res) => {
   }
 };
 
-// GET /api/executions
 const getAllExecutionsController = async (req, res) => {
   try {
     const executions = await getAllExecutions();
@@ -34,7 +31,6 @@ const getAllExecutionsController = async (req, res) => {
   }
 };
 
-// GET /api/executions/session/:session_id
 const getExecutionsBySessionIdController = async (req, res) => {
   const { session_id } = req.params;
   try {
@@ -45,7 +41,6 @@ const getExecutionsBySessionIdController = async (req, res) => {
   }
 };
 
-// GET /api/executions/user/:user_id
 const getExecutionsByUserIdController = async (req, res) => {
   const { user_id } = req.params;
   try {
@@ -56,7 +51,6 @@ const getExecutionsByUserIdController = async (req, res) => {
   }
 };
 
-// GET /api/executions/:execution_id
 const getExecutionByIdController = async (req, res) => {
   const { execution_id } = req.params;
   try {
@@ -70,7 +64,6 @@ const getExecutionByIdController = async (req, res) => {
   }
 };
 
-// PUT /api/executions/:execution_id
 const updateExecutionController = async (req, res) => {
   const { execution_id } = req.params;
   const updates = req.body;
@@ -82,7 +75,6 @@ const updateExecutionController = async (req, res) => {
   }
 };
 
-// DELETE /api/executions/:execution_id
 const deleteExecutionController = async (req, res) => {
   const { execution_id } = req.params;
   try {

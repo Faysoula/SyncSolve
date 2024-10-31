@@ -1,4 +1,3 @@
-const Session = require("../models/session");
 const User = require("../models/user");
 require("dotenv").config();
 const Execution = require("../models/executions");
@@ -6,7 +5,7 @@ const TerminalSession = require("../models/terminal_sessions");
 const judge = require("../utils/judge");
 
 
-const createExecution = async (session_id, user_id, code, terminal_id) => {
+const createExecution = async (user_id, code, terminal_id) => {
   try {
     // Retrieve the terminal session to get the language and other data
     const terminalSession = await TerminalSession.findByPk(terminal_id);
@@ -24,7 +23,6 @@ const createExecution = async (session_id, user_id, code, terminal_id) => {
 
     // Proceed with execution creation if syntax is valid
     const execution = await Execution.create({
-      session_id,
       user_id,
       code,
       terminal_id,
@@ -43,11 +41,10 @@ const getAllExecutions = async () => {
   try {
     const executions = await Execution.findAll({
       include: [
-        { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
         {
           model: TerminalSession,
-          attributes: ["terminal_id", "language", "active", "last_active"],
+          attributes: ["terminal_id", "language", "active", "last_active", "session_id"],
         },
       ],
     });
@@ -63,10 +60,10 @@ const getExecutionsBySessionId = async (session_id) => {
     const executions = await Execution.findAll({
       where: { session_id },
       include: [
-        { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
         {
           model: TerminalSession,
+          where: { session_id },
           attributes: ["terminal_id", "language", "active", "last_active"],
         },
       ],
@@ -85,7 +82,6 @@ const getExecutionsByUserId = async (user_id) => {
     const executions = await Execution.findAll({
       where: { user_id },
       include: [
-        { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
         {
           model: TerminalSession,
@@ -106,7 +102,6 @@ const getExecutionById = async (execution_id) => {
   try {
     const execution = await Execution.findByPk(execution_id, {
       include: [
-        { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
         {
           model: TerminalSession,
