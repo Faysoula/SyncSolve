@@ -8,14 +8,15 @@ const {
 } = require("../services/problemsService");
 
 const addProblemController = async (req, res) => {
-  const { title, description, difficulty, created_by } = req.body;
+  const { title, description, difficulty, created_by, test_cases } = req.body;
 
   try {
     const problem = await addProblem(
       title,
       description,
       difficulty,
-      created_by
+      created_by,
+      test_cases
     );
     res.status(201).json({ message: "Problem added successfully", problem });
   } catch (err) {
@@ -58,13 +59,14 @@ const getProblemByIdController = async (req, res) => {
 
 const updateProblemController = async (req, res) => {
   const problem_id = req.params.id;
-  const { title, description, difficulty } = req.body;
+  const { title, description, difficulty, test_cases } = req.body;
   try {
     const updatedProblem = await updateProblem(
       problem_id,
       title,
       description,
-      difficulty
+      difficulty,
+      test_cases
     );
     res
       .status(200)

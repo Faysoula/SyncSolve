@@ -6,6 +6,7 @@ const TerminalSession = require("../models/terminal_sessions");
 const judge = require("../utils/judge");
 const { createSessionSnapshot } = require("../services/sessionSnapshotService");
 const { getTeamMembers } = require("../services/teamService");
+const { getProblemById } = require("../services/problemsService");
 
 const createExecution = async (user_id, code, terminal_id) => {
   try {
@@ -26,24 +27,26 @@ const createExecution = async (user_id, code, terminal_id) => {
 
     const { language, session_id } = terminalSession;
 
-    // Perform syntax check using the language from terminal_sessions
-    const syntaxCheck = await judge(code, language);
-    if (!syntaxCheck.valid) {
-      throw new Error(`Syntax error in code: ${syntaxCheck.result}`);
+    const problem = await getProblemById(session.problem_id);
+    if (!problem || !problem.test_cases) {
+      throw new Error("Problem not found or has no test cases");
     }
 
-    // Proceed with execution creation if syntax is valid
+    const runResult = await judge(code, language, problem.test_cases);
+
+    const status = runResult.allPassed ? "success" : "error";
+    
     const execution = await Execution.create({
       user_id,
       code,
       terminal_id,
-      result: syntaxCheck.result,
-      status: syntaxCheck.status,
+      result: JSON.stringify(runResult),
+      status,
     });
 
     await createSessionSnapshot(session_id, code);
 
-    return execution;
+    return {execution, runResult};
   } catch (error) {
     throw new Error(`Error creating execution: ${error.message}`);
   }

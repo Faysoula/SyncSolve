@@ -1,8 +1,9 @@
 const Problems = require("../models/problems");
 const { getUserById } = require("./userService");
-const addProblem = async (title, description, difficulty, created_by) => {
+
+const addProblem = async (title, description, difficulty, created_by, test_cases) => {
   try {
-    //jst in case
+    //just in case
     const validDifficulty = ["easy", "medium", "hard"];
     const normalizedDifficulty = difficulty.toLowerCase();
 
@@ -11,8 +12,8 @@ const addProblem = async (title, description, difficulty, created_by) => {
     }
 
     const user = await getUserById(created_by);
-    if(!user){
-        throw new Error("User not found");
+    if (!user) {
+      throw new Error("User not found");
     }
 
     const problem = await Problems.create({
@@ -20,6 +21,7 @@ const addProblem = async (title, description, difficulty, created_by) => {
       description,
       difficulty: normalizedDifficulty,
       created_by,
+      test_cases,
     });
 
     return problem;
@@ -61,9 +63,15 @@ const getProblemById = async (problem_id) => {
   } catch (err) {
     throw new Error(`Error getting problem by id: ${err.message}`);
   }
-}
+};
 
-const updateProblem = async (problem_id, title, description, difficulty) => {
+const updateProblem = async (
+  problem_id,
+  title,
+  description,
+  difficulty,
+  test_cases
+) => {
   try {
     const [affectedrows] = await Problems.update(
       {

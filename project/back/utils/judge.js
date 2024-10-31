@@ -2,85 +2,82 @@ const axios = require("axios");
 require("dotenv").config();
 
 const LANGUAGE_MAP = {
-  Cpp: 54, // C++ (GCC 9.2.0)
-  Java: 62, // Java (OpenJDK 13.0.1)
-  Python: 71, // Python (3.8.1)
+  Cpp: 54,
+  Java: 62,
+  Python: 71,
 };
 
-const checkSyntax = async (code, language) => {
+const checkTestCases = async (code, language, testCases) => {
   const languageId = LANGUAGE_MAP[language];
-  console.log(
-    "Checking syntax for language:",
-    language,
-    "with ID:",
-    languageId
-  );
-
   if (!languageId) {
     throw new Error("Unsupported language for syntax check");
   }
 
-  try {
-    const response = await axios.post(
-      "https://judge0-ce.p.rapidapi.com/submissions",
-      {
-        source_code: code,
-        language_id: languageId,
-        stdin: "",
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
-          "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+  const results = [];
+
+  for (const testCase of testCases) {
+    const { input, expected_output } = testCase;
+    try {
+      // Submit the code with test case input
+      const response = await axios.post(
+        "https://judge0-ce.p.rapidapi.com/submissions",
+        {
+          source_code: code,
+          language_id: languageId,
+          stdin: input, // Pass the test case input here
         },
-      }
-    );
-
-    const { token } = response.data;
-    console.log("Submission token:", token);
-
-    const maxWaitTime = 30000;
-    const pollingInterval = 3000;
-    const startTime = Date.now();
-
-    let resultResponse;
-    while (true) {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > maxWaitTime) {
-        throw new Error("Execution timed out. Please try again later.");
-      }
-
-      resultResponse = await axios.get(
-        `https://judge0-ce.p.rapidapi.com/submissions/${token}`,
         {
           headers: {
+            "Content-Type": "application/json",
             "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
             "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
           },
         }
       );
 
-      const { status } = resultResponse.data;
-      console.log("Judge0 Status:", status.description);
+      const { token } = response.data;
+      console.log("Submission token:", token);
 
-      if (status.id !== 1 && status.id !== 2) break;
-      await new Promise((resolve) => setTimeout(resolve, pollingInterval));
-    }
+      const maxWaitTime = 30000;
+      const pollingInterval = 3000;
+      const startTime = Date.now();
 
-    const { stderr, stdout, compile_output, status } = resultResponse.data;
-    if (status.id === 3) {
-      return { valid: true, result: stdout, status: "success" };
-    } else {
-      return {
-        valid: false,
-        result: stderr || compile_output || "Syntax error",
-        status: "error",
-      };
+      let resultResponse;
+      while (true) {
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime > maxWaitTime) {
+          throw new Error("Execution timed out. Please try again later.");
+        }
+
+        resultResponse = await axios.get(
+          `https://judge0-ce.p.rapidapi.com/submissions/${token}`,
+          {
+            headers: {
+              "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+              "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+            },
+          }
+        );
+
+        const { status } = resultResponse.data;
+        if (status.id !== 1 && status.id !== 2) break; // Status 1 and 2 mean "In Queue" and "Processing"
+        await new Promise((resolve) => setTimeout(resolve, pollingInterval));
+      }
+
+      // Retrieve result and compare with expected output
+      const { stdout, stderr, compile_output, status } = resultResponse.data;
+      const output = stdout || stderr || compile_output || "";
+      const passed = output.trim() === expected_output.trim();
+
+      results.push({ testCase, output, passed });
+    } catch (error) {
+      results.push({ testCase, error: error.message, passed: false });
     }
-  } catch (error) {
-    throw new Error(`Syntax check failed: ${error.message}`);
   }
+
+  // Determine overall success
+  const allPassed = results.every((result) => result.passed);
+  return { allPassed, results };
 };
 
-module.exports = checkSyntax;
+module.exports = checkTestCases;

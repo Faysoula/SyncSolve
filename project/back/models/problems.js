@@ -33,9 +33,15 @@ const Problems = db.define("Problems", {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+  test_cases: {
+    type: DataTypes.JSON,
+    allowNull: false,
+    defaultValue: [],
+  },
 }, {
     tableName: "problems",
     timestamps: false,
 });
 
 module.exports = Problems;
+
