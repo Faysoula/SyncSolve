@@ -1,9 +1,11 @@
 const User = require("../models/user");
+const Session = require("../models/session");
 require("dotenv").config();
 const Execution = require("../models/executions");
 const TerminalSession = require("../models/terminal_sessions");
 const judge = require("../utils/judge");
-
+const { createSessionSnapshot } = require("../services/sessionSnapshotService");
+const { getTeamMembers } = require("../services/teamService");
 
 const createExecution = async (user_id, code, terminal_id) => {
   try {
@@ -13,7 +15,16 @@ const createExecution = async (user_id, code, terminal_id) => {
       throw new Error("Terminal session not found");
     }
 
-    const { language } = terminalSession;
+    const session = await Session.findByPk(terminalSession.session_id);
+    const teamMembers = await getTeamMembers(session.team_id);
+    const isTeamMember = teamMembers.some(
+      (member) => member.user_id === user_id
+    );
+    if (!isTeamMember) {
+      throw new Error("User not authorized for this team session");
+    }
+
+    const { language, session_id } = terminalSession;
 
     // Perform syntax check using the language from terminal_sessions
     const syntaxCheck = await judge(code, language);
@@ -30,6 +41,8 @@ const createExecution = async (user_id, code, terminal_id) => {
       status: syntaxCheck.status,
     });
 
+    await createSessionSnapshot(session_id, code);
+
     return execution;
   } catch (error) {
     throw new Error(`Error creating execution: ${error.message}`);
@@ -44,7 +57,13 @@ const getAllExecutions = async () => {
         { model: User, attributes: ["user_id", "username"] },
         {
           model: TerminalSession,
-          attributes: ["terminal_id", "language", "active", "last_active", "session_id"],
+          attributes: [
+            "terminal_id",
+            "language",
+            "active",
+            "last_active",
+            "session_id",
+          ],
         },
       ],
     });

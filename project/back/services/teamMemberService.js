@@ -9,7 +9,8 @@ const addTeamMember = async (team_id, user_id, role) => {
     if (!team) {
       throw new Error("Team not found");
     }
-    
+
+
     const user = await User.findByPk(user_id);
     if (!user) {
       throw new Error("User not found");
@@ -21,6 +22,17 @@ const addTeamMember = async (team_id, user_id, role) => {
       },
     });
     
+    const existingmbr = await TeamMember.findOne({
+      where: {
+        team_id,
+        user_id,
+      },
+    })
+
+    if(existingmbr){
+      throw new Error("User already in team");
+    }
+
     if (count >= 3) {
       throw new Error("Team is full");
     }
