@@ -1,101 +1,9 @@
 const Session = require("../models/session");
 const User = require("../models/user");
 require("dotenv").config();
-const axios = require("axios");
 const Execution = require("../models/executions");
 const TerminalSession = require("../models/terminal_sessions");
-const { getSessionById } = require("./sessionService");
-
-const LANGUAGE_MAP = {
-  Cpp: 54, // C++ (GCC 9.2.0)
-  Java: 62, // Java (OpenJDK 13.0.1)
-  Python: 71, // Python (3.8.1)
-};
-
-const checkSyntax = async (code, language) => {
-  const languageId = LANGUAGE_MAP[language];
-  console.log(
-    "Checking syntax for language:",
-    language,
-    "with ID:",
-    languageId
-  );
-  if (!languageId) {
-    throw new Error("Unsupported language for syntax check");
-  }
-
-  try {
-    // Initial submission to Judge0
-    const response = await axios.post(
-      "https://judge0-ce.p.rapidapi.com/submissions",
-      {
-        source_code: code,
-        language_id: languageId,
-        stdin: "",
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
-          "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-        },
-      }
-    );
-
-    const { token } = response.data;
-    console.log("Submission token:", token);
-
-    // Polling loop to check the status of the submission
-    const maxWaitTime = 30000; // Maximum wait time of 30 seconds
-    const pollingInterval = 3000; // 3-second delay between polling requests
-    const startTime = Date.now();
-
-    let resultResponse;
-    while (true) {
-      // Check the elapsed time to enforce the max wait time
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > maxWaitTime) {
-        throw new Error("Execution timed out. Please try again later.");
-      }
-
-      // Get the submission status
-      resultResponse = await axios.get(
-        `https://judge0-ce.p.rapidapi.com/submissions/${token}`,
-        {
-          headers: {
-            "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
-            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-          },
-        }
-      );
-
-      const { status } = resultResponse.data;
-      console.log("Judge0 Status:", status.description);
-
-      // If the status is not "In Queue" or "Processing", break the loop
-      if (status.id !== 1 && status.id !== 2) break;
-
-      // Wait before polling again
-      await new Promise((resolve) => setTimeout(resolve, pollingInterval));
-    }
-
-    // Handle the response when completed
-    const { stderr, stdout, compile_output, status } = resultResponse.data;
-    if (status.id === 3) {
-      // "Accepted" in Judge0
-      return { valid: true, result: stdout, status: "success" };
-    } else {
-      return {
-        valid: false,
-        result: stderr || compile_output || "Syntax error",
-        status: "error",
-      };
-    }
-  } catch (error) {
-    throw new Error(`Syntax check failed: ${error.message}`);
-  }
-};
-
+const judge = require("../utils/judge");
 
 
 const createExecution = async (session_id, user_id, code, terminal_id) => {
@@ -109,7 +17,7 @@ const createExecution = async (session_id, user_id, code, terminal_id) => {
     const { language } = terminalSession;
 
     // Perform syntax check using the language from terminal_sessions
-    const syntaxCheck = await checkSyntax(code, language);
+    const syntaxCheck = await judge(code, language);
     if (!syntaxCheck.valid) {
       throw new Error(`Syntax error in code: ${syntaxCheck.result}`);
     }
@@ -119,7 +27,7 @@ const createExecution = async (session_id, user_id, code, terminal_id) => {
       session_id,
       user_id,
       code,
-      terminal_id, 
+      terminal_id,
       result: syntaxCheck.result,
       status: syntaxCheck.status,
     });
@@ -137,7 +45,10 @@ const getAllExecutions = async () => {
       include: [
         { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
-        { model: TerminalSession, attributes: ["terminal_id", "language", "active", "last_active"] },
+        {
+          model: TerminalSession,
+          attributes: ["terminal_id", "language", "active", "last_active"],
+        },
       ],
     });
     return executions;
@@ -154,7 +65,10 @@ const getExecutionsBySessionId = async (session_id) => {
       include: [
         { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
-        { model: TerminalSession, attributes: ["terminal_id", "language", "active", "last_active"] },
+        {
+          model: TerminalSession,
+          attributes: ["terminal_id", "language", "active", "last_active"],
+        },
       ],
     });
     return executions;
@@ -173,7 +87,10 @@ const getExecutionsByUserId = async (user_id) => {
       include: [
         { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
-        { model: TerminalSession, attributes: ["terminal_id", "language", "active", "last_active"] },
+        {
+          model: TerminalSession,
+          attributes: ["terminal_id", "language", "active", "last_active"],
+        },
       ],
     });
     return executions;
@@ -191,7 +108,10 @@ const getExecutionById = async (execution_id) => {
       include: [
         { model: Session, attributes: ["session_id"] },
         { model: User, attributes: ["user_id", "username"] },
-        { model: TerminalSession, attributes: ["terminal_id", "language", "active", "last_active"] },
+        {
+          model: TerminalSession,
+          attributes: ["terminal_id", "language", "active", "last_active"],
+        },
       ],
     });
     return execution;
@@ -201,7 +121,6 @@ const getExecutionById = async (execution_id) => {
     );
   }
 };
-
 
 // 6. Update an execution
 const updateExecution = async (execution_id, updates) => {
