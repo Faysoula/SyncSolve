@@ -8,9 +8,10 @@ const LoadingButton = ({ loading, children, ...props }) => {
       disabled={loading}
       sx={{
         mt: 2,
-        backgroundColor: "#E0B1CB",
+        backgroundColor: "#C77DFF",
+        color: "#fff",
         "&:hover": {
-          backgroundColor: "#BE95C4",
+          backgroundColor: "#9D4EDD",
         },
         ...props.sx,
       }}

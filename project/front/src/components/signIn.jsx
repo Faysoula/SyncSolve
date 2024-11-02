@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box,Typography, Alert, Stack } from "@mui/material";
+import { Box,Typography, Alert, Stack, Button } from "@mui/material";
 import { EmailOutlined, LockOutlined, Coffee } from "@mui/icons-material";
 import AuthLayout from "./common/AuthLayout";
 import FormTextField from "./common/FormTextField";
@@ -129,6 +129,27 @@ const SignIn = () => {
           >
             Sign In
           </LoadingButton>
+          <Box
+            sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 2 }}
+          >
+          <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.9 }}>
+            WHAT IM NOT A MEMBER YET?!!
+          </Typography>
+            <Button
+              variant="text"
+              sx={{
+                color: "#FAF0CA",
+                textTransform: "none",
+                fontWeight: 600,
+                p: 0,
+                minWidth: "700",
+                "&:hover": { backgroundColor: "transparent", color: "#E0B1CB" },
+              }}
+              onClick={() => navigate("/Register")}
+            >
+              Sign Up
+            </Button>
+          </Box>
         </Stack>
       </form>
     </AuthLayout>

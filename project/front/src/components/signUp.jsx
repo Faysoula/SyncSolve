@@ -104,7 +104,7 @@ const SignUp = () => {
 
       // Redirect after successful registration
       setTimeout(() => {
-        navigate("/login");
+        navigate("/");
       }, 2000);
     } catch (error) {
       setApiError(error.response?.data?.message || "Registration failed");
@@ -232,7 +232,7 @@ const SignUp = () => {
             sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 2 }}
           >
             <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.9 }}>
-              Already have an account?
+              Already an exhausted dev?
             </Typography>
             <Button
               variant="text"
@@ -247,7 +247,7 @@ const SignUp = () => {
                   color: "#E0B1CB",
                 },
               }}
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/signin")}
             >
               Sign in
             </Button>

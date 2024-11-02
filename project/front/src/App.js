@@ -1,18 +1,33 @@
-import logo from "./logo.svg";
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import SignUpPage from "./components/signUp";
+import { ThemeProvider, Box } from "@mui/material";
+import SignUp from "./components/signUp";
 import LoginForm from "./components/signIn";
 import LandingPage from "./components/landing";
+import Footer from "./components/common/Footer";
+import { theme } from "./theme";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/Register" element={<SignUpPage />} />
-      <Route path="/Signin" element={<LoginForm />} />
-      <Route path="/" element={<LandingPage />} />
-
-    </Routes>
+    <ThemeProvider theme={theme}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: theme.palette.background.default,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Routes>
+            <Route path="/Register" element={<SignUp />} />
+            <Route path="/Signin" element={<LoginForm />} />
+            <Route path="/" element={<LandingPage />} />
+          </Routes>
+        </Box>
+        <Footer />
+      </Box>
+    </ThemeProvider>
   );
 }
 
