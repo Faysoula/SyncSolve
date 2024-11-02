@@ -4,6 +4,7 @@ import { ThemeProvider, Box } from "@mui/material";
 import SignUp from "./components/signUp";
 import LoginForm from "./components/signIn";
 import LandingPage from "./components/landing";
+import ProblemsPage from "./components/problemsPage";
 import Footer from "./components/common/Footer";
 import { theme } from "./theme";
 import { AuthProvider } from "./context/authContext";
@@ -26,6 +27,7 @@ function App() {
             <Routes>
               <Route path="/Register" element={<SignUp />} />
               <Route path="/Signin" element={<LoginForm />} />
+              <Route path="/problems" element={<ProblemsPage />} />
               <Route path="/" element={<LandingPage />} />
             </Routes>
           </Box>

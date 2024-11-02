@@ -236,7 +236,7 @@ const LandingPage = () => {
             variant="contained"
             color="secondary"
             size="large"
-            onClick={() => navigate("/Register")}
+            onClick={() => navigate("/problems")}
             endIcon={
               <Box component="span" sx={{ ml: 1 }}>
                 →
