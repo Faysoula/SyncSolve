@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box,Typography, Alert, Stack, Button } from "@mui/material";
+import { Box, Typography, Alert, Stack, Button } from "@mui/material";
 import { EmailOutlined, LockOutlined, Coffee } from "@mui/icons-material";
 import AuthLayout from "./common/AuthLayout";
 import FormTextField from "./common/FormTextField";
 import LoadingButton from "./common/LoadingButton";
 import useForm from "../hooks/useForm";
 import UserService from "../Services/userService";
+import { useAuth } from "../context/authContext";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -38,6 +40,7 @@ const SignIn = () => {
     validate
   );
 
+  // In SignIn component
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError("");
@@ -52,12 +55,14 @@ const SignIn = () => {
         password: formData.password,
       });
 
-      localStorage.setItem("token", response.data.token);
-      setShowSuccess(true);
+      if (response.data.user && response.data.token) {
+        login(response.data.user); // Call login before navigating
+        setShowSuccess(true);
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 1500);
+      }
     } catch (error) {
       setApiError(error.response?.data?.message || "Login failed");
     } finally {
@@ -132,9 +137,9 @@ const SignIn = () => {
           <Box
             sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 2 }}
           >
-          <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.9 }}>
-            WHAT IM NOT A MEMBER YET?!!
-          </Typography>
+            <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.9 }}>
+              WHAT IM NOT A MEMBER YET?!!
+            </Typography>
             <Button
               variant="text"
               sx={{

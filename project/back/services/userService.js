@@ -56,6 +56,15 @@ const loginUser = async (email, password) => {
   }
 };
 
+const getCurrentUser = async (user_id) => {
+  try {
+    const user = await User.findByPk(user_id);
+    return user;
+  } catch (err) {
+    throw new Error(`Error getting current user: ${err.message}`);
+  }
+};
+
 const getAllUsers = async () => {
   try {
     const users = await User.findAll();
@@ -67,7 +76,7 @@ const getAllUsers = async () => {
 
 const getUserById = async (user_id) => {
   try {
-    const user = await User.findByPk(user_id);
+    const user = await User.findByPk(parseInt(user_id));
     return user;
   } catch (err) {
     throw new Error(`Error getting user by id: ${err.message}`);
@@ -114,7 +123,7 @@ const updateUser = async (
     );
 
     if (affectedrows === 0) {
-        throw new Error("User not found");
+      throw new Error("User not found");
     }
 
     const updatedUser = await User.findByPk(user_id);
@@ -127,11 +136,11 @@ const updateUser = async (
 const deleteUser = async (user_id) => {
   try {
     const toDelete = await User.findByPk(user_id);
-    if(!toDelete){
-        throw new Error("User not found");
+    if (!toDelete) {
+      throw new Error("User not found");
     }
     await toDelete.destroy();
-     return { message: "User deleted successfully" };
+    return { message: "User deleted successfully" };
   } catch (err) {
     throw new Error(`Error deleting user: ${err.message}`);
   }
@@ -140,6 +149,7 @@ const deleteUser = async (user_id) => {
 module.exports = {
   registerUser,
   loginUser,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   getUserByUsername,

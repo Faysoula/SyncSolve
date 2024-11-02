@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const {
     registerController,
     loginController,
+    getCurrentUserController,
     getAllUsersController,
     getUserByIdController,
     getUserByUsernameController,
@@ -19,6 +20,9 @@ router.post("/register", registerController);
 
 // Route for logging in a user
 router.post("/login", loginController);
+
+// Route for getting the current user
+router.get("/me", auth, getCurrentUserController);
 
 // Route for getting all users
 router.get("/", auth ,getAllUsersController);

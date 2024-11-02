@@ -1,12 +1,31 @@
 import http from "../http-common";
 import { getTokenBearer } from "../utils/token";
 
-const register = (data) => {
-  return http.post("/users/register", data);
+const register = async(data) => {
+  const res = await http.post("/users/register", data);
+  if (res.data.token) {
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+  }
+  return res;
 };
 
-const login = (data) => {
-  return http.post("/users/login", data);
+const login = async (data) => {
+  const res = await http.post("/users/login", data);
+  if (res.data.token) {
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+  }
+  return res;
+};
+
+const getCurrentUser = () => {
+  const token = localStorage.getItem("token");
+  return http.get("/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 const getAllUsers = () => {
@@ -52,6 +71,7 @@ const deleteUser = (id) => {
 const UserService = {
   register,
   login,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   getUserByUsername,

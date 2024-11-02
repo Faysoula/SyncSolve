@@ -1,6 +1,7 @@
 const {
   registerUser,
   loginUser,
+  getCurrentUser,
   getAllUsers,
   getUserById,
   getUserByUsername,
@@ -34,10 +35,31 @@ const loginController = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await loginUser(email, password);
-    res.status(200).json({ message: "User logged in successfully", user });
+    const { token, user } = await loginUser(email, password);
+    res.status(200).json({
+      message: "User logged in successfully",
+      token,
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        last_name: user.last_name,
+        email: user.email,
+        username: user.username,
+      },
+    });
   } catch (err) {
     console.error("Error logging in user:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getCurrentUserController = async (req, res) => {
+  const user_id = req.user.user_id;
+  try {
+    const user = await getCurrentUser(user_id);
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("Error getting current user:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -114,6 +136,7 @@ const deleteUserController = async (req, res) => {
 module.exports = {
   registerController,
   loginController,
+  getCurrentUserController,
   getAllUsersController,
   getUserByIdController,
   getUserByUsernameController,

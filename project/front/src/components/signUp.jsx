@@ -12,9 +12,11 @@ import FormTextField from "./common/FormTextField";
 import LoadingButton from "./common/LoadingButton";
 import useForm from "../hooks/useForm";
 import UserService from "../Services/userService";
+import { useAuth } from "../context/authContext";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +98,7 @@ const SignUp = () => {
         last_name: formData.lastName,
       });
 
-      localStorage.setItem("token", response.data.token);
+      login(response.data.user);
       setShowSuccess(true);
 
       // Reset form
