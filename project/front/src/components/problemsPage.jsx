@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  SlidersHorizontal,
-  Calendar,
-  ArrowUpDown,
   Clock,
-  Award,
   User,
   BookOpen,
 } from "lucide-react";
@@ -19,91 +15,80 @@ import {
   Stack,
   Select,
   MenuItem,
-  IconButton,
   Card,
-  Divider,
   Grid,
   alpha,
+  Alert,
 } from "@mui/material";
+import ProblemService from "../Services/problemService";
+import UserService from "../Services/userService";
 
 const difficultyConfig = {
   easy: {
-    color: "#22c55e",
-    background: alpha("#22c55e", 0.1),
+    color: "#4ade80",
+    background: alpha("#4ade80", 0.1),
     label: "Easy",
   },
   medium: {
-    color: "#eab308",
-    background: alpha("#eab308", 0.1),
+    color: "#fbbf24",
+    background: alpha("#fbbf24", 0.1),
     label: "Medium",
   },
   hard: {
-    color: "#ef4444",
-    background: alpha("#ef4444", 0.1),
+    color: "#f87171",
+    background: alpha("#f87171", 0.1),
     label: "Hard",
   },
 };
 
-// In a real application, this would come from your API
-const mockProblems = [
-  {
-    problem_id: 1,
-    title: "Two Sum",
-    description:
-      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-    difficulty: "easy",
-    created_at: "2024-03-15",
-    created_by: "John Doe",
-    solved_count: 1234,
-    acceptance_rate: 76,
-  },
-  {
-    problem_id: 2,
-    title: "Merge K Sorted Lists",
-    description:
-      "You are given an array of k linked-lists lists, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list.",
-    difficulty: "hard",
-    created_at: "2024-03-14",
-    created_by: "Jane Smith",
-    solved_count: 892,
-    acceptance_rate: 45,
-  },
-  {
-    problem_id: 3,
-    title: "LRU Cache",
-    description:
-      "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.",
-    difficulty: "medium",
-    created_at: "2024-03-13",
-    created_by: "Alex Johnson",
-    solved_count: 567,
-    acceptance_rate: 62,
-  },
-  {
-    problem_id: 4,
-    title: "Valid Parentheses",
-    description:
-      "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
-    difficulty: "easy",
-    created_at: "2024-03-12",
-    created_by: "Sarah Wilson",
-    solved_count: 2341,
-    acceptance_rate: 82,
-  },
-];
-
 export default function ProblemsPage() {
-  const [problems, setProblems] = useState(mockProblems);
+  const [problems, setProblems] = useState([]);
+  const [userMap, setUserMap] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [filteredProblems, setFilteredProblems] = useState(problems);
+  const [filteredProblems, setFilteredProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Apply filters and sorting whenever any filter/sort criteria changes
+  // Fetch problems and user data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch all users first
+        const usersResponse = await UserService.getAllUsers();
+        const users = usersResponse.data.users;
+
+        // Create user map
+        const userDataMap = {};
+        users.forEach((user) => {
+          userDataMap[user.user_id] = user;
+        });
+
+        // Fetch problems
+        const problemsResponse = await ProblemService.getAllProblems();
+        const problemsData = problemsResponse.data.problems;
+
+        setUserMap(userDataMap);
+        setProblems(problemsData);
+      } catch (err) {
+        setError("Failed to fetch data. Please try again later.");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Rest of the filter and sort logic remains the same
   useEffect(() => {
     let result = [...problems];
 
-    // Apply search filter
     if (searchQuery) {
       result = result.filter(
         (problem) =>
@@ -112,22 +97,20 @@ export default function ProblemsPage() {
       );
     }
 
-    // Apply difficulty filter
     if (difficultyFilter !== "all") {
       result = result.filter(
         (problem) => problem.difficulty === difficultyFilter
       );
     }
 
-    // Apply sorting
     result.sort((a, b) => {
       switch (sortBy) {
         case "newest":
           return new Date(b.created_at) - new Date(a.created_at);
         case "oldest":
           return new Date(a.created_at) - new Date(b.created_at);
-        case "acceptance":
-          return b.acceptance_rate - a.acceptance_rate;
+        case "title":
+          return a.title.localeCompare(b.title);
         case "difficulty":
           const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
           return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
@@ -138,11 +121,6 @@ export default function ProblemsPage() {
 
     setFilteredProblems(result);
   }, [searchQuery, difficultyFilter, sortBy, problems]);
-
-  // Debounced search handler
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
-  };
 
   return (
     <Box
@@ -162,10 +140,7 @@ export default function ProblemsPage() {
               variant="h4"
               sx={{
                 fontWeight: 700,
-                background: "linear-gradient(to right, #c084fc, #818cf8)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                color: "#FAF0CA",
               }}
             >
               Problem Bank
@@ -174,7 +149,7 @@ export default function ProblemsPage() {
           <Typography
             variant="body1"
             sx={{
-              color: "gray.400",
+              color: "#FAF0CA",
               maxWidth: "600px",
               opacity: 0.7,
             }}
@@ -188,16 +163,19 @@ export default function ProblemsPage() {
           </Typography>
         </Box>
 
+        {error && (
+          <Alert severity="error" sx={{ mb: 4 }}>
+            {error}
+          </Alert>
+        )}
+
         {/* Filters Section */}
         <Card
           sx={{
             mb: 4,
-            bgcolor: "#1a103c",
+            bgcolor: "#3C096C",
             borderRadius: 2,
-            border: "1px solid",
-            borderColor: "rgba(139, 92, 246, 0.1)",
-            boxShadow:
-              "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
           }}
         >
           <Grid container spacing={2} sx={{ p: 3 }}>
@@ -206,22 +184,28 @@ export default function ProblemsPage() {
                 fullWidth
                 placeholder="Search problems..."
                 value={searchQuery}
-                onChange={handleSearch}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Search className="text-purple-400" />
+                      <Search sx={{ color: "#FAF0CA" }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    bgcolor: "#2d1f5b",
+                    bgcolor: "#240046",
+                    "& input": {
+                      color: "#FAF0CA",
+                    },
+                    "& fieldset": {
+                      borderColor: "#5A189A",
+                    },
                     "&:hover fieldset": {
-                      borderColor: "rgba(139, 92, 246, 0.4)",
+                      borderColor: "#7B2CBF",
                     },
                     "&.Mui-focused fieldset": {
-                      borderColor: "#8b5cf6",
+                      borderColor: "#9D4EDD",
                     },
                   },
                 }}
@@ -232,15 +216,20 @@ export default function ProblemsPage() {
                 fullWidth
                 value={difficultyFilter}
                 onChange={(e) => setDifficultyFilter(e.target.value)}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <Award className="text-purple-400" />
-                  </InputAdornment>
-                }
                 sx={{
-                  bgcolor: "#2d1f5b",
-                  "&:hover": {
-                    bgcolor: "#372963",
+                  bgcolor: "#240046",
+                  color: "#FAF0CA",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#5A189A",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#7B2CBF",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#9D4EDD",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    color: "#FAF0CA",
                   },
                 }}
               >
@@ -255,37 +244,28 @@ export default function ProblemsPage() {
                 fullWidth
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <ArrowUpDown className="text-purple-400" />
-                  </InputAdornment>
-                }
                 sx={{
-                  bgcolor: "#2d1f5b",
-                  "&:hover": {
-                    bgcolor: "#372963",
+                  bgcolor: "#240046",
+                  color: "#FAF0CA",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#5A189A",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#7B2CBF",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#9D4EDD",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    color: "#FAF0CA",
                   },
                 }}
               >
                 <MenuItem value="newest">Newest First</MenuItem>
                 <MenuItem value="oldest">Oldest First</MenuItem>
-                <MenuItem value="acceptance">Acceptance Rate</MenuItem>
+                <MenuItem value="title">Title</MenuItem>
                 <MenuItem value="difficulty">Difficulty</MenuItem>
               </Select>
-            </Grid>
-            <Grid item xs={12} md={1}>
-              <IconButton
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  bgcolor: "#2d1f5b",
-                  "&:hover": {
-                    bgcolor: "#372963",
-                  },
-                }}
-              >
-                <SlidersHorizontal className="text-purple-400" />
-              </IconButton>
             </Grid>
           </Grid>
         </Card>
@@ -297,28 +277,24 @@ export default function ProblemsPage() {
               <Card
                 key={problem.problem_id}
                 sx={{
-                  bgcolor: "#1a103c",
+                  bgcolor: "#3C096C",
                   borderRadius: 2,
-                  border: "1px solid",
-                  borderColor: "rgba(139, 92, 246, 0.1)",
                   transition: "all 0.2s",
                   cursor: "pointer",
                   "&:hover": {
                     transform: "translateY(-2px)",
-                    boxShadow:
-                      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                    borderColor: "rgba(139, 92, 246, 0.2)",
+                    bgcolor: "#5A189A",
                   },
                 }}
               >
                 <Box sx={{ p: 3 }}>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12} md={9}>
                       <Stack spacing={2}>
                         <Stack direction="row" spacing={2} alignItems="center">
                           <Typography
                             variant="h6"
-                            sx={{ color: "#e2e8f0", fontWeight: 600 }}
+                            sx={{ color: "#FAF0CA", fontWeight: 600 }}
                           >
                             {problem.title}
                           </Typography>
@@ -332,68 +308,42 @@ export default function ProblemsPage() {
                             }}
                           />
                         </Stack>
-                        <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#FAF0CA", opacity: 0.8 }}
+                        >
                           {problem.description}
                         </Typography>
                       </Stack>
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Stack
-                        direction="row"
-                        spacing={3}
-                        justifyContent="flex-end"
-                        divider={
-                          <Divider
-                            orientation="vertical"
-                            flexItem
-                            sx={{ borderColor: "rgba(148, 163, 184, 0.1)" }}
-                          />
-                        }
-                      >
-                        <Stack alignItems="center">
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#94a3b8", mb: 0.5 }}
-                          >
-                            Acceptance
-                          </Typography>
-                          <Typography
-                            variant="h6"
-                            sx={{ color: "#e2e8f0", fontWeight: 600 }}
-                          >
-                            {problem.acceptance_rate}%
-                          </Typography>
-                        </Stack>
-                        <Stack alignItems="center">
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#94a3b8", mb: 0.5 }}
-                          >
-                            Solved
-                          </Typography>
-                          <Typography
-                            variant="h6"
-                            sx={{ color: "#e2e8f0", fontWeight: 600 }}
-                          >
-                            {problem.solved_count.toLocaleString()}
-                          </Typography>
-                        </Stack>
-                      </Stack>
-                      <Divider
-                        sx={{ my: 2, borderColor: "rgba(148, 163, 184, 0.1)" }}
-                      />
+                    <Grid item xs={12} md={3}>
                       <Stack
                         direction="row"
                         spacing={1}
                         alignItems="center"
                         justifyContent="flex-end"
                       >
-                        <User size={16} className="text-purple-400" />
-                        <Typography variant="caption" sx={{ color: "#94a3b8" }}>
-                          {problem.created_by}
+                        <User size={16} sx={{ color: "#FAF0CA" }} />
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#FAF0CA", opacity: 0.8 }}
+                        >
+                          {userMap[problem.created_by]?.username ||
+                            "Unknown User"}
                         </Typography>
-                        <Clock size={16} className="text-purple-400" />
-                        <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        justifyContent="flex-end"
+                        sx={{ mt: 1 }}
+                      >
+                        <Clock size={16} sx={{ color: "#FAF0CA" }} />
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#FAF0CA", opacity: 0.8 }}
+                        >
                           {new Date(problem.created_at).toLocaleDateString()}
                         </Typography>
                       </Stack>
@@ -405,18 +355,19 @@ export default function ProblemsPage() {
           ) : (
             <Card
               sx={{
-                bgcolor: "#1a103c",
+                bgcolor: "#3C096C",
                 borderRadius: 2,
-                border: "1px solid",
-                borderColor: "rgba(139, 92, 246, 0.1)",
                 p: 4,
                 textAlign: "center",
               }}
             >
-              <Typography variant="h6" sx={{ color: "#e2e8f0", mb: 1 }}>
+              <Typography variant="h6" sx={{ color: "#FAF0CA", mb: 1 }}>
                 No problems found
               </Typography>
-              <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "#FAF0CA", opacity: 0.8 }}
+              >
                 Try adjusting your search or filter criteria
               </Typography>
             </Card>
