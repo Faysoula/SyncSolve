@@ -38,6 +38,14 @@ const Problems = db.define("Problems", {
     allowNull: false,
     defaultValue: [],
   },
+  metadata: {
+    type: DataTypes.JSONB,
+    allowNull: false,
+    defaultValue: {
+      tags: [],
+      example_images: []
+    },
+  }
 }, {
     tableName: "problems",
     timestamps: false,

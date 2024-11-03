@@ -1,7 +1,15 @@
 const Problems = require("../models/problems");
 const { getUserById } = require("./userService");
 
-const addProblem = async (title, description, difficulty, created_by, test_cases) => {
+const addProblem = async (
+  title,
+  description,
+  difficulty,
+  created_by,
+  test_cases,
+  example_images = [],
+  tags = []
+) => {
   try {
     //just in case
     const validDifficulty = ["easy", "medium", "hard"];
@@ -22,6 +30,12 @@ const addProblem = async (title, description, difficulty, created_by, test_cases
       difficulty: normalizedDifficulty,
       created_by,
       test_cases,
+      metadata: {
+        example_images: example_images.filter((img) => img !== null),
+        tags: tags
+          .map((tag) => tag.toLowerCase().trim())
+          .filter((tag) => tag !== ""),
+      },
     });
 
     return problem;
@@ -70,7 +84,9 @@ const updateProblem = async (
   title,
   description,
   difficulty,
-  test_cases
+  test_cases,
+  example_images = [],
+  tags = []
 ) => {
   try {
     const [affectedrows] = await Problems.update(
@@ -78,6 +94,13 @@ const updateProblem = async (
         title,
         description,
         difficulty,
+        test_cases,
+        metadata: {
+          example_images: example_images.filter((img) => img !== null),
+          tags: tags
+            .map((tag) => tag.toLowerCase().trim())
+            .filter((tag) => tag !== ""),
+        },
       },
       {
         where: {
@@ -94,6 +117,39 @@ const updateProblem = async (
     return updatedProblem;
   } catch (err) {
     throw new Error(`Error updating problem: ${err.message}`);
+  }
+};
+
+const searchProblemsByTags = async (tags) => {
+  try {
+    const normalizedTags = tags.map((tag) => tag.toLowerCase().trim());
+
+    const problems = await Problems.findAll({
+      where: db.literal(
+        `metadata->>'tags' ?| array['${normalizedTags.join("','")}']`
+      ),
+    });
+
+    return problems;
+  } catch (err) {
+    throw new Error(`Error searching problems by tags: ${err.message}`);
+  }
+};
+
+const getAllTags = async () => {
+  try {
+    const result = await Problems.findAll({
+      attributes: [[db.fn("DISTINCT", db.col("metadata->'tags'")), "tags"]],
+    });
+
+    const allTags = result
+      .map((r) => r.getDataValue("tags") || [])
+      .flat()
+      .filter((tag, index, self) => self.indexOf(tag) === index);
+
+    return allTags;
+  } catch (err) {
+    throw new Error(`Error getting all tags: ${err.message}`);
   }
 };
 const deleteProblem = async (problem_id) => {
@@ -116,4 +172,6 @@ module.exports = {
   getProblemById,
   deleteProblem,
   updateProblem,
+  searchProblemsByTags,
+  getAllTags,
 };

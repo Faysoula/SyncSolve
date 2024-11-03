@@ -8,7 +8,15 @@ const {
 } = require("../services/problemsService");
 
 const addProblemController = async (req, res) => {
-  const { title, description, difficulty, created_by, test_cases } = req.body;
+  const {
+    title,
+    description,
+    difficulty,
+    created_by,
+    test_cases,
+    example_images,
+    tags,
+  } = req.body;
 
   try {
     const problem = await addProblem(
@@ -16,11 +24,34 @@ const addProblemController = async (req, res) => {
       description,
       difficulty,
       created_by,
-      test_cases
+      test_cases,
+      example_images,
+      tags
     );
     res.status(201).json({ message: "Problem added successfully", problem });
   } catch (err) {
     console.error("Error adding problem:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const searchByTagsController = async (req, res) => {
+  const { tags } = req.query;
+  try {
+    const problems = await searchProblemsByTags(tags.split(","));
+    res.status(200).json({ problems });
+  } catch (err) {
+    console.error("Error searching problems by tags:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getAllTagsController = async (req, res) => {
+  try {
+    const tags = await getAllTags();
+    res.status(200).json({ tags });
+  } catch (err) {
+    console.error("Error getting all tags:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -59,14 +90,17 @@ const getProblemByIdController = async (req, res) => {
 
 const updateProblemController = async (req, res) => {
   const problem_id = req.params.id;
-  const { title, description, difficulty, test_cases } = req.body;
+  const { title, description, difficulty, test_cases, example_images, tags } =
+    req.body;
   try {
     const updatedProblem = await updateProblem(
       problem_id,
       title,
       description,
       difficulty,
-      test_cases
+      test_cases,
+      example_images,
+      tags
     );
     res
       .status(200)
@@ -95,4 +129,6 @@ module.exports = {
   getProblemByIdController,
   updateProblemController,
   deleteProblemController,
+  searchByTagsController,
+  getAllTagsController,
 };

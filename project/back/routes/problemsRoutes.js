@@ -4,6 +4,8 @@ const {
   getProblemBYDifficultyController,
   updateProblemController,
   deleteProblemController,
+  searchByTagsController,
+  getAllTagsController,
 } = require("../controllers/problemController");
 
 const express = require("express");
@@ -20,10 +22,18 @@ router.get("/getAllProblems", getAllProblemsController);
 // Get problems by difficulty
 router.get("/getProblemBYDifficulty/:difficulty", getProblemBYDifficultyController);
 
+// Get problems by tags
+router.get("/searchByTags", searchByTagsController);
+
+// Get all tags
+router.get("/Tags", getAllTagsController);
+
 // Update a problem
 router.put("/updateProblem/:id", auth, updateProblemController);
 
 // Delete a problem
 router.delete("/deleteProblem/:id", auth, deleteProblemController);
+
+
 
 module.exports = router;

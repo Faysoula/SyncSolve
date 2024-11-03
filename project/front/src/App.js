@@ -9,6 +9,7 @@ import Footer from "./components/common/Footer";
 import { theme } from "./theme";
 import { AuthProvider } from "./context/authContext";
 import Header from "./components/common/Header";
+import AddProblemPage from "./components/AddProblemPage";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               <Route path="/Register" element={<SignUp />} />
               <Route path="/Signin" element={<LoginForm />} />
               <Route path="/problems" element={<ProblemsPage />} />
+              <Route path="/problems/add" element={<AddProblemPage />} />
               <Route path="/" element={<LandingPage />} />
             </Routes>
           </Box>
