@@ -25,6 +25,14 @@ const addProblem = (data) => {
   });
 };
 
+const getProblemById = (id) => {
+  return http.get(`/problems/${id}`, {
+    headers:{
+      Authorization: getTokenBearer(),
+    }
+})
+}
+
 const getAllTags = () => {
   return http.get("/problems/tags", {
     headers: {
@@ -62,6 +70,7 @@ const ProblemService = {
   getAllProblems,
   getProblemsByDifficulty,
   addProblem,
+  getProblemById,
   getAllTags,
   searchByTags,
   updateProblem,

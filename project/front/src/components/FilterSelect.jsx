@@ -10,7 +10,7 @@ import {
   Chip,
 } from "@mui/material";
 import { Search, Hash } from "lucide-react";
-import ProblemService from "../Services/problemService"; // Update import
+import ProblemService from "../Services/problemService";
 
 const FilterSection = ({ filters, onFilterChange }) => {
   const [openTags, setOpenTags] = useState(false);
@@ -23,11 +23,12 @@ const FilterSection = ({ filters, onFilterChange }) => {
       setIsLoading(true);
       try {
         const response = await ProblemService.getAllTags();
-        setAvailableTags(response.data.tags || []);
+        const tags = response.data.tags || [];
+        setAvailableTags(tags.filter((tag) => tag)); // Filter out any null/empty tags
       } catch (err) {
         console.error("Error fetching tags:", err);
         setError("Failed to load tags");
-        setAvailableTags([]); // Set empty array on error
+        setAvailableTags([]);
       } finally {
         setIsLoading(false);
       }
@@ -40,7 +41,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
     <Box sx={{ mb: 4 }}>
       {/* Search and Filters Row */}
       <Stack direction="row" spacing={2}>
-        {/* Search Bar with original dark purple style */}
+        {/* Search Bar */}
         <TextField
           placeholder="Search problems..."
           value={filters.searchQuery || ""}
@@ -128,7 +129,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
         </Select>
       </Stack>
 
-      {/* Tags Section */}
+      {/* Topics Section */}
       <Box
         onClick={() => setOpenTags(!openTags)}
         sx={{
@@ -150,7 +151,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
           }}
         >
           <Hash size={16} />
-          Topics {isLoading ? "(Loading...)" : `(${availableTags.length})`}
+          Topics ({availableTags.length})
         </Typography>
       </Box>
 
@@ -194,7 +195,8 @@ const FilterSection = ({ filters, onFilterChange }) => {
             <Typography
               sx={{ color: "#FAF0CA", opacity: 0.7, fontStyle: "italic" }}
             >
-              {error || "No topics available yet"}
+              {error ||
+                (isLoading ? "Loading topics..." : "No topics available yet")}
             </Typography>
           )}
         </Box>

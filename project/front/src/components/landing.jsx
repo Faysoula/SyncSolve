@@ -196,7 +196,6 @@ const LandingPage = () => {
         </Container>
       </AppBar>
 
-      {/* Rest of the landing page content remains the same */}
       {/* Hero Section */}
       <Container maxWidth="lg">
         <Toolbar />

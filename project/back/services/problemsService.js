@@ -25,9 +25,9 @@ const addProblem = async (
       throw new Error("User not found");
     }
 
-    // Construct metadata explicitly
+    // Instead of storing full base64 strings, we just store the filenames
     const metadata = {
-      example_images: example_images.filter((img) => img !== null),
+      example_images: example_images.filter((img) => img !== null), // These should now be just filenames
       tags: tags
         .map((tag) => tag.toLowerCase().trim())
         .filter((tag) => tag !== ""),
@@ -39,7 +39,7 @@ const addProblem = async (
       difficulty: normalizedDifficulty,
       created_by,
       test_cases,
-      metadata, // Explicitly set the metadata here
+      metadata,
     });
 
     return problem;
@@ -47,7 +47,6 @@ const addProblem = async (
     throw new Error(`Error adding problem: ${err.message}`);
   }
 };
-
 
 const getAllProblems = async () => {
   try {
@@ -141,33 +140,29 @@ const updateProblem = async (
 
 
 const getAllTags = async () => {
-  try {
-    console.log("Getting all tags"); // Debug log
-    const result = await Problems.findAll({
-      attributes: [
-        [db.literal("jsonb_array_elements_text(metadata->'tags')"), "tag"],
-      ],
-      where: {
-        metadata: {
-          [Op.not]: null,
-        },
-      },
-      group: ["tag"],
-    });
-
-    console.log("Query result:", result); // Debug log
-
-    // Extract unique tags from the result
-    const allTags = result.map((r) => r.get("tag")).filter(Boolean);
-
-    console.log("Processed tags:", allTags); // Debug log
-    return allTags;
-  } catch (err) {
-    console.error("Database error in getAllTags:", err);
-    throw new Error(`Error getting all tags: ${err.message}`);
-  }
-};
-
+  try{
+    const problems = await Problems.findAll({
+		where:{
+			metadata: {
+				tags: {
+					[Op.ne]: null
+				}
+			}
+		},
+		attributes: ['metadata']
+	});
+	const tags = new Set();
+	problems.forEach(problem => {
+		const metadata = problem.metadata;
+		if(metadata && Array.isArray(metadata.tags)){
+			metadata.tags.forEach(tag => tags.add(tag.toLowerCase().trim()));
+		}
+	})
+	return Array.from(tags);
+  }catch(err){
+	throw new Error(`Error getting all tags: ${err.message}`);
+}
+}
 const searchProblemsByTags = async (tags) => {
   try {
     const normalizedTags = tags.map((tag) => tag.toLowerCase().trim());

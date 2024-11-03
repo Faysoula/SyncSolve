@@ -29,6 +29,10 @@ function App() {
               <Route path="/Register" element={<SignUp />} />
               <Route path="/Signin" element={<LoginForm />} />
               <Route path="/problems" element={<ProblemsPage />} />
+              <Route
+                path="/problems/edit/:problemId"
+                element={<AddProblemPage mode="edit" />}
+                />
               <Route path="/problems/add" element={<AddProblemPage />} />
               <Route path="/" element={<LandingPage />} />
             </Routes>

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate,useParams } from "react-router-dom";
 import {
   Box,
   Container,
@@ -12,35 +12,125 @@ import {
   Stack,
   Alert,
   Fade,
+  Autocomplete,
+  Chip,
 } from "@mui/material";
 import { Plus, Trash2, Save, Upload, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "../context/authContext";
 import ProblemService from "../Services/problemService";
+import http from "../http-common";
+import { getTokenBearer } from "../utils/token";
 
-const AddProblemPage = () => {
+
+// Predefined tags
+const AVAILABLE_TAGS = [
+  "Array",
+  "String",
+  "Hash Table",
+  "Dynamic Programming",
+  "Math",
+  "Sorting",
+  "Greedy",
+  "Depth-First Search",
+  "Database",
+  "Binary Search",
+  "Matrix",
+  "Tree",
+  "Breadth-First Search",
+  "Bit Manipulation",
+  "Two Pointers",
+  "Heap (Priority Queue)",
+  "Binary Tree",
+  "Prefix Sum",
+  "Simulation",
+  "Stack",
+  "Counting",
+  "Graph",
+  "Sliding Window",
+  "Design",
+  "Backtracking",
+  "Enumeration",
+  "Union Find",
+  "Linked List",
+  "Ordered Set",
+  "Number Theory",
+  "Monotonic Stack",
+  "Trie",
+  "Segment Tree",
+  "Bitmask",
+  "Divide and Conquer",
+  "Queue",
+  "Recursion",
+  "Combinatorics",
+  "Binary Search Tree",
+  "Hash Function",
+  "Binary Indexed Tree",
+  "Geometry",
+  "Memoization",
+  "String Matching",
+  "Topological Sort",
+  "Rolling Hash",
+  "Shortest Path",
+  "Game Theory",
+  "Interactive",
+  "Data Stream",
+  "Monotonic Queue",
+  "Brainteaser",
+  "Randomized",
+  "Merge Sort",
+  "Doubly-Linked List",
+  "Counting Sort",
+  "Iterator",
+  "Concurrency",
+  "Probability and Statistics",
+  "Quickselect",
+  "Suffix Array",
+  "Bucket Sort",
+  "Minimum Spanning Tree",
+  "Shell",
+  "Line Sweep",
+  "Reservoir Sampling",
+  "Strongly Connected Component",
+  "Eulerian Circuit",
+  "Radix Sort",
+  "Rejection Sampling",
+  "Biconnected Component",
+].sort();
+
+const AddProblemPage = ({ mode = "create" }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { problemId } = useParams();
+  console.log("Mode:", mode, "ProblemId:", problemId);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     difficulty: "medium",
     test_cases: [{ input: "", expected_output: "" }],
+    tags: [], // Added tags to formData
   });
 
   const [testCaseImages, setTestCaseImages] = useState([]);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Form validation
   const validateForm = () => {
     if (!formData.title.trim()) {
-      setError("Title is required");
+      setError("ohh so cool no name huh");
       return false;
     }
     if (!formData.description.trim()) {
-      setError("Description is required");
+      setError(
+        "How the hell are we supposed to know what this is about ,PUT THE DESCRIPTION BACK"
+      );
+      return false;
+    }
+    if (formData.tags.length === 0) {
+      setError("so no tags yea, bold choice");
       return false;
     }
 
@@ -56,6 +146,45 @@ const AddProblemPage = () => {
     return true;
   };
 
+ useEffect(() => {
+   const loadProblem = async () => {
+     if (mode === "edit" && problemId) {
+       try {
+         const response = await ProblemService.getProblemById(problemId);
+         const problem = response.data;
+
+         // Verify user is creator
+         if (user?.user_id !== problem.created_by) {
+           navigate("/problems");
+           return;
+         }
+
+         // Set form data from existing problem
+         setFormData({
+           title: problem.title,
+           description: problem.description,
+           difficulty: problem.difficulty,
+           test_cases: problem.test_cases || [
+             { input: "", expected_output: "" },
+           ],
+           tags: problem.metadata?.tags || [],
+         });
+
+         // Set images if they exist
+         if (problem.metadata?.example_images) {
+           setTestCaseImages(problem.metadata.example_images);
+         }
+       } catch (err) {
+         setError("Failed to load problem");
+         navigate("/problems");
+       }
+     }
+     setInitialLoadComplete(true);
+   };
+
+   loadProblem();
+ }, [problemId, mode, user, navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -63,6 +192,14 @@ const AddProblemPage = () => {
       [name]: value,
     }));
     setError(""); // Clear error when user makes changes
+  };
+
+  const handleTagsChange = (_, newTags) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: newTags,
+    }));
+    setError("");
   };
 
   const handleTestCaseChange = (index, field, value) => {
@@ -78,32 +215,42 @@ const AddProblemPage = () => {
     setError(""); // Clear error when user makes changes
   };
 
-  const handleImageUpload = async (index, file) => {
-    if (!file) return;
+ const handleImageUpload = async (index, file) => {
+   if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image size should be less than 5MB");
-      return;
-    }
+   if (file.size > 5 * 1024 * 1024) {
+     setError("Image size should be less than 5MB");
+     return;
+   }
 
-    try {
-      const base64 = await convertToBase64(file);
-      const newImages = [...testCaseImages];
-      newImages[index] = base64;
-      setTestCaseImages(newImages);
-    } catch (err) {
-      setError("Error processing image");
-    }
-  };
+   try {
+     const formData = new FormData();
+     formData.append("image", file);
 
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+     const response = await http.post("/upload", formData, {
+       headers: {
+         "Content-Type": "multipart/form-data",
+         Authorization: getTokenBearer(),
+       },
+     });
+
+     // Log the response to see what we're getting
+     console.log("Upload response:", response.data);
+
+     const imagePath = response.data.path;
+     console.log("Image path being saved:", imagePath);
+
+     const newImages = [...testCaseImages];
+     newImages[index] = imagePath;
+     setTestCaseImages(newImages);
+
+     // Log the updated testCaseImages
+     console.log("Updated testCaseImages:", newImages);
+   } catch (err) {
+     console.error("Upload error:", err);
+     setError("Error uploading image");
+   }
+ };
 
   const addTestCase = () => {
     setFormData((prev) => ({
@@ -158,14 +305,22 @@ const AddProblemPage = () => {
         title: formData.title.trim(),
         description: formData.description.trim(),
         difficulty: formData.difficulty,
-        created_by: user.user_id,
         test_cases: formData.test_cases.map((tc) => ({
           input: tc.input.trim(),
           expected_output: tc.expected_output.trim(),
         })),
+        example_images: testCaseImages,
+        tags: formData.tags,
       };
 
-      await ProblemService.addProblem(problemData);
+      if (mode === "edit") {
+        await ProblemService.updateProblem(problemId, problemData);
+      } else {
+        await ProblemService.addProblem({
+          ...problemData,
+          created_by: user.user_id,
+        });
+      }
 
       setSuccess(true);
       setTimeout(() => {
@@ -174,12 +329,48 @@ const AddProblemPage = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Failed to create problem. Please try again."
+          `Failed to ${
+            mode === "edit" ? "update" : "create"
+          } problem. Please try again.`
       );
     } finally {
       setIsLoading(false);
     }
   };
+
+  const pageTitle = mode === "edit" ? "Edit Problem" : "Create New Problem";
+
+  // Don't render until initial load is complete
+  if (!initialLoadComplete) {
+    return null;
+  }
+
+const ProblemImage = ({ imagePath }) => {
+  if (!imagePath) return null;
+
+  // Use your API URL from environment variables to construct the full path
+  const imageUrl = `http://localhost:3001/uploads/${imagePath}`;
+
+  console.log("Full image URL:", imageUrl); // Debug log
+
+  return (
+    <Box sx={{ mt: 2, maxWidth: "200px" }}>
+      <img
+        src={imageUrl}
+        alt="Test case example"
+        style={{
+          width: "100%",
+          height: "auto",
+          borderRadius: "4px",
+        }}
+        onError={(e) => {
+          console.error("Image load error for URL:", imageUrl);
+          e.target.style.display = "none";
+        }}
+      />
+    </Box>
+  );
+};
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#0a0118", pt: 12, pb: 6 }}>
@@ -204,7 +395,7 @@ const AddProblemPage = () => {
             component="h1"
             sx={{ color: "#FAF0CA", mb: 4 }}
           >
-            Create New Problem
+            {pageTitle}
           </Typography>
 
           <form onSubmit={handleSubmit}>
@@ -262,6 +453,51 @@ const AddProblemPage = () => {
                 <MenuItem value="medium">Medium</MenuItem>
                 <MenuItem value="hard">Hard</MenuItem>
               </TextField>
+
+              <Autocomplete
+                multiple
+                options={AVAILABLE_TAGS}
+                value={formData.tags}
+                onChange={handleTagsChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Tags"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        color: "#FAF0CA",
+                        "& fieldset": { borderColor: "#5A189A" },
+                      },
+                      "& .MuiInputLabel-root": { color: "#FAF0CA" },
+                    }}
+                  />
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      key={option}
+                      label={option}
+                      {...getTagProps({ index })}
+                      sx={{
+                        backgroundColor: "rgba(157, 78, 221, 0.3)",
+                        color: "#FAF0CA",
+                        "& .MuiChip-deleteIcon": {
+                          color: "#FAF0CA",
+                          "&:hover": {
+                            color: "#ff4444",
+                          },
+                        },
+                      }}
+                    />
+                  ))
+                }
+                sx={{
+                  "& .MuiAutocomplete-tag": {
+                    backgroundColor: "rgba(157, 78, 221, 0.3)",
+                    color: "#FAF0CA",
+                  },
+                }}
+              />
 
               <Box>
                 <Typography variant="h6" sx={{ color: "#FAF0CA", mb: 2 }}>
@@ -372,17 +608,7 @@ const AddProblemPage = () => {
                             )}
                           </Stack>
                           {testCaseImages[index] && (
-                            <Box sx={{ mt: 2, maxWidth: "200px" }}>
-                              <img
-                                src={testCaseImages[index]}
-                                alt={`Example for test case ${index + 1}`}
-                                style={{
-                                  width: "100%",
-                                  height: "auto",
-                                  borderRadius: "4px",
-                                }}
-                              />
-                            </Box>
+                            <ProblemImage imagePath={testCaseImages[index]} />
                           )}
                         </Box>
                       </Stack>

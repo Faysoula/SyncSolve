@@ -1,6 +1,8 @@
 import React from "react";
-import { Stack, Card, Box, Typography, Chip } from "@mui/material";
-import { User, Clock } from "lucide-react";
+import { Stack, Card, Box, Typography, Chip, IconButton } from "@mui/material";
+import { User, Clock, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
 import { difficultyConfig } from "../../utils/constants";
 
 const ProblemsList = ({ problems, userMap }) => (
@@ -19,92 +21,132 @@ const ProblemsList = ({ problems, userMap }) => (
   </Stack>
 );
 
-const ProblemCard = ({ problem, username }) => (
-  <Card sx={styles.problemCard}>
-    <Box sx={{ p: 3 }}>
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={2}
-        sx={{ width: "100%" }}
-      >
-        <Box sx={{ flex: { xs: "1", md: "3" } }}>
-          <Stack spacing={2}>
+const ProblemCard = ({ problem, username }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isCreator = user?.user_id === problem.created_by;
+
+  return (
+    <Card sx={styles.problemCard}>
+      <Box sx={{ p: 3 }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          sx={{ width: "100%" }}
+        >
+          <Box sx={{ flex: { xs: "1", md: "3" } }}>
             <Stack spacing={2}>
-              {/* Title and Difficulty */}
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography
-                  variant="h6"
-                  sx={{ color: "#FAF0CA", fontWeight: 600 }}
+              <Stack spacing={2}>
+                {/* Title and Difficulty */}
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  justifyContent="space-between"
                 >
-                  {problem.title}
-                </Typography>
-                <Chip
-                  label={difficultyConfig[problem.difficulty].label}
-                  sx={{
-                    color: difficultyConfig[problem.difficulty].color,
-                    bgcolor: difficultyConfig[problem.difficulty].background,
-                    fontWeight: 600,
-                  }}
-                />
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#FAF0CA", fontWeight: 600 }}
+                    >
+                      {problem.title}
+                    </Typography>
+                    <Chip
+                      label={difficultyConfig[problem.difficulty].label}
+                      sx={{
+                        color: difficultyConfig[problem.difficulty].color,
+                        bgcolor:
+                          difficultyConfig[problem.difficulty].background,
+                        fontWeight: 600,
+                      }}
+                    />
+                  </Stack>
+
+                  {isCreator && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("Navigating to edit:", problem.problem_id);
+                        navigate(`/problems/edit/${problem.problem_id}`, {
+                          state: { problem },
+                          replace: true,
+                        });
+                      }}
+                      sx={{
+                        color: "#FAF0CA",
+                        "&:hover": {
+                          bgcolor: "rgba(250, 240, 202, 0.1)",
+                        },
+                      }}
+                    >
+                      <Edit size={20} />
+                    </IconButton>
+                  )}
+                </Stack>
+
+                {/* Tags Section */}
+                <Box>
+                  {problem.metadata?.tags &&
+                  problem.metadata.tags.length > 0 ? (
+                    <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                      {problem.metadata.tags.map((tag, index) => (
+                        <Chip
+                          key={index}
+                          label={tag}
+                          size="small"
+                          sx={{
+                            bgcolor: "rgba(157, 78, 221, 0.1)",
+                            color: "#9D4EDD",
+                            borderColor: "#9D4EDD",
+                            "&:hover": {
+                              bgcolor: "rgba(157, 78, 221, 0.2)",
+                            },
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#9D4EDD",
+                        fontStyle: "italic",
+                        opacity: 0.8,
+                      }}
+                    >
+                      no tags here you're on your own :/
+                    </Typography>
+                  )}
+                </Box>
               </Stack>
 
-              {/* Tags Section */}
-              <Box>
-                {problem.metadata?.tags && problem.metadata.tags.length > 0 ? (
-                  <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                    {problem.metadata.tags.map((tag, index) => (
-                      <Chip
-                        key={index}
-                        label={tag}
-                        size="small"
-                        sx={{
-                          bgcolor: "rgba(157, 78, 221, 0.1)",
-                          color: "#9D4EDD",
-                          borderColor: "#9D4EDD",
-                          "&:hover": {
-                            bgcolor: "rgba(157, 78, 221, 0.2)",
-                          },
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#9D4EDD",
-                      fontStyle: "italic",
-                      opacity: 0.8,
-                    }}
-                  >
-                    no tags here you're on your own :/
-                  </Typography>
-                )}
-              </Box>
+              <Typography
+                variant="body2"
+                sx={{ color: "#FAF0CA", opacity: 0.8 }}
+              >
+                {problem.description}
+              </Typography>
             </Stack>
+          </Box>
 
-            <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.8 }}>
-              {problem.description}
-            </Typography>
-          </Stack>
-        </Box>
-
-        <Box
-          sx={{
-            flex: { xs: "1", md: "1" },
-            display: "flex",
-            flexDirection: "column",
-            alignItems: { xs: "flex-start", md: "flex-end" },
-            justifyContent: "flex-start",
-            mt: { xs: 2, md: 0 },
-          }}
-        >
-          <ProblemMetadata username={username} date={problem.created_at} />
-        </Box>
-      </Stack>
-    </Box>
-  </Card>
-);
+          <Box
+            sx={{
+              flex: { xs: "1", md: "1" },
+              display: "flex",
+              flexDirection: "column",
+              alignItems: { xs: "flex-start", md: "flex-end" },
+              justifyContent: "flex-start",
+              mt: { xs: 2, md: 0 },
+            }}
+          >
+            <ProblemMetadata username={username} date={problem.created_at} />
+          </Box>
+        </Stack>
+      </Box>
+    </Card>
+  );
+};
 
 const ProblemMetadata = ({ username, date }) => (
   <Stack spacing={1} sx={{ width: "100%" }}>

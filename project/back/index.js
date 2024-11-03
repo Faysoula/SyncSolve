@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const path = require("path");
+const fs = require("fs");
 const { testConnection } = require("./config/db");
 require("dotenv").config();
 
@@ -23,6 +25,7 @@ const sessionRoutes = require("./routes/sessionRoutes");
 const terminalRoutes = require("./routes/terminalRoutes");
 const sessionSnapshot = require("./routes/sessionSnapRoutes");
 const ExecutionRoutes = require("./routes/executionRoutes");
+const uploadRoutes = require("./routes/uploadRoute");
 
 const app = express();
 
@@ -30,7 +33,13 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+    limit: "50mb",
+    parameterLimit: 50000,
+  })
+);
 
 app.use("/api/users", userRoutes);
 app.use("/api/problems", problemRoutes);
@@ -40,6 +49,10 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/terminal", terminalRoutes);
 app.use("/api/snapshots", sessionSnapshot);
 app.use("/api/executions", ExecutionRoutes);
+app.use("/api", uploadRoutes);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 app.get("/", (req, res) => {
   res.send("api running yay");
