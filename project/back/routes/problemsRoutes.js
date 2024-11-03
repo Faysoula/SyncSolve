@@ -13,6 +13,7 @@ const router = express.Router();
 
 const auth = require("../middleware/auth");
 
+router.get("/Tags", getAllTagsController);
 // Add a new problem
 router.post("/addProblem", auth ,addProblemController);
 
@@ -26,7 +27,6 @@ router.get("/getProblemBYDifficulty/:difficulty", getProblemBYDifficultyControll
 router.get("/searchByTags", searchByTagsController);
 
 // Get all tags
-router.get("/Tags", getAllTagsController);
 
 // Update a problem
 router.put("/updateProblem/:id", auth, updateProblemController);

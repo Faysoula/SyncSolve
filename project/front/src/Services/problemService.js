@@ -25,6 +25,23 @@ const addProblem = (data) => {
   });
 };
 
+const getAllTags = () => {
+  return http.get("/problems/tags", {
+    headers: {
+      Authorization: getTokenBearer(),
+    },
+  });
+};
+
+const searchByTags = (tags) => {
+  const tagString = Array.isArray(tags) ? tags.join(",") : tags;
+  return http.get(`/problems/searchByTags?tags=${tagString}`, {
+    headers: {
+      Authorization: getTokenBearer(),
+    },
+  });
+};
+
 const updateProblem = (id, data) => {
   return http.put(`/problems/updateProblem/${id}`, data, {
     headers: {
@@ -45,6 +62,8 @@ const ProblemService = {
   getAllProblems,
   getProblemsByDifficulty,
   addProblem,
+  getAllTags,
+  searchByTags,
   updateProblem,
   deleteProblem,
 };

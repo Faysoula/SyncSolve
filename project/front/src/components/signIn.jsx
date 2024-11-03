@@ -56,7 +56,7 @@ const SignIn = () => {
       });
 
       if (response.data.user && response.data.token) {
-        login(response.data.user); // Call login before navigating
+        login(response.data.user, response.data.token);
         setShowSuccess(true);
 
         setTimeout(() => {

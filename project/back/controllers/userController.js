@@ -54,12 +54,23 @@ const loginController = async (req, res) => {
 };
 
 const getCurrentUserController = async (req, res) => {
-  const user_id = req.user.user_id;
   try {
-    const user = await getCurrentUser(user_id);
-    res.status(200).json(user);
+    console.log("Getting current user for ID:", req.user.user_id);
+
+    const user = await getUserById(req.user.user_id);
+    console.log("Found user:", user);
+
+    if (!user) {
+      console.log("No user found");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { password_hash, ...userWithoutPassword } = user.dataValues;
+    console.log("Sending user data:", userWithoutPassword);
+
+    res.status(200).json({ user: userWithoutPassword });
   } catch (err) {
-    console.error("Error getting current user:", err.message);
+    console.error("Error in getCurrentUserController:", err);
     res.status(500).json({ message: err.message });
   }
 };

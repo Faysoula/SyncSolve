@@ -5,6 +5,8 @@ const {
   getProblemById,
   deleteProblem,
   updateProblem,
+  searchProblemsByTags,
+  getAllTags,
 } = require("../services/problemsService");
 
 const addProblemController = async (req, res) => {

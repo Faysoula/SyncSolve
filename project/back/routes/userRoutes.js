@@ -14,15 +14,13 @@ const {
 } = require('../controllers/userController');
 
 
+router.get("/me", auth, getCurrentUserController);
 
 // Route for registering a new user
 router.post("/register", registerController);
 
 // Route for logging in a user
 router.post("/login", loginController);
-
-// Route for getting the current user
-router.get("/me", auth, getCurrentUserController);
 
 // Route for getting all users
 router.get("/", auth ,getAllUsersController);

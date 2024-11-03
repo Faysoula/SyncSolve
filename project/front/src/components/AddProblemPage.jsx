@@ -14,9 +14,13 @@ import {
   Fade,
 } from "@mui/material";
 import { Plus, Trash2, Save, Upload, Image as ImageIcon } from "lucide-react";
+import { useAuth } from "../context/authContext";
+import ProblemService from "../Services/problemService";
 
 const AddProblemPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -24,10 +28,33 @@ const AddProblemPage = () => {
     test_cases: [{ input: "", expected_output: "" }],
   });
 
-  // Separate state for test case images
   const [testCaseImages, setTestCaseImages] = useState([]);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Form validation
+  const validateForm = () => {
+    if (!formData.title.trim()) {
+      setError("Title is required");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      setError("Description is required");
+      return false;
+    }
+
+    // Validate test cases
+    for (let i = 0; i < formData.test_cases.length; i++) {
+      const testCase = formData.test_cases[i];
+      if (!testCase.input.trim() || !testCase.expected_output.trim()) {
+        setError(`Test case #${i + 1} is incomplete`);
+        return false;
+      }
+    }
+
+    return true;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,13 +62,26 @@ const AddProblemPage = () => {
       ...prev,
       [name]: value,
     }));
+    setError(""); // Clear error when user makes changes
+  };
+
+  const handleTestCaseChange = (index, field, value) => {
+    const newTestCases = [...formData.test_cases];
+    newTestCases[index] = {
+      ...newTestCases[index],
+      [field]: value,
+    };
+    setFormData((prev) => ({
+      ...prev,
+      test_cases: newTestCases,
+    }));
+    setError(""); // Clear error when user makes changes
   };
 
   const handleImageUpload = async (index, file) => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       setError("Image size should be less than 5MB");
       return;
     }
@@ -65,18 +105,6 @@ const AddProblemPage = () => {
     });
   };
 
-  const handleTestCaseChange = (index, field, value) => {
-    const newTestCases = [...formData.test_cases];
-    newTestCases[index] = {
-      ...newTestCases[index],
-      [field]: value,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      test_cases: newTestCases,
-    }));
-  };
-
   const addTestCase = () => {
     setFormData((prev) => ({
       ...prev,
@@ -85,12 +113,16 @@ const AddProblemPage = () => {
   };
 
   const removeTestCase = (index) => {
+    if (formData.test_cases.length === 1) {
+      setError("At least one test case is required");
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       test_cases: prev.test_cases.filter((_, i) => i !== index),
     }));
 
-    // Also remove the corresponding image if it exists
     setTestCaseImages((prev) => {
       const newImages = [...prev];
       newImages.splice(index, 1);
@@ -108,22 +140,44 @@ const AddProblemPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!user) {
+      setError("You must be logged in to create a problem");
+      return;
+    }
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
     try {
-      // Prepare the data for submission
-      const submissionData = {
-        ...formData,
-        example_images: testCaseImages.filter((img) => img !== null), // Only include non-null images
+      const problemData = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        difficulty: formData.difficulty,
+        created_by: user.user_id,
+        test_cases: formData.test_cases.map((tc) => ({
+          input: tc.input.trim(),
+          expected_output: tc.expected_output.trim(),
+        })),
       };
 
-      // API call will go here
-      console.log("Submission data:", submissionData);
+      await ProblemService.addProblem(problemData);
 
       setSuccess(true);
       setTimeout(() => {
         navigate("/problems");
-      }, 2000);
+      }, 1500);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.response?.data?.message ||
+          "Failed to create problem. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -365,10 +419,15 @@ const AddProblemPage = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  startIcon={<Save />}
-                  sx={{ bgcolor: "#7B2CBF", "&:hover": { bgcolor: "#9D4EDD" } }}
+                  disabled={isLoading}
+                  startIcon={isLoading ? null : <Save />}
+                  sx={{
+                    bgcolor: "#7B2CBF",
+                    "&:hover": { bgcolor: "#9D4EDD" },
+                    "&:disabled": { bgcolor: "#5A189A" },
+                  }}
                 >
-                  Create Problem
+                  {isLoading ? "Creating..." : "Create Problem"}
                 </Button>
               </Stack>
             </Stack>

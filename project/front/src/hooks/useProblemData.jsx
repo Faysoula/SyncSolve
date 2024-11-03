@@ -9,8 +9,9 @@ const useProblemsData = () => {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     searchQuery: "",
-    difficultyFilter: "all",
-    sortBy: "newest",
+    difficulty: "all", // Changed from difficultyFilter
+    sort: "newest", // Changed from sortBy
+    tags: [],
   });
 
   // Fetch problems and user data
@@ -46,43 +47,40 @@ const useProblemsData = () => {
 
   // Filter and sort problems
   const filteredProblems = useMemo(() => {
-    let result = [...problems];
+    return problems
+      .filter((problem) => {
+        // Filter by search query
+        const matchesSearch =
+          !filters.searchQuery || // if no search query, show all
+          problem.title
+            .toLowerCase()
+            .includes(filters.searchQuery.toLowerCase()) ||
+          problem.description
+            .toLowerCase()
+            .includes(filters.searchQuery.toLowerCase());
 
-    // Apply search filter
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      result = result.filter(
-        (problem) =>
-          problem.title.toLowerCase().includes(query) ||
-          problem.description.toLowerCase().includes(query)
-      );
-    }
+        // Filter by difficulty
+        const matchesDifficulty =
+          filters.difficulty === "all" ||
+          problem.difficulty === filters.difficulty;
 
-    // Apply difficulty filter
-    if (filters.difficultyFilter !== "all") {
-      result = result.filter(
-        (problem) => problem.difficulty === filters.difficultyFilter
-      );
-    }
+        // Filter by tags
+        const matchesTags =
+          !filters.tags?.length || // if no tags selected, show all
+          (problem.metadata?.tags &&
+            filters.tags.every((tag) => problem.metadata.tags.includes(tag)));
 
-    // Apply sorting
-    result.sort((a, b) => {
-      switch (filters.sortBy) {
-        case "newest":
+        return matchesSearch && matchesDifficulty && matchesTags;
+      })
+      .sort((a, b) => {
+        // Sort logic
+        if (filters.sort === "newest") {
           return new Date(b.created_at) - new Date(a.created_at);
-        case "oldest":
+        } else if (filters.sort === "oldest") {
           return new Date(a.created_at) - new Date(b.created_at);
-        case "title":
-          return a.title.localeCompare(b.title);
-        case "difficulty":
-          const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
-          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
-        default:
-          return 0;
-      }
-    });
-
-    return result;
+        }
+        return 0;
+      });
   }, [problems, filters]);
 
   return {

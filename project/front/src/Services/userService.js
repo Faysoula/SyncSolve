@@ -19,9 +19,13 @@ const login = async (data) => {
   return res;
 };
 
-const getCurrentUser = () => {
+const getCurrentUser = async () => {
   const token = localStorage.getItem("token");
-  return http.get("/me", {
+  if (!token) {
+    throw new Error("No token found");
+  }
+
+  return http.get("/users/me", {
     headers: {
       Authorization: `Bearer ${token}`,
     },

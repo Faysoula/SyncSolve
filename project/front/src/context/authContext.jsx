@@ -4,42 +4,62 @@ import UserService from "../Services/userService";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // Initialize from localStorage but still mark as loading
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [loading, setLoading] = useState(true);
 
-  // authContext.jsx
   useEffect(() => {
-    const checkAuth = async () => {
+    const initializeAuth = async () => {
       const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const response = await UserService.getCurrentUser();
+      const storedUser = localStorage.getItem("user");
+
+      if (!token || !storedUser) {
+        console.log("No token or stored user found");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        console.log("Attempting to validate user session");
+        const response = await UserService.getCurrentUser();
+        console.log("User validation response:", response.data);
+
+        if (response.data.user) {
+          console.log("Setting validated user");
           setUser(response.data.user);
+          // Update stored user data in case it changed
           localStorage.setItem("user", JSON.stringify(response.data.user));
-        } catch (error) {
+        } else {
+          console.log("No user data in response");
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setUser(null);
         }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    checkAuth();
+
+    initializeAuth();
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
+  const login = (userData, token) => {
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+    setUser(userData);
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    setUser(null);
   };
 
   if (loading) {
@@ -47,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -98,7 +98,7 @@ const SignUp = () => {
         last_name: formData.lastName,
       });
 
-      login(response.data.user);
+      login(response.data.user, response.data.token);
       setShowSuccess(true);
 
       // Reset form

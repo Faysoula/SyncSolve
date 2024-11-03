@@ -1,5 +1,7 @@
-const Problems = require("../models/problems");
 const { getUserById } = require("./userService");
+const { Op } = require("sequelize");
+const { db } = require("../config/db");
+const Problems = require("../models/problems");
 
 const addProblem = async (
   title,
@@ -120,36 +122,75 @@ const updateProblem = async (
   }
 };
 
+const getAllTags = async () => {
+  try {
+    console.log("Getting all tags"); // Debug log
+    const result = await Problems.findAll({
+      attributes: [
+        [db.literal("jsonb_array_elements_text(metadata->'tags')"), "tag"],
+      ],
+      where: {
+        metadata: {
+          [Op.not]: null,
+        },
+      },
+      group: ["tag"],
+    });
+
+    console.log("Query result:", result); // Debug log
+
+    // Extract unique tags from the result
+    const allTags = result.map((r) => r.get("tag")).filter(Boolean);
+
+    console.log("Processed tags:", allTags); // Debug log
+    return allTags;
+  } catch (err) {
+    console.error("Database error in getAllTags:", err);
+    throw new Error(`Error getting all tags: ${err.message}`);
+  }
+};
+
 const searchProblemsByTags = async (tags) => {
   try {
     const normalizedTags = tags.map((tag) => tag.toLowerCase().trim());
 
     const problems = await Problems.findAll({
       where: db.literal(
-        `metadata->>'tags' ?| array['${normalizedTags.join("','")}']`
+        `metadata->'tags' ?& array[${normalizedTags
+          .map((tag) => `'${tag}'`)
+          .join(", ")}]`
       ),
+      order: [["created_at", "DESC"]],
     });
 
     return problems;
   } catch (err) {
+    console.error("Database error in searchProblemsByTags:", err);
     throw new Error(`Error searching problems by tags: ${err.message}`);
   }
 };
 
-const getAllTags = async () => {
+// Helper function to add tags to a problem
+const addTagsToProblem = async (problemId, tags) => {
   try {
-    const result = await Problems.findAll({
-      attributes: [[db.fn("DISTINCT", db.col("metadata->'tags'")), "tags"]],
+    const problem = await Problems.findByPk(problemId);
+    if (!problem) {
+      throw new Error("Problem not found");
+    }
+
+    const currentMetadata = problem.metadata || { tags: [] };
+    const updatedTags = [...new Set([...currentMetadata.tags, ...tags])];
+
+    await problem.update({
+      metadata: {
+        ...currentMetadata,
+        tags: updatedTags,
+      },
     });
 
-    const allTags = result
-      .map((r) => r.getDataValue("tags") || [])
-      .flat()
-      .filter((tag, index, self) => self.indexOf(tag) === index);
-
-    return allTags;
+    return problem;
   } catch (err) {
-    throw new Error(`Error getting all tags: ${err.message}`);
+    throw new Error(`Error adding tags to problem: ${err.message}`);
   }
 };
 const deleteProblem = async (problem_id) => {

@@ -3,7 +3,7 @@ import { Box, Container, Alert } from "@mui/material";
 import { useAuth } from "../context/authContext";
 import useProblemsData from "../hooks/useProblemData";
 import ProblemsHeader from "../components/problem-common/ProblemsHeader";
-import ProblemsFilters from "../components/problem-common/ProblemsFilters";
+import FilterSection from "../components/FilterSelect.jsx"; // New import
 import ProblemsList from "../components/problem-common/ProblemsList";
 import AuthRequiredCard from "./common/AuthRequiredCard.jsx";
 import LoadingState from "./common/LoadingState.jsx";
@@ -39,7 +39,8 @@ const ProblemsPage = () => {
           </Alert>
         )}
 
-        <ProblemsFilters filters={filters} onFilterChange={setFilters} />
+        {/* Replace ProblemsFilters with FilterSection */}
+        <FilterSection filters={filters} onFilterChange={setFilters} />
 
         <ProblemsList problems={filteredProblems} userMap={userMap} />
       </Container>

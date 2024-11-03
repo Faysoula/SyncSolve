@@ -3,7 +3,7 @@ import { Stack, Card, Box, Typography, Chip } from "@mui/material";
 import { User, Clock } from "lucide-react";
 import { difficultyConfig } from "../../utils/constants";
 
-export const ProblemsList = ({ problems, userMap }) => (
+const ProblemsList = ({ problems, userMap }) => (
   <Stack spacing={2}>
     {problems.length > 0 ? (
       problems.map((problem) => (
@@ -29,22 +29,60 @@ const ProblemCard = ({ problem, username }) => (
       >
         <Box sx={{ flex: { xs: "1", md: "3" } }}>
           <Stack spacing={2}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Typography
-                variant="h6"
-                sx={{ color: "#FAF0CA", fontWeight: 600 }}
-              >
-                {problem.title}
-              </Typography>
-              <Chip
-                label={difficultyConfig[problem.difficulty].label}
-                sx={{
-                  color: difficultyConfig[problem.difficulty].color,
-                  bgcolor: difficultyConfig[problem.difficulty].background,
-                  fontWeight: 600,
-                }}
-              />
+            <Stack spacing={2}>
+              {/* Title and Difficulty */}
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography
+                  variant="h6"
+                  sx={{ color: "#FAF0CA", fontWeight: 600 }}
+                >
+                  {problem.title}
+                </Typography>
+                <Chip
+                  label={difficultyConfig[problem.difficulty].label}
+                  sx={{
+                    color: difficultyConfig[problem.difficulty].color,
+                    bgcolor: difficultyConfig[problem.difficulty].background,
+                    fontWeight: 600,
+                  }}
+                />
+              </Stack>
+
+              {/* Tags Section */}
+              <Box>
+                {problem.metadata?.tags && problem.metadata.tags.length > 0 ? (
+                  <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                    {problem.metadata.tags.map((tag, index) => (
+                      <Chip
+                        key={index}
+                        label={tag}
+                        size="small"
+                        sx={{
+                          bgcolor: "rgba(157, 78, 221, 0.1)",
+                          color: "#9D4EDD",
+                          borderColor: "#9D4EDD",
+                          "&:hover": {
+                            bgcolor: "rgba(157, 78, 221, 0.2)",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#9D4EDD",
+                      fontStyle: "italic",
+                      opacity: 0.8,
+                    }}
+                  >
+                    no tags here you're on your own :/
+                  </Typography>
+                )}
+              </Box>
             </Stack>
+
             <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.8 }}>
               {problem.description}
             </Typography>
@@ -101,7 +139,7 @@ const EmptyState = () => (
       No problems found
     </Typography>
     <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.8 }}>
-       fix your silly criteria, buddy.
+      Try adjusting your search or filter criteria
     </Typography>
   </Card>
 );
