@@ -39,7 +39,7 @@ const Problems = db.define("Problems", {
     defaultValue: [],
   },
   metadata: {
-    type: DataTypes.JSONB,
+    type: DataTypes.JSON,
     allowNull: false,
     defaultValue: {
       tags: [],

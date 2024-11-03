@@ -13,7 +13,6 @@ const addProblem = async (
   tags = []
 ) => {
   try {
-    //just in case
     const validDifficulty = ["easy", "medium", "hard"];
     const normalizedDifficulty = difficulty.toLowerCase();
 
@@ -26,18 +25,21 @@ const addProblem = async (
       throw new Error("User not found");
     }
 
+    // Construct metadata explicitly
+    const metadata = {
+      example_images: example_images.filter((img) => img !== null),
+      tags: tags
+        .map((tag) => tag.toLowerCase().trim())
+        .filter((tag) => tag !== ""),
+    };
+
     const problem = await Problems.create({
       title,
       description,
       difficulty: normalizedDifficulty,
       created_by,
       test_cases,
-      metadata: {
-        example_images: example_images.filter((img) => img !== null),
-        tags: tags
-          .map((tag) => tag.toLowerCase().trim())
-          .filter((tag) => tag !== ""),
-      },
+      metadata, // Explicitly set the metadata here
     });
 
     return problem;
@@ -45,6 +47,7 @@ const addProblem = async (
     throw new Error(`Error adding problem: ${err.message}`);
   }
 };
+
 
 const getAllProblems = async () => {
   try {
@@ -88,39 +91,54 @@ const updateProblem = async (
   difficulty,
   test_cases,
   example_images = [],
-  tags = []
+  tags = [],
+  metadata = null
 ) => {
   try {
-    const [affectedrows] = await Problems.update(
-      {
-        title,
-        description,
-        difficulty,
-        test_cases,
-        metadata: {
-          example_images: example_images.filter((img) => img !== null),
-          tags: tags
-            .map((tag) => tag.toLowerCase().trim())
-            .filter((tag) => tag !== ""),
-        },
-      },
-      {
-        where: {
-          problem_id,
-        },
-      }
-    );
-
-    if (affectedrows === 0) {
+    const problem = await Problems.findByPk(problem_id);
+    if (!problem) {
       throw new Error("Problem not found");
     }
 
-    const updatedProblem = await Problems.findByPk(problem_id);
-    return updatedProblem;
+    let updatedMetadata;
+
+    if (metadata) {
+      // If metadata object is provided directly, use it but ensure proper structure
+      updatedMetadata = {
+        example_images: Array.isArray(metadata.example_images)
+          ? metadata.example_images.filter((img) => img !== null)
+          : problem.metadata.example_images,
+        tags: Array.isArray(metadata.tags)
+          ? metadata.tags
+              .map((tag) => tag.toLowerCase().trim())
+              .filter((tag) => tag !== "")
+          : problem.metadata.tags,
+      };
+    } else {
+      // Use individual parameters if no direct metadata object
+      updatedMetadata = {
+        example_images: example_images.filter((img) => img !== null),
+        tags: tags
+          .map((tag) => tag.toLowerCase().trim())
+          .filter((tag) => tag !== ""),
+      };
+    }
+
+    // Update the problem with new fields
+    await problem.update({
+      title: title || problem.title,
+      description: description || problem.description,
+      difficulty: difficulty || problem.difficulty,
+      test_cases: test_cases || problem.test_cases,
+      metadata: updatedMetadata,
+    });
+
+    return problem;
   } catch (err) {
     throw new Error(`Error updating problem: ${err.message}`);
   }
 };
+
 
 const getAllTags = async () => {
   try {

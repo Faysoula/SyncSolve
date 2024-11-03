@@ -92,8 +92,16 @@ const getProblemByIdController = async (req, res) => {
 
 const updateProblemController = async (req, res) => {
   const problem_id = req.params.id;
-  const { title, description, difficulty, test_cases, example_images, tags } =
-    req.body;
+  const {
+    title,
+    description,
+    difficulty,
+    test_cases,
+    example_images,
+    tags,
+    metadata,
+  } = req.body;
+
   try {
     const updatedProblem = await updateProblem(
       problem_id,
@@ -102,11 +110,14 @@ const updateProblemController = async (req, res) => {
       difficulty,
       test_cases,
       example_images,
-      tags
+      tags,
+      metadata
     );
-    res
-      .status(200)
-      .json({ message: "Problem updated successfully", updatedProblem });
+
+    res.status(200).json({
+      message: "Problem updated successfully",
+      updatedProblem,
+    });
   } catch (err) {
     console.error("Error updating problem:", err.message);
     res.status(500).json({ message: err.message });
