@@ -10,6 +10,7 @@ import { theme } from "./theme";
 import { AuthProvider } from "./context/authContext";
 import Header from "./components/common/Header";
 import AddProblemPage from "./components/AddProblemPage";
+import ProblemSolvingInterface from "./components/problemInterface";
 
 function App() {
   return (
@@ -30,9 +31,13 @@ function App() {
               <Route path="/Signin" element={<LoginForm />} />
               <Route path="/problems" element={<ProblemsPage />} />
               <Route
+                path="/problems/:problemId"
+                element={<ProblemSolvingInterface />}
+              />
+              <Route
                 path="/problems/edit/:problemId"
                 element={<AddProblemPage mode="edit" />}
-                />
+              />
               <Route path="/problems/add" element={<AddProblemPage />} />
               <Route path="/" element={<LandingPage />} />
             </Routes>

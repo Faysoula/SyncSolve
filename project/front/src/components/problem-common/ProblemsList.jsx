@@ -26,8 +26,20 @@ const ProblemCard = ({ problem, username }) => {
   const { user } = useAuth();
   const isCreator = user?.user_id === problem.created_by;
 
+  const handleclick = () => {
+    navigate(`/problems/${problem.problem_id}`);
+  }
+    const handleEditClick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      navigate(`/problems/edit/${problem.problem_id}`, {
+        state: { problem },
+        replace: true,
+      });
+    };
+
   return (
-    <Card sx={styles.problemCard}>
+    <Card sx={styles.problemCard} onClick={handleclick}>
       <Box sx={{ p: 3 }}>
         <Stack
           direction={{ xs: "column", md: "row" }}
@@ -64,15 +76,7 @@ const ProblemCard = ({ problem, username }) => {
 
                   {isCreator && (
                     <IconButton
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log("Navigating to edit:", problem.problem_id);
-                        navigate(`/problems/edit/${problem.problem_id}`, {
-                          state: { problem },
-                          replace: true,
-                        });
-                      }}
+                      onClick={handleEditClick}
                       sx={{
                         color: "#FAF0CA",
                         "&:hover": {

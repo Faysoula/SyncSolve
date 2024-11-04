@@ -20,6 +20,7 @@ import { useAuth } from "../context/authContext";
 import ProblemService from "../Services/problemService";
 import http from "../http-common";
 import { getTokenBearer } from "../utils/token";
+import ProblemImage from "../components/problem-common/ProblemImage";
 
 
 // Predefined tags
@@ -345,32 +346,7 @@ const AddProblemPage = ({ mode = "create" }) => {
     return null;
   }
 
-const ProblemImage = ({ imagePath }) => {
-  if (!imagePath) return null;
 
-  // Use your API URL from environment variables to construct the full path
-  const imageUrl = `http://localhost:3001/uploads/${imagePath}`;
-
-  console.log("Full image URL:", imageUrl); // Debug log
-
-  return (
-    <Box sx={{ mt: 2, maxWidth: "200px" }}>
-      <img
-        src={imageUrl}
-        alt="Test case example"
-        style={{
-          width: "100%",
-          height: "auto",
-          borderRadius: "4px",
-        }}
-        onError={(e) => {
-          console.error("Image load error for URL:", imageUrl);
-          e.target.style.display = "none";
-        }}
-      />
-    </Box>
-  );
-};
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#0a0118", pt: 12, pb: 6 }}>
