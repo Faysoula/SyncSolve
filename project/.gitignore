@@ -1,6 +1,7 @@
 # Ignore node_modules in all folders
 node_modules/
 **/.env
+back/uploads/
 
 # Ignore lock files (optional, keeps package managers flexible)
 package-lock.json
