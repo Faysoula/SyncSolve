@@ -10,6 +10,12 @@ const THEME_CATEGORIES = {
     { id: "dracula", label: "Dracula", icon: "🧛" },
     { id: "github-dark", label: "GitHub Dark", icon: "🐱" },
     { id: "monokai", label: "Monokai", icon: "🌙" },
+    { id: "tomorrow-night", label: "Tomorrow Night", icon: "🌌" },
+    { id: "one-dark-pro", label: "One Dark Pro", icon: "🌚" },
+    { id: "ayu-dark", label: "Ayu Dark", icon: "🌘" },
+    { id: "nord", label: "Nord", icon: "❄️" },
+    { id: "material-palenight", label: "Material Palenight", icon: "🌃" },
+    { id: "solarized-dark", label: "Solarized Dark", icon: "🌞" },
   ],
   "Light Themes": [
     { id: "github-light", label: "GitHub Light", icon: "☀️" },
