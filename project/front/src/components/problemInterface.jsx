@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Card, CircularProgress, Alert, Typography } from "@mui/material";
+import { Box, CircularProgress, Alert, Typography } from "@mui/material";
+import { EditorProvider, useEditor } from "../context/editorContext";
 import ProblemService from "../Services/problemService";
 import { useAuth } from "../context/authContext";
-import { EditorProvider, useEditor } from "../context/editorContext";
 import ProblemDetails from "./problem-interface/ProblemDetails";
 import EditorPanel from "./problem-interface/EditorPanel";
 import TestResults from "./problem-interface/TestResults";
@@ -13,7 +13,6 @@ const ProblemContent = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { runTests } = useEditor();
-
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,7 +41,7 @@ const ProblemContent = () => {
       <Box
         sx={{
           minHeight: "100vh",
-          bgcolor: "#0a0118",
+          bgcolor: "#0E0B1A",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -58,7 +57,7 @@ const ProblemContent = () => {
       <Box
         sx={{
           minHeight: "100vh",
-          bgcolor: "#0a0118",
+          bgcolor: "#0E0B1A",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -84,7 +83,7 @@ const ProblemContent = () => {
       <Box
         sx={{
           minHeight: "100vh",
-          bgcolor: "#0a0118",
+          bgcolor: "#0E0B1A",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -109,32 +108,90 @@ const ProblemContent = () => {
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-        gap: 4,
-        minHeight: "100vh",
-        bgcolor: "#0a0118",
-        p: 8,
-        pt: { xs: 12, md: 8 },
+        display: "grid",
+        gridTemplateColumns: "400px 1fr",
+        gridTemplateRows: "1fr 250px",
+        gap: 2,
+        height: "100vh",
+        p: 2,
+        backgroundColor: "#0E0B1A",
+        pt: { xs: 10, md: 2 }, // Account for AppBar
       }}
     >
-      <ProblemDetails problem={problem} />
-
-      <Card
+      {/* Problem Details Panel - Left Side */}
+      <Box
         sx={{
-          width: { xs: "100%", md: "50%" },
-          bgcolor: "#3C096C",
-          p: 4,
-          borderRadius: "24px",
-          display: "flex",
-          flexDirection: "column",
-          height: "fit-content",
+          gridRow: "1 / span 2",
+          backgroundColor: "#1A1626",
+          borderRadius: "12px",
           overflow: "hidden",
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
         }}
       >
-        <EditorPanel onRunTests={handleRunTests} />
-        <TestResults problem={problem} />
-      </Card>
+        <Box
+          sx={{
+            height: "100%",
+            overflowY: "auto",
+            p: 3,
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "#1A1626",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#3C096C",
+              borderRadius: "4px",
+            },
+          }}
+        >
+          <ProblemDetails problem={problem} />
+        </Box>
+      </Box>
+
+      {/* Code Editor Panel - Top Right */}
+      <Box
+        sx={{
+          backgroundColor: "#1A1626",
+          borderRadius: "12px",
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+        }}
+      >
+        <EditorPanel
+          onRunTests={handleRunTests}
+          sx={{
+            height: "100%",
+            "& .monaco-editor": {
+              borderRadius: "8px",
+              padding: "8px",
+            },
+          }}
+        />
+      </Box>
+
+      {/* Test Results Panel - Bottom Right */}
+      <Box
+        sx={{
+          backgroundColor: "#1A1626",
+          borderRadius: "12px",
+          p: 2,
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <TestResults
+          problem={problem}
+          sx={{
+            height: "100%",
+            overflow: "auto",
+          }}
+        />
+      </Box>
     </Box>
   );
 };

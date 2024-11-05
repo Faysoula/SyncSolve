@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Button } from "@mui/material";
 import { Play } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { useEditor } from "../../context/editorContext";
@@ -10,13 +10,13 @@ const EditorPanel = ({ onRunTests }) => {
   const { code, language, theme, updateCode } = useEditor();
 
   return (
-    <Stack spacing={3} sx={{ height: "100%" }}>
+    <Stack spacing={0} sx={{ height: "100%" }}>
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
           gap: 2,
-          mb: 2,
+          p: 1,
+          borderBottom: "1px solid rgba(157, 78, 221, 0.2)",
         }}
       >
         <LanguageSelector />
@@ -25,19 +25,17 @@ const EditorPanel = ({ onRunTests }) => {
 
       <Box
         sx={{
-          flexGrow: 1,
-          minHeight: "60vh",
-          borderRadius: "16px",
-          overflow: "hidden",
-          border: "1px solid #5A189A",
+          flex: 1,
+          position: "relative",
           "& .monaco-editor": {
-            borderRadius: "16px !important",
-            overflow: "hidden",
+            ".margin": {
+              background: "transparent !important",
+            },
           },
         }}
       >
         <Editor
-          height="60vh"
+          height="100%"
           language={language}
           theme={theme}
           value={code}
@@ -45,47 +43,44 @@ const EditorPanel = ({ onRunTests }) => {
           options={{
             minimap: { enabled: false },
             fontSize: 14,
-            lineNumbers: "on",
+            lineHeight: 1.6,
+            padding: { top: 16, bottom: 16 },
             scrollBeyondLastLine: false,
             automaticLayout: true,
-            tabSize: 4,
-            renderLineHighlight: "all",
-            highlightActiveIndentGuide: true,
+            tabSize: 2,
+            wordWrap: "on",
             contextmenu: true,
-            folding: true,
-            showFoldingControls: "always",
-            roundedSelection: true,
-            padding: { top: 16, bottom: 16 },
             smoothScrolling: true,
             cursorBlinking: "smooth",
             cursorSmoothCaretAnimation: true,
+            folding: true,
+            lineNumbers: "on",
+            renderLineHighlight: "all",
+            fontFamily: "JetBrains Mono, monospace",
           }}
         />
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <button
-          onClick={onRunTests}
-          style={{
-            background: "linear-gradient(45deg, #7B2CBF 30%, #9D4EDD 90%)",
-            border: 0,
-            borderRadius: "12px",
-            color: "#FAF0CA",
-            padding: "12px 24px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            cursor: "pointer",
-            fontSize: "16px",
-            fontWeight: 600,
-            transition: "all 0.3s ease",
-            boxShadow: "0 3px 15px rgba(157, 78, 221, 0.3)",
-          }}
-        >
-          <Play size={20} />
-          Run Tests
-        </button>
-      </Box>
+      <Button
+        onClick={onRunTests}
+        variant="contained"
+        startIcon={<Play size={18} />}
+        sx={{
+          mt: 2,
+          bgcolor: "#7B2CBF",
+          color: "#FAF0CA",
+          borderRadius: 2,
+          textTransform: "none",
+          px: 3,
+          py: 1.5,
+          "&:hover": {
+            bgcolor: "#9D4EDD",
+          },
+          alignSelf: "flex-end",
+        }}
+      >
+        Run Tests
+      </Button>
     </Stack>
   );
 };
