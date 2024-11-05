@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Stack, Button } from "@mui/material";
-import { Play } from "lucide-react";
 import Editor from "@monaco-editor/react";
+import { Play } from "lucide-react";
 import { useEditor } from "../../context/editorContext";
 import LanguageSelector from "./LanguageSelector";
 import ThemeSelector from "./ThemeSelector";
@@ -10,30 +10,60 @@ const EditorPanel = ({ onRunTests }) => {
   const { code, language, theme, updateCode } = useEditor();
 
   return (
-    <Stack spacing={0} sx={{ height: "100%" }}>
+    <Stack
+      spacing={0}
+      sx={{
+        height: "100%",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
-          gap: 2,
-          p: 1,
+          gap: 1.5,
+          px: 1,
+          py: 0.5,
           borderBottom: "1px solid rgba(157, 78, 221, 0.2)",
+          backgroundColor: theme.includes("light")
+            ? "rgb(255, 255, 255, 0.05)"
+            : "rgba(26, 22, 38, 0.6)",
+          minHeight: "40px",
+          alignItems: "center",
+          justifyContent: "space-between", // Added to separate left and right content
         }}
       >
-        <LanguageSelector />
-        <ThemeSelector />
+        {/* Left side controls */}
+        <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
+          <LanguageSelector />
+          <ThemeSelector />
+        </Box>
+
+        {/* Run Tests button */}
+        <Button
+          onClick={onRunTests}
+          variant="contained"
+          startIcon={<Play size={16} />}
+          sx={{
+            bgcolor: "#7B2CBF",
+            color: "#FAF0CA",
+            borderRadius: 1.5,
+            textTransform: "none",
+            px: 2,
+            py: 0.5,
+            fontSize: "13px",
+            minHeight: 0,
+            "&:hover": {
+              bgcolor: "#9D4EDD",
+            },
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          }}
+        >
+          Run Tests
+        </Button>
       </Box>
 
-      <Box
-        sx={{
-          flex: 1,
-          position: "relative",
-          "& .monaco-editor": {
-            ".margin": {
-              background: "transparent !important",
-            },
-          },
-        }}
-      >
+      <Box sx={{ flex: 1, position: "relative" }}>
         <Editor
           height="100%"
           language={language}
@@ -42,9 +72,9 @@ const EditorPanel = ({ onRunTests }) => {
           onChange={updateCode}
           options={{
             minimap: { enabled: false },
-            fontSize: 14,
-            lineHeight: 1.6,
-            padding: { top: 16, bottom: 16 },
+            fontSize: 13,
+            lineHeight: 1.5,
+            padding: { top: 8, bottom: 8 },
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 2,
@@ -55,32 +85,21 @@ const EditorPanel = ({ onRunTests }) => {
             cursorSmoothCaretAnimation: true,
             folding: true,
             lineNumbers: "on",
-            renderLineHighlight: "all",
+            lineNumbersMinChars: -1,
+            renderLineHighlight: "line",
             fontFamily: "JetBrains Mono, monospace",
+            roundedSelection: false,
+            renderIndentGuides: true,
+            colorDecorators: true,
+            bracketPairColorization: {
+              enabled: true,
+            },
+            "semanticHighlighting.enabled": true,
+            formatOnPaste: true,
+            formatOnType: true,
           }}
         />
       </Box>
-
-      <Button
-        onClick={onRunTests}
-        variant="contained"
-        startIcon={<Play size={18} />}
-        sx={{
-          mt: 2,
-          bgcolor: "#7B2CBF",
-          color: "#FAF0CA",
-          borderRadius: 2,
-          textTransform: "none",
-          px: 3,
-          py: 1.5,
-          "&:hover": {
-            bgcolor: "#9D4EDD",
-          },
-          alignSelf: "flex-end",
-        }}
-      >
-        Run Tests
-      </Button>
     </Stack>
   );
 };

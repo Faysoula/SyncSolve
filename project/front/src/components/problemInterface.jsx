@@ -1,21 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { Box, CircularProgress, Alert, Typography } from "@mui/material";
-import { EditorProvider, useEditor } from "../context/editorContext";
 import ProblemService from "../Services/problemService";
-import { useAuth } from "../context/authContext";
+import { EditorProvider, useEditor } from "../context/editorContext";
 import ProblemDetails from "./problem-interface/ProblemDetails";
 import EditorPanel from "./problem-interface/EditorPanel";
 import TestResults from "./problem-interface/TestResults";
 
 const ProblemContent = () => {
   const { problemId } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const { runTests } = useEditor();
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const containerRef = useRef(null);
+
+  // Handle resize observer errors and setup
+  useEffect(() => {
+    // Create a custom ResizeObserver with error handling
+    const resizeObserver = new ResizeObserver((entries) => {
+      // Use requestAnimationFrame to throttle updates
+      window.requestAnimationFrame(() => {
+        if (!Array.isArray(entries) || !entries.length) {
+          return;
+        }
+      });
+    });
+
+    // Add error handler for ResizeObserver
+    const errorHandler = (event) => {
+      if (event.message && event.message.includes("ResizeObserver")) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("error", errorHandler);
+    window.addEventListener("unhandledrejection", errorHandler);
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("error", errorHandler);
+      window.removeEventListener("unhandledrejection", errorHandler);
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -25,7 +57,6 @@ const ProblemContent = () => {
         setProblem(res.data);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load problem");
-        console.error("Failed to load problem:", err);
       } finally {
         setLoading(false);
       }
@@ -36,11 +67,19 @@ const ProblemContent = () => {
     }
   }, [problemId]);
 
+  const handleRunTests = async () => {
+    try {
+      await runTests(problemId);
+    } catch (error) {
+      setError("Failed to run tests");
+    }
+  };
+
   if (loading) {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
+          height: "100vh",
           bgcolor: "#0E0B1A",
           display: "flex",
           alignItems: "center",
@@ -52,11 +91,11 @@ const ProblemContent = () => {
     );
   }
 
-  if (error) {
+  if (error || !problem) {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
+          height: "100vh",
           bgcolor: "#0E0B1A",
           display: "flex",
           alignItems: "center",
@@ -72,76 +111,61 @@ const ProblemContent = () => {
             maxWidth: "600px",
           }}
         >
-          {error}
+          {error || "Problem not found"}
         </Alert>
       </Box>
     );
   }
 
-  if (!problem) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          bgcolor: "#0E0B1A",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 4,
-        }}
-      >
-        <Typography variant="h5" sx={{ color: "#FAF0CA" }}>
-          Problem not found
-        </Typography>
-      </Box>
-    );
-  }
-
-  const handleRunTests = async () => {
-    try {
-      await runTests(problemId);
-    } catch (error) {
-      setError("Failed to run tests");
-    }
-  };
-
   return (
     <Box
+      ref={containerRef}
       sx={{
         display: "grid",
-        gridTemplateColumns: "400px 1fr",
-        gridTemplateRows: "1fr 250px",
-        gap: 2,
+        gridTemplateColumns: "380px 1fr",
+        gridTemplateRows: "1fr 200px",
+        gap: 1.5,
         height: "100vh",
-        p: 2,
+        p: 1.5,
         backgroundColor: "#0E0B1A",
-        pt: { xs: 10, md: 2 }, // Account for AppBar
+        pt: { xs: 9, md: 1.5 },
+        overflow: "hidden",
+        minWidth: "800px", // Add minimum width
+        minHeight: "600px", // Add minimum height
+        "& .monaco-editor, & .overflow-guard": {
+          width: "100% !important",
+          height: "100% !important",
+          position: "relative !important",
+        },
       }}
     >
-      {/* Problem Details Panel - Left Side */}
+      {/* Problem Details Panel */}
       <Box
         sx={{
           gridRow: "1 / span 2",
           backgroundColor: "#1A1626",
-          borderRadius: "12px",
+          borderRadius: "8px",
           overflow: "hidden",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0, // Allow shrinking
         }}
       >
         <Box
           sx={{
-            height: "100%",
+            flex: 1,
             overflowY: "auto",
-            p: 3,
+            overflowX: "hidden",
+            p: 2.5,
             "&::-webkit-scrollbar": {
-              width: "8px",
+              width: "6px",
             },
             "&::-webkit-scrollbar-track": {
               background: "#1A1626",
             },
             "&::-webkit-scrollbar-thumb": {
               background: "#3C096C",
-              borderRadius: "4px",
+              borderRadius: "3px",
             },
           }}
         >
@@ -149,46 +173,46 @@ const ProblemContent = () => {
         </Box>
       </Box>
 
-      {/* Code Editor Panel - Top Right */}
+      {/* Editor Panel */}
       <Box
         sx={{
           backgroundColor: "#1A1626",
-          borderRadius: "12px",
-          p: 2,
+          borderRadius: "8px",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+          overflow: "hidden",
+          minWidth: 0, // Allow shrinking
+          position: "relative", // Needed for Monaco editor
         }}
       >
         <EditorPanel
           onRunTests={handleRunTests}
           sx={{
-            height: "100%",
+            flex: 1,
             "& .monaco-editor": {
-              borderRadius: "8px",
-              padding: "8px",
+              width: "100% !important",
+              height: "100% !important",
             },
           }}
         />
       </Box>
 
-      {/* Test Results Panel - Bottom Right */}
+      {/* Test Results Panel */}
       <Box
         sx={{
           backgroundColor: "#1A1626",
-          borderRadius: "12px",
-          p: 2,
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+          borderRadius: "8px",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
+          minWidth: 0, // Allow shrinking
         }}
       >
         <TestResults
           problem={problem}
           sx={{
             height: "100%",
-            overflow: "auto",
+            overflow: "hidden",
           }}
         />
       </Box>
@@ -196,7 +220,6 @@ const ProblemContent = () => {
   );
 };
 
-// Wrap the main component with the EditorProvider
 const ProblemSolvingInterface = () => {
   return (
     <EditorProvider>
