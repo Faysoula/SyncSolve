@@ -82,7 +82,7 @@ const removeTeamMember = (teamMemberId) => {
 };
 
 const updateTeamMemberRole = (data) => {
-  return http.put("/team-members/ChangeRole", data, {
+  return http.put("/team-members/members/ChangeRole", data, {
     headers: {
       Authorization: getTokenBearer(),
     },

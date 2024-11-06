@@ -9,8 +9,17 @@ import {
   Divider,
   Avatar,
   CircularProgress,
+  Alert,
+  IconButton,
+  Snackbar,
 } from "@mui/material";
-import { Users, ChevronDown, LogOut, Crown } from "lucide-react";
+import {
+  Users,
+  ChevronDown,
+  LogOut,
+  Crown,
+  Link as LinkIcon,
+} from "lucide-react";
 import TeamService from "../Services/teamService";
 import { useAuth } from "../context/authContext";
 
@@ -19,17 +28,15 @@ const TeamDropdown = ({ onCreateTeam }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [teamData, setTeamData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const fetchTeamData = async () => {
     try {
       setLoading(true);
-
-      // First get user's teams
       const userTeamsResponse = await TeamService.getUserTeams(user.user_id);
       const userTeams = userTeamsResponse.data.teamMembers;
 
       if (!userTeams || userTeams.length === 0) {
-        // If no teams found as member, check for admin teams
         const allTeamsResponse = await TeamService.getAllTeams();
         const adminTeam = allTeamsResponse.data.teams?.find((team) =>
           team.TeamMembers?.some(
@@ -51,7 +58,6 @@ const TeamDropdown = ({ onCreateTeam }) => {
           setTeamData(null);
         }
       } else {
-        // User has a team as a member
         const userTeam = userTeams[0];
         const teamResponse = await TeamService.getTeamById(userTeam.team_id);
         const membersResponse = await TeamService.getTeamMembers(
@@ -78,20 +84,52 @@ const TeamDropdown = ({ onCreateTeam }) => {
     }
   }, [user]);
 
+  const handleCopyInviteLink = () => {
+    const inviteLink = `${window.location.origin}/teams/join/${teamData.team.team_id}`;
+    navigator.clipboard.writeText(inviteLink);
+    setOpenSnackbar(true);
+    handleClose();
+  };
+
   const handleLeaveTeam = async () => {
     try {
       const membershipToRemove = teamData.members.find(
         (m) => m.user_id === user.user_id
       );
-      if (membershipToRemove) {
-        await TeamService.removeTeamMember(membershipToRemove.team_member_id);
-        setTeamData(null);
-        setAnchorEl(null);
-        window.location.reload();
+
+      if (!membershipToRemove) return;
+
+      // If admin is leaving and there are other members, transfer admin role
+      if (membershipToRemove.role === "admin" && teamData.members.length > 1) {
+        // Find the first non-admin member to promote
+        const newAdmin = teamData.members.find(
+          (m) => m.user_id !== user.user_id
+        );
+        if (newAdmin) {
+          // Update the new admin's role first
+          await TeamService.updateTeamMemberRole({
+            team_member_id: newAdmin.team_member_id,
+            role: "admin",
+          });
+        }
       }
+
+      // Now remove the leaving member
+      await TeamService.removeTeamMember(membershipToRemove.team_member_id);
+
+      // If this was the last member, the team will be automatically deleted
+      // by the cascade delete in database
+
+      setTeamData(null);
+      setAnchorEl(null);
+      window.location.reload();
     } catch (error) {
       console.error("Error leaving team:", error);
     }
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   if (loading) {
@@ -131,105 +169,158 @@ const TeamDropdown = ({ onCreateTeam }) => {
   }
 
   return (
-    <Box>
-      <Button
-        onClick={(e) => setAnchorEl(e.currentTarget)}
-        variant="contained"
-        endIcon={<ChevronDown size={16} />}
-        sx={{
-          bgcolor: "#240046",
-          color: "#FAF0CA",
-          "&:hover": {
-            bgcolor: "#3C096C",
-          },
-          px: 3,
-          py: 1,
-        }}
-      >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Users size={20} />
-          <Typography>
-            {teamData.userRole === "admin"
-              ? `${teamData.team.team_name} (Admin)`
-              : teamData.team.team_name}
-          </Typography>
-        </Stack>
-      </Button>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-        PaperProps={{
-          sx: {
-            bgcolor: "#1A1626",
-            color: "#FAF0CA",
-            minWidth: "200px",
-          },
-        }}
-      >
-        <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2" color="#9D4EDD">
-            Team Members
-          </Typography>
-        </Box>
-        <Divider sx={{ borderColor: "rgba(157, 78, 221, 0.2)" }} />
-
-        {teamData.members.map((member) => (
-          <MenuItem
-            key={member.user_id}
-            sx={{
-              py: 1,
-              "&:hover": {
-                bgcolor: "rgba(157, 78, 221, 0.1)",
-              },
-            }}
-          >
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              sx={{ width: "100%" }}
-            >
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: "#3C096C",
-                  fontSize: "0.875rem",
-                }}
-              >
-                {member.User?.name?.charAt(0) ||
-                  member.User?.username?.charAt(0)}
-              </Avatar>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2">
-                  {member.User?.name || member.User?.username}
-                </Typography>
-              </Box>
-              {member.role === "admin" && <Crown size={16} color="#fbbf24" />}
-            </Stack>
-          </MenuItem>
-        ))}
-
-        <Divider sx={{ borderColor: "rgba(157, 78, 221, 0.2)", my: 1 }} />
-
-        <MenuItem
-          onClick={handleLeaveTeam}
+    <>
+      <Box>
+        <Button
+          onClick={(e) => setAnchorEl(e.currentTarget)}
+          variant="contained"
+          endIcon={<ChevronDown size={16} />}
           sx={{
-            color: "#f87171",
+            bgcolor: "#240046",
+            color: "#FAF0CA",
             "&:hover": {
-              bgcolor: "rgba(248, 113, 113, 0.1)",
+              bgcolor: "#3C096C",
             },
+            px: 3,
+            py: 1,
           }}
         >
           <Stack direction="row" spacing={1} alignItems="center">
-            <LogOut size={16} />
-            <Typography variant="body2">Leave Team</Typography>
+            <Users size={20} />
+            <Typography>
+              {teamData?.userRole === "admin"
+                ? `${teamData.team.team_name} (Admin)`
+                : teamData?.team.team_name}
+            </Typography>
           </Stack>
-        </MenuItem>
-      </Menu>
-    </Box>
+        </Button>
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+          PaperProps={{
+            sx: {
+              bgcolor: "#1A1626",
+              color: "#FAF0CA",
+              minWidth: "200px",
+            },
+          }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="#9D4EDD">
+              Team Members ({teamData?.members?.length || 0}/3)
+            </Typography>
+          </Box>
+          <Divider sx={{ borderColor: "rgba(157, 78, 221, 0.2)" }} />
+
+          {teamData?.members.map((member) => (
+            <MenuItem
+              key={member.user_id}
+              sx={{
+                py: 1,
+                "&:hover": {
+                  bgcolor: "rgba(157, 78, 221, 0.1)",
+                },
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ width: "100%" }}
+              >
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: "#3C096C",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {member.User?.name?.charAt(0) ||
+                    member.User?.username?.charAt(0)}
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2">
+                    {member.User?.name || member.User?.username}
+                  </Typography>
+                </Box>
+                {member.role === "admin" && <Crown size={16} color="#fbbf24" />}
+              </Stack>
+            </MenuItem>
+          ))}
+
+          <Divider sx={{ borderColor: "rgba(157, 78, 221, 0.2)", my: 1 }} />
+
+          {teamData?.members.length < 3 && (
+            <MenuItem
+              onClick={handleCopyInviteLink}
+              sx={{
+                color: "#9D4EDD",
+                "&:hover": {
+                  bgcolor: "rgba(157, 78, 221, 0.1)",
+                },
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center">
+                <LinkIcon size={16} />
+                <Typography variant="body2">Copy Invite Link</Typography>
+              </Stack>
+            </MenuItem>
+          )}
+
+          <MenuItem
+            onClick={handleLeaveTeam}
+            sx={{
+              color: "#f87171",
+              "&:hover": {
+                bgcolor: "rgba(248, 113, 113, 0.1)",
+              },
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <LogOut size={16} />
+              <Typography variant="body2">
+                Leave Team
+                {teamData?.userRole === "admin" &&
+                  teamData?.members.length > 1 && (
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontSize: "0.75rem",
+                        opacity: 0.8,
+                        ml: 1,
+                      }}
+                    >
+                      (admin role will transfer)
+                    </Typography>
+                  )}
+              </Typography>
+            </Stack>
+          </MenuItem>
+        </Menu>
+      </Box>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          sx={{
+            bgcolor: "rgba(74, 222, 128, 0.1)",
+            color: "#4ade80",
+            border: "1px solid",
+            borderColor: "rgba(74, 222, 128, 0.2)",
+          }}
+        >
+          Invite link copied to clipboard!
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 

@@ -1,24 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   AppBar,
-  Button,
   Container,
   Toolbar,
   Typography,
   Box,
+  Avatar,
+  IconButton,
   Menu,
   MenuItem,
-  IconButton,
-  Avatar,
+  Stack,
+  Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
 import { ChevronDown } from "lucide-react";
+import { useAuth } from "../../context/authContext";
+import TeamDropdown from "../TeamDropdown";
+import TeamInviteModal from "../TeamInviteModal";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -34,7 +38,6 @@ const Header = () => {
     navigate("/");
   };
 
-  // Get user's initials for the avatar
   const getInitials = () => {
     if (!user?.name) return "?";
     return `${user.name.charAt(0)}${
@@ -43,146 +46,163 @@ const Header = () => {
   };
 
   return (
-    <AppBar position="fixed">
-      <Container maxWidth="lg">
-        <Toolbar
-          sx={{
-            minHeight: "70px !important",
-            px: { xs: 2, sm: 3 },
-            gap: 2,
-          }}
-        >
-          <Typography
-            variant="h6"
-            component="div"
+    <>
+      <AppBar position="fixed">
+        <Container maxWidth="lg">
+          <Toolbar
             sx={{
-              flexGrow: 1,
-              fontWeight: "bold",
-              fontSize: { xs: "1.25rem", sm: "1.5rem" },
-              cursor: "pointer",
+              minHeight: "70px !important",
+              px: { xs: 2, sm: 3 },
+              gap: 2,
             }}
-            onClick={() => navigate("/")}
           >
-            SyncSolve
-          </Typography>
-
-          {user ? (
-            <Box
+            <Typography
+              variant="h6"
+              component="div"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "20px",
-                padding: "4px 12px",
+                fontWeight: "bold",
+                fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                cursor: "pointer",
               }}
+              onClick={() => navigate("/")}
             >
-              <Avatar
-                sx={{
-                  bgcolor: "secondary.main",
-                  width: 32,
-                  height: 32,
-                  fontSize: "0.875rem",
-                }}
-              >
-                {getInitials()}
-              </Avatar>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  color="secondary.light"
-                  sx={{
-                    fontSize: "0.9rem",
-                    fontWeight: 500,
-                  }}
-                >
-                  {user.name} {user.last_name}
-                </Typography>
-                <IconButton
-                  color="inherit"
-                  onClick={handleMenuClick}
-                  sx={{
-                    p: 0.5,
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    },
-                  }}
-                >
-                  <ChevronDown size={18} />
-                </IconButton>
+              SyncSolve
+            </Typography>
+
+            {/* Spacer */}
+            <Box sx={{ flexGrow: 1 }} />
+
+            {/* Team Section - Only show if user is logged in */}
+            {user && (
+              <Box sx={{ mr: 2 }}>
+                <TeamDropdown onCreateTeam={() => setIsTeamModalOpen(true)} />
               </Box>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                PaperProps={{
-                  sx: {
-                    mt: 1,
-                    backgroundColor: "primary.dark",
-                    color: "secondary.light",
-                  },
+            )}
+
+            {user ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: "20px",
+                  padding: "4px 12px",
                 }}
               >
-                <MenuItem
-                  onClick={() => {
-                    handleMenuClose();
-                    navigate("/profile");
-                  }}
+                <Avatar
                   sx={{
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    bgcolor: "secondary.main",
+                    width: 32,
+                    height: 32,
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {getInitials()}
+                </Avatar>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography
+                    color="secondary.light"
+                    sx={{
+                      fontSize: "0.9rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {user.name} {user.last_name}
+                  </Typography>
+                  <IconButton
+                    color="inherit"
+                    onClick={handleMenuClick}
+                    sx={{
+                      p: 0.5,
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      },
+                    }}
+                  >
+                    <ChevronDown size={18} />
+                  </IconButton>
+                </Box>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1,
+                      backgroundColor: "primary.dark",
+                      color: "secondary.light",
                     },
                   }}
                 >
-                  Profile
-                </MenuItem>
-                <MenuItem
-                  onClick={handleLogout}
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      navigate("/profile");
+                    }}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      },
+                    }}
+                  >
+                    Profile
+                  </MenuItem>
+                  <MenuItem
+                    onClick={handleLogout}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      },
+                    }}
+                  >
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </Box>
+            ) : (
+              <Stack direction="row" spacing={2}>
+                <Button
+                  color="inherit"
+                  onClick={() => navigate("/Signin")}
                   sx={{
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    },
+                    minWidth: "auto",
+                    px: { xs: 2, sm: 3 },
                   }}
                 >
-                  Logout
-                </MenuItem>
-              </Menu>
-            </Box>
-          ) : (
-            <>
-              <Button
-                color="inherit"
-                sx={{
-                  minWidth: "auto",
-                  px: { xs: 2, sm: 3 },
-                }}
-                onClick={() => navigate("/Signin")}
-              >
-                Sign In
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{
-                  minWidth: "auto",
-                  px: { xs: 2, sm: 3 },
-                }}
-                onClick={() => navigate("/Register")}
-              >
-                Sign Up
-              </Button>
-            </>
-          )}
-        </Toolbar>
-      </Container>
-    </AppBar>
+                  Sign In
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => navigate("/Register")}
+                  sx={{
+                    minWidth: "auto",
+                    px: { xs: 2, sm: 3 },
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </Stack>
+            )}
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      {/* Team Creation Modal */}
+      <TeamInviteModal
+        open={isTeamModalOpen}
+        onClose={() => setIsTeamModalOpen(false)}
+      />
+    </>
   );
 };
 
