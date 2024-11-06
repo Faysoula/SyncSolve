@@ -1,6 +1,7 @@
 const {
   addTeamMember,
   getTeamMembers,
+  getTeamMemberById,
   updateTeamMemberRole,
   removeTeamMember,
 } = require("../services/teamMemberService");
@@ -31,6 +32,17 @@ const getTeamMembersController = async (req, res) => {
   }
 };
 
+const getTeamMemberByIdController = async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    const teamMembers = await getTeamMemberById(user_id);
+    res.status(200).json({ teamMembers });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 const updateTeamMemberRoleController = async (req, res) => {
     const { team_member_id, role } = req.body;
 
@@ -58,6 +70,7 @@ const removeTeamMemberController = async (req, res) => {
 module.exports = {
     addTeamMemberController,
     getTeamMembersController,
+    getTeamMemberByIdController,
     updateTeamMemberRoleController,
     removeTeamMemberController,
     };

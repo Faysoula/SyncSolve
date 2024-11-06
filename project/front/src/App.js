@@ -11,6 +11,7 @@ import { AuthProvider } from "./context/authContext";
 import Header from "./components/common/Header";
 import AddProblemPage from "./components/AddProblemPage";
 import ProblemSolvingInterface from "./components/problemInterface";
+import TeamJoin from "./components/TeamJoin";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
                 path="/problems/edit/:problemId"
                 element={<AddProblemPage mode="edit" />}
               />
+              <Route path="/teams/join/:teamId" element={<TeamJoin />} />
               <Route path="/problems/add" element={<AddProblemPage />} />
               <Route path="/" element={<LandingPage />} />
             </Routes>

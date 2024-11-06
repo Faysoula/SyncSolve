@@ -10,41 +10,40 @@ const addTeamMember = async (team_id, user_id, role) => {
       throw new Error("Team not found");
     }
 
-
     const user = await User.findByPk(user_id);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     const count = await TeamMember.count({
       where: {
         team_id,
       },
     });
-    
+
     const existingmbr = await TeamMember.findOne({
       where: {
         team_id,
         user_id,
       },
-    })
+    });
 
-    if(existingmbr){
+    if (existingmbr) {
       throw new Error("User already in team");
     }
 
     if (count >= 3) {
       throw new Error("Team is full");
     }
-    
-    if(newRole === "admin"){
+
+    if (newRole === "admin") {
       const countAdmin = await TeamMember.count({
         where: {
           team_id,
           role: "admin",
         },
-      })
-      if(countAdmin > 0){
+      });
+      if (countAdmin > 0) {
         throw new Error("Team already has an admin");
       }
     }
@@ -80,6 +79,28 @@ const getTeamMembers = async (team_id) => {
   }
 };
 
+
+const getTeamMemberById = async (user_id) => {
+  try {
+    const teamMembers = await TeamMember.findAll({
+      where: { user_id },
+      include: [
+        {
+          model: Team,
+          attributes: ["team_id", "team_name"],
+        },
+        {
+          model: User,
+          attributes: ["user_id", "username", "name", "last_name"],
+        },
+      ],
+    });
+
+    return teamMembers;
+  } catch (error) {
+    throw new Error(`Error getting team member: ${error.message}`);
+  }
+};
 const updateTeamMemberRole = async (team_member_id, role) => {
   try {
     const [affectedrows] = await TeamMember.update(
@@ -125,6 +146,7 @@ const removeTeamMember = async (team_member_id) => {
 module.exports = {
   addTeamMember,
   getTeamMembers,
+  getTeamMemberById,
   updateTeamMemberRole,
   removeTeamMember,
 };

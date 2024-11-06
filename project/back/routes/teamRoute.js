@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   createTeamController,
+  getTeamByIdController,
   getTeamsController,
   getTeamByNameController,
   getTeamMembersController,
@@ -19,7 +20,10 @@ router.post("/Createteam", auth, createTeamController);
 router.get("/", auth, getTeamsController);
 
 // Route to get a team by name
-router.get("/:team_name", auth, getTeamByNameController);
+router.get("/name/:team_name", auth, getTeamByNameController);
+
+// Route to get a team by ID
+router.get("/:id", auth, getTeamByIdController);
 
 // Route to get all members of a team by team ID
 router.get("/:id/members", auth, getTeamMembersController);
