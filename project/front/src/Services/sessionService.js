@@ -1,14 +1,13 @@
 import http from "../http-common";
 import { getTokenBearer } from "../utils/token";
 
-const createProblemSession = async (userId, problemId) => {
+const createProblemSession = async (teamId, problemId) => {
   try {
-    console.log("Creating session with:", { userId, problemId }); // Debug log
     const response = await http.post(
       "/sessions/CreateSession",
       {
-        team_id: Number(userId), // Ensure it's a number
-        problem_id: Number(problemId), // Ensure it's a number
+        team_id: Number(teamId),
+        problem_id: Number(problemId),
       },
       {
         headers: {
@@ -16,14 +15,38 @@ const createProblemSession = async (userId, problemId) => {
         },
       }
     );
-    console.log("Session creation response:", response.data);
     return response.data;
   } catch (err) {
-    console.error("Full error object:", err);
-    console.error("Error response data:", err.response?.data);
-    throw new Error(
-      `Failed to create session: ${err.response?.data?.message || err.message}`
-    );
+    console.error("Session creation error:", err);
+    throw err;
+  }
+};
+
+const getActiveSession = async (teamId) => {
+  try {
+    const response = await http.get(`/sessions/session/team/${teamId}`, {
+      headers: {
+        Authorization: getTokenBearer(),
+      },
+    });
+    return response.data;
+  } catch (err) {
+    console.error("Error getting active session:", err);
+    throw err;
+  }
+};
+
+const getUserTeam = async (userId) => {
+  try {
+    const response = await http.get(`/team-members/${userId}`, {
+      headers: {
+        Authorization: getTokenBearer(),
+      },
+    });
+    return response.data.teamMembers[0]?.team_id;
+  } catch (err) {
+    console.error("Error getting user team:", err);
+    throw err;
   }
 };
 
@@ -33,7 +56,7 @@ const createTerminal = async (sessionId, language) => {
     const response = await http.post(
       "/terminal/createTerminal",
       {
-        session_id: Number(sessionId), // Ensure it's a number
+        session_id: Number(sessionId),
         language: language,
       },
       {
@@ -61,9 +84,9 @@ const executeCode = async (userId, code, terminalId) => {
     const response = await http.post(
       "/executions/createEx",
       {
-        user_id: Number(userId), // Ensure it's a number
+        user_id: Number(userId),
         code: code,
-        terminal_id: Number(terminalId), // Ensure it's a number
+        terminal_id: Number(terminalId),
       },
       {
         headers: {
@@ -84,10 +107,13 @@ const executeCode = async (userId, code, terminalId) => {
   }
 };
 
+
 const SessionTerminalService = {
   createProblemSession,
   createTerminal,
   executeCode,
+  getActiveSession,
+  getUserTeam,
 };
 
 export default SessionTerminalService;

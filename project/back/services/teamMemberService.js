@@ -101,6 +101,33 @@ const getTeamMemberById = async (user_id) => {
     throw new Error(`Error getting team member: ${error.message}`);
   }
 };
+
+const getUserTeam = async(user_id) => {
+  try {
+    const teamMembers = await TeamMember.findAll({
+      where: { user_id },
+      include: [
+        {
+          model: Team,
+          attributes: ["team_id", "team_name"],
+        },
+        {
+          model: User,
+          attributes: ["user_id", "username", "name", "last_name"],
+        },
+      ],
+    });
+
+    return teamMembers;
+  } catch (error) {
+    throw new Error(`Error getting team member: ${error.message}`);
+  }
+}
+
+
+
+
+
 const updateTeamMemberRole = async (team_member_id, role) => {
   try {
     const [affectedrows] = await TeamMember.update(
@@ -147,6 +174,7 @@ module.exports = {
   addTeamMember,
   getTeamMembers,
   getTeamMemberById,
+  getUserTeam,
   updateTeamMemberRole,
   removeTeamMember,
 };

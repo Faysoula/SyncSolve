@@ -1,9 +1,19 @@
 import React from "react";
-import { Stack, Card, Box, Typography, Chip, IconButton } from "@mui/material";
+import {
+  Stack,
+  Card,
+  Box,
+  Typography,
+  Chip,
+  IconButton,
+  Alert,
+} from "@mui/material";
 import { User, Clock, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { difficultyConfig } from "../../utils/constants";
+import TeamService from "../../Services/teamService";
+import SessionTerminalService from "../../Services/sessionService";
 
 const ProblemsList = ({ problems, userMap }) => (
   <Stack spacing={2}>
@@ -24,22 +34,106 @@ const ProblemsList = ({ problems, userMap }) => (
 const ProblemCard = ({ problem, username }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const [activeSession, setActiveSession] = React.useState(null);
+  const [teamId, setTeamId] = React.useState(null);
   const isCreator = user?.user_id === problem.created_by;
 
-  const handleclick = () => {
-    navigate(`/problems/${problem.problem_id}`);
-  }
-    const handleEditClick = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      navigate(`/problems/edit/${problem.problem_id}`, {
-        state: { problem },
-        replace: true,
-      });
+  React.useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        if (!user) return;
+
+        const teamsResponse = await TeamService.getUserTeams(user.user_id);
+        const teamMember = teamsResponse.data.teamMembers?.[0];
+
+        if (teamMember) {
+          setTeamId(teamMember.team_id);
+          setIsAdmin(teamMember.role === "admin");
+
+          // Get active session for the team
+          const sessionResponse = await SessionTerminalService.getActiveSession(
+            teamMember.team_id
+          );
+          if (sessionResponse && sessionResponse.length > 0) {
+            setActiveSession(sessionResponse[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking status:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
+    checkStatus();
+  }, [user]);
+
+  const handleProblemClick = async (e) => {
+    e.preventDefault();
+
+    if (!teamId) {
+      setError("You need to be in a team first!");
+      return;
+    }
+
+    if (isAdmin) {
+      try {
+        // Create new session
+        const sessionResponse =
+          await SessionTerminalService.createProblemSession(
+            teamId,
+            problem.problem_id
+          );
+
+        navigate(
+          `/problems/${problem.problem_id}/session/${sessionResponse.session_id}`
+        );
+      } catch (err) {
+        console.error("Error starting session:", err);
+        setError("Failed to start session");
+      }
+      return;
+    }
+
+    // Handle member clicks
+    if (activeSession) {
+      if (activeSession.problem_id === problem.problem_id) {
+        navigate(
+          `/problems/${activeSession.problem_id}/session/${activeSession.session_id}`
+        );
+      } else {
+        setError("Your team needs you somewhere else!");
+      }
+    } else {
+      setError("Wait for admin to start a session");
+    }
+  };
+
+  const canClickProblem =
+    isAdmin || activeSession?.problem_id === problem.problem_id;
+
   return (
-    <Card sx={styles.problemCard} onClick={handleclick}>
+    <Card
+      sx={{
+        ...styles.problemCard,
+        cursor: canClickProblem ? "pointer" : "default",
+        "&:hover": canClickProblem
+          ? {
+              transform: "translateY(-2px)",
+              bgcolor: "#5A189A",
+            }
+          : {},
+        ...(activeSession?.problem_id === problem.problem_id && {
+          borderColor: "#4ade80",
+          borderWidth: 1,
+          borderStyle: "solid",
+        }),
+      }}
+      onClick={handleProblemClick}
+    >
       <Box sx={{ p: 3 }}>
         <Stack
           direction={{ xs: "column", md: "row" }}
@@ -49,7 +143,6 @@ const ProblemCard = ({ problem, username }) => {
           <Box sx={{ flex: { xs: "1", md: "3" } }}>
             <Stack spacing={2}>
               <Stack spacing={2}>
-                {/* Title and Difficulty */}
                 <Stack
                   direction="row"
                   spacing={2}
@@ -62,6 +155,20 @@ const ProblemCard = ({ problem, username }) => {
                       sx={{ color: "#FAF0CA", fontWeight: 600 }}
                     >
                       {problem.title}
+                      {activeSession?.problem_id === problem.problem_id &&
+                        !isAdmin && (
+                          <Chip
+                            label="Session Active"
+                            size="small"
+                            sx={{
+                              ml: 2,
+                              bgcolor: "rgba(74, 222, 128, 0.1)",
+                              color: "#4ade80",
+                              borderColor: "#4ade80",
+                              border: "1px solid",
+                            }}
+                          />
+                        )}
                     </Typography>
                     <Chip
                       label={difficultyConfig[problem.difficulty].label}
@@ -76,7 +183,14 @@ const ProblemCard = ({ problem, username }) => {
 
                   {isCreator && (
                     <IconButton
-                      onClick={handleEditClick}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/problems/edit/${problem.problem_id}`, {
+                          state: { problem },
+                          replace: true,
+                        });
+                      }}
                       sx={{
                         color: "#FAF0CA",
                         "&:hover": {
@@ -89,7 +203,19 @@ const ProblemCard = ({ problem, username }) => {
                   )}
                 </Stack>
 
-                {/* Tags Section */}
+                {error && (
+                  <Alert
+                    severity="error"
+                    sx={{
+                      bgcolor: "rgba(248, 113, 113, 0.1)",
+                      color: "#f87171",
+                    }}
+                    onClose={() => setError("")}
+                  >
+                    {error}
+                  </Alert>
+                )}
+
                 <Box>
                   {problem.metadata?.tags &&
                   problem.metadata.tags.length > 0 ? (

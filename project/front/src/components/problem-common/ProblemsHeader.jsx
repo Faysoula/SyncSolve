@@ -1,10 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography, Stack, Button } from "@mui/material";
 import { BookOpen, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
+import SessionStatusTag from "../sessionStatus";
+import SessionTerminalService from "../../Services/sessionService";
 
 export const ProblemsHeader = ({ problemCount }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [activeSession, setActiveSession] = useState(null);
+
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      try {
+        const teamId = await SessionTerminalService.getUserTeam(user.user_id);
+        if (teamId) {
+          const session = await SessionTerminalService.getActiveSession(teamId);
+          if (session && session.length > 0) {
+            setActiveSession(session[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking active session:", err);
+      }
+    };
+
+    if (user) {
+      checkActiveSession();
+    }
+  }, [user]);
+
+  const handleSessionClick = () => {
+    if (activeSession) {
+      navigate(
+        `/problems/${activeSession.problem_id}/session/${activeSession.session_id}`
+      );
+    }
+  };
 
   return (
     <Box sx={{ mb: 6 }}>
@@ -16,10 +49,18 @@ export const ProblemsHeader = ({ problemCount }) => {
         sx={{ mb: 2 }}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
-          <BookOpen size={32} className="text-purple-700" />
+          <BookOpen size={32} className="text-purple-400" />
           <Typography variant="h4" sx={{ fontWeight: 700, color: "#FAF0CA" }}>
             Problem Bank
           </Typography>
+          {activeSession && (
+            <div onClick={handleSessionClick}>
+              <SessionStatusTag
+                sessionId={activeSession.session_id}
+                problemId={activeSession.problem_id}
+              />
+            </div>
+          )}
         </Stack>
 
         <Button

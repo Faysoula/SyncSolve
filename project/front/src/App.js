@@ -31,8 +31,9 @@ function App() {
               <Route path="/Register" element={<SignUp />} />
               <Route path="/Signin" element={<LoginForm />} />
               <Route path="/problems" element={<ProblemsPage />} />
+              {/* Update this route to include session parameter */}
               <Route
-                path="/problems/:problemId"
+                path="/problems/:problemId/session/:sessionId"
                 element={<ProblemSolvingInterface />}
               />
               <Route

@@ -4,6 +4,7 @@ const {
     addTeamMemberController,
     getTeamMembersController,
     getTeamMemberByIdController,
+    getUserTeamController,
     updateTeamMemberRoleController,
     removeTeamMemberController,
 } = require("../controllers/teamMemberController");
@@ -17,6 +18,8 @@ router.post("/addMembers", auth, addTeamMemberController);
 
 // Route to get members of a team by team ID
 router.get("/members/:team_id", auth, getTeamMembersController);
+
+router.get("/members/:user_id", auth, getUserTeamController);
 
 // Route to get a team member by user ID
 router.get("/:user_id", auth, getTeamMemberByIdController);
