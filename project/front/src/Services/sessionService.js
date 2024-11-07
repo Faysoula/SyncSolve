@@ -50,6 +50,26 @@ const getUserTeam = async (userId) => {
   }
 };
 
+const updateSession = async (sessionId, problemId) => {
+  try {
+    const response = await http.put(
+      `/sessions/${sessionId}/updateProblem`,
+      {
+        problem_id: Number(problemId),
+      },
+      {
+        headers: {
+          Authorization: getTokenBearer(),
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Session update error:", err);
+    throw err;
+  }
+}
+
 const createTerminal = async (sessionId, language) => {
   try {
     console.log("Creating terminal with:", { sessionId, language }); // Debug log
@@ -112,6 +132,7 @@ const SessionTerminalService = {
   createProblemSession,
   createTerminal,
   executeCode,
+  updateSession,
   getActiveSession,
   getUserTeam,
 };

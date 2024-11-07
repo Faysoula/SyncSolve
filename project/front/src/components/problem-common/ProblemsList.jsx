@@ -7,8 +7,13 @@ import {
   Chip,
   IconButton,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
-import { User, Clock, Edit } from "lucide-react";
+import { User, Clock, Edit, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { difficultyConfig } from "../../utils/constants";
@@ -39,6 +44,7 @@ const ProblemCard = ({ problem, username }) => {
   const [error, setError] = React.useState("");
   const [activeSession, setActiveSession] = React.useState(null);
   const [teamId, setTeamId] = React.useState(null);
+  const [showSwitchDialog, setShowSwitchDialog] = React.useState(false);
   const isCreator = user?.user_id === problem.created_by;
 
   React.useEffect(() => {
@@ -48,15 +54,13 @@ const ProblemCard = ({ problem, username }) => {
 
         const teamsResponse = await TeamService.getUserTeams(user.user_id);
         const teamMember = teamsResponse.data.teamMembers?.[0];
-
+        
         if (teamMember) {
           setTeamId(teamMember.team_id);
           setIsAdmin(teamMember.role === "admin");
-
+          
           // Get active session for the team
-          const sessionResponse = await SessionTerminalService.getActiveSession(
-            teamMember.team_id
-          );
+          const sessionResponse = await SessionTerminalService.getActiveSession(teamMember.team_id);
           if (sessionResponse && sessionResponse.length > 0) {
             setActiveSession(sessionResponse[0]);
           }
@@ -80,21 +84,13 @@ const ProblemCard = ({ problem, username }) => {
     }
 
     if (isAdmin) {
-      try {
-        // Create new session
-        const sessionResponse =
-          await SessionTerminalService.createProblemSession(
-            teamId,
-            problem.problem_id
-          );
-
-        navigate(
-          `/problems/${problem.problem_id}/session/${sessionResponse.session_id}`
-        );
-      } catch (err) {
-        console.error("Error starting session:", err);
-        setError("Failed to start session");
+      // If admin already has an active session on a different problem
+      if (activeSession && activeSession.problem_id !== problem.problem_id) {
+        setShowSwitchDialog(true);
+        return;
       }
+
+      await startNewSession();
       return;
     }
 
@@ -112,10 +108,36 @@ const ProblemCard = ({ problem, username }) => {
     }
   };
 
-  const canClickProblem =
-    isAdmin || activeSession?.problem_id === problem.problem_id;
+  const startNewSession = async () => {
+    try {
+      const sessionResponse = await SessionTerminalService.createProblemSession(
+        teamId,
+        problem.problem_id
+      );
+      navigate(`/problems/${problem.problem_id}/session/${sessionResponse.session_id}`);
+    } catch (err) {
+      console.error("Error starting session:", err);
+      setError("Failed to start session");
+    }
+  };
+
+  const handleSwitchProblem = async () => {
+    try {
+      // You'll need to implement this endpoint
+      await SessionTerminalService.updateSession(activeSession.session_id, problem.problem_id);
+      navigate(`/problems/${problem.problem_id}/session/${activeSession.session_id}`);
+    } catch (err) {
+      console.error("Error switching problem:", err);
+      setError("Failed to switch problem");
+    } finally {
+      setShowSwitchDialog(false);
+    }
+  };
+
+  const canClickProblem = isAdmin || (activeSession?.problem_id === problem.problem_id);
 
   return (
+  <>
     <Card
       sx={{
         ...styles.problemCard,
@@ -155,27 +177,25 @@ const ProblemCard = ({ problem, username }) => {
                       sx={{ color: "#FAF0CA", fontWeight: 600 }}
                     >
                       {problem.title}
-                      {activeSession?.problem_id === problem.problem_id &&
-                        !isAdmin && (
-                          <Chip
-                            label="Session Active"
-                            size="small"
-                            sx={{
-                              ml: 2,
-                              bgcolor: "rgba(74, 222, 128, 0.1)",
-                              color: "#4ade80",
-                              borderColor: "#4ade80",
-                              border: "1px solid",
-                            }}
-                          />
-                        )}
+                      {activeSession?.problem_id === problem.problem_id && !isAdmin && (
+                        <Chip
+                          label="Session Active"
+                          size="small"
+                          sx={{
+                            ml: 2,
+                            bgcolor: "rgba(74, 222, 128, 0.1)",
+                            color: "#4ade80",
+                            borderColor: "#4ade80",
+                            border: "1px solid",
+                          }}
+                        />
+                      )}
                     </Typography>
                     <Chip
                       label={difficultyConfig[problem.difficulty].label}
                       sx={{
                         color: difficultyConfig[problem.difficulty].color,
-                        bgcolor:
-                          difficultyConfig[problem.difficulty].background,
+                        bgcolor: difficultyConfig[problem.difficulty].background,
                         fontWeight: 600,
                       }}
                     />
@@ -217,8 +237,7 @@ const ProblemCard = ({ problem, username }) => {
                 )}
 
                 <Box>
-                  {problem.metadata?.tags &&
-                  problem.metadata.tags.length > 0 ? (
+                  {problem.metadata?.tags && problem.metadata.tags.length > 0 ? (
                     <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
                       {problem.metadata.tags.map((tag, index) => (
                         <Chip
@@ -251,10 +270,7 @@ const ProblemCard = ({ problem, username }) => {
                 </Box>
               </Stack>
 
-              <Typography
-                variant="body2"
-                sx={{ color: "#FAF0CA", opacity: 0.8 }}
-              >
+              <Typography variant="body2" sx={{ color: "#FAF0CA", opacity: 0.8 }}>
                 {problem.description}
               </Typography>
             </Stack>
@@ -275,7 +291,55 @@ const ProblemCard = ({ problem, username }) => {
         </Stack>
       </Box>
     </Card>
-  );
+
+    <Dialog
+      open={showSwitchDialog}
+      onClose={() => setShowSwitchDialog(false)}
+      PaperProps={{
+        sx: {
+          bgcolor: "#1A1626",
+          color: "#FAF0CA",
+          maxWidth: "400px",
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 1 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <AlertTriangle color="#fbbf24" />
+          <Typography variant="h6">Switch Problem?</Typography>
+        </Stack>
+      </DialogTitle>
+      <DialogContent>
+        <Typography sx={{ color: "#FAF0CA", opacity: 0.9 }}>
+          Your current session will be transferred to "{problem.title}". The previous work 
+          will be saved. Do you want to continue?
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, pt: 0 }}>
+        <Button
+          onClick={() => setShowSwitchDialog(false)}
+          sx={{
+            color: "#FAF0CA",
+            "&:hover": { bgcolor: "rgba(157, 78, 221, 0.1)" },
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSwitchProblem}
+          sx={{
+            bgcolor: "#7B2CBF",
+            color: "#FAF0CA",
+            "&:hover": { bgcolor: "#9D4EDD" },
+          }}
+        >
+          Switch Problem
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </>
+)
 };
 
 const ProblemMetadata = ({ username, date }) => (

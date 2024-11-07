@@ -8,6 +8,7 @@ const {
     getSessionByIdController,
     getSessionByTeamController,
     endSessionController,
+    updateSessionController,
     deleteSessionController,
 } = require('../controllers/sessionController');
 
@@ -21,6 +22,8 @@ router.get('/session/:id', auth, getSessionByIdController);
 router.get("/session/team/:id", auth, getSessionByTeamController);
 
 router.put('/:id/end', auth, endSessionController);
+
+router.put("/:id/updateProblem", auth, updateSessionController);
 
 router.delete('/session/:id/delete', auth, deleteSessionController);
 

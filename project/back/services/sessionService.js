@@ -84,6 +84,26 @@ const getSessionByTeam = async (team_id) => {
   }
 };
 
+const updateSession = async (session_id, problem_id) => {
+    try {
+        const session = await Session.findByPk(session_id);
+        if (!session) {
+            throw new Error("Session not found");
+        }
+
+        const problem = await getProblemById(problem_id);
+        if (!problem) {
+            throw new Error("Problem not found");
+        }
+
+        session.problem_id = problem_id;
+        await session.save();
+        return session;
+    } catch (error) {
+        throw new Error(`Error updating session: ${error.message}`);
+    }
+}
+
 
 const endSession = async (session_id) => {
     try {
@@ -120,5 +140,6 @@ module.exports = {
     getSessionById,
     getSessionByTeam,
     endSession,
+    updateSession,
     deleteSession,
 };
