@@ -114,7 +114,7 @@ const TeamDropdown = ({ onCreateTeam }) => {
         }
       }
 
-      // Now remove the leaving member
+      // Now remove the mmemebr whos leaving
       await TeamService.removeTeamMember(membershipToRemove.team_member_id);
 
       // If this was the last member, the team will be automatically deleted
