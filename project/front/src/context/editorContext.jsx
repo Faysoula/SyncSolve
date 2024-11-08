@@ -7,6 +7,14 @@ import React, {
 } from "react";
 import { loader } from "@monaco-editor/react";
 import { importThemes } from "../utils/editorThemes";
+import { useParams } from "react-router-dom";
+import SessionTerminalService from "../Services/sessionService";
+
+const LANGUAGE_MAPPING = {
+  cpp: "Cpp",
+  python: "Python",
+  java: "Java",
+};
 
 const STARTING_CODE_TEMPLATES = {
   python: `def solution():
@@ -48,33 +56,68 @@ int main() {
 const EditorContext = createContext(null);
 
 export const EditorProvider = ({ children }) => {
+  const { sessionId } = useParams();
   const [codeStates, setCodeStates] = useState({
     python: STARTING_CODE_TEMPLATES.python,
     cpp: STARTING_CODE_TEMPLATES.cpp,
     java: STARTING_CODE_TEMPLATES.java,
   });
 
-  const [language, setLanguage] = useState("cpp");
+  const [language, setLanguage] = useState("");
   const [theme, setTheme] = useState("vs-dark");
   const [testResults, setTestResults] = useState(null);
+  const [terminals, setTerminals] = useState({});
+  const [currentTerminal, setCurrentTerminal] = useState(null);
+  const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize Monaco and themes
+  const createTerminalForLanguage = async (lang) => {
+    if (!lang) return null;
+    try {
+      // Check if we already have a terminal for this language
+      if (terminals[lang] && terminals[lang].active) {
+        console.log(`Reusing existing terminal for ${lang}:`, terminals[lang]);
+        setCurrentTerminal(terminals[lang]);
+        return terminals[lang];
+      }
+
+      const terminalLanguage = LANGUAGE_MAPPING[lang];
+      if (!terminalLanguage) {
+        throw new Error(`Unsupported language: ${lang}`);
+      }
+
+      console.log(`Creating new terminal for ${lang}`);
+      const response = await SessionTerminalService.createTerminal(
+        sessionId,
+        terminalLanguage
+      );
+
+      const newTerminals = {
+        ...terminals,
+        [lang]: response,
+      };
+      setTerminals(newTerminals);
+      setCurrentTerminal(response);
+      return response;
+    } catch (err) {
+      console.error("Failed to create terminal:", err);
+      setError(err.message);
+      return null;
+    }
+  };
+
+  // Initialize terminal only once on mount
   useEffect(() => {
-    const initializeMonaco = async () => {
-      const monaco = await loader.init();
-      const themes = await importThemes();
-
-      // Register all themes with Monaco
-      Object.entries(themes).forEach(([themeName, themeData]) => {
-        monaco.editor.defineTheme(themeName, themeData);
+    if (sessionId && !isInitialized) {
+      createTerminalForLanguage(language).then(() => {
+        setIsInitialized(true);
       });
-    };
-
-    initializeMonaco();
-  }, []);
+    }
+  }, [sessionId, isInitialized]);
 
   const updateCode = useCallback(
     (newCode) => {
+      if (!language) return;
       setCodeStates((prev) => ({
         ...prev,
         [language]: newCode,
@@ -83,12 +126,27 @@ export const EditorProvider = ({ children }) => {
     [language]
   );
 
-  const updateLanguage = useCallback((newLanguage) => {
-    setLanguage(newLanguage);
-  }, []);
+  const updateLanguage = useCallback(
+    async (newLanguage) => {
+      if (newLanguage === language) return;
+
+      try {
+        // Only create a new terminal if we don't have an active one for this language
+        if (!terminals[newLanguage] || !terminals[newLanguage].active) {
+          await createTerminalForLanguage(newLanguage);
+        } else {
+          setCurrentTerminal(terminals[newLanguage]);
+        }
+        setLanguage(newLanguage);
+      } catch (err) {
+        console.error("Error updating language:", err);
+        setError(err.message);
+      }
+    },
+    [language, terminals]
+  );
 
   const updateTheme = useCallback((newTheme) => {
-    // Set the theme for the editor
     loader.init().then((monaco) => {
       monaco.editor.setTheme(newTheme);
       setTheme(newTheme);
@@ -97,34 +155,33 @@ export const EditorProvider = ({ children }) => {
 
   const runTests = useCallback(
     async (problemId) => {
+      if (!currentTerminal) {
+        throw new Error("No active terminal session");
+      }
+
       try {
         const currentCode = codeStates[language];
-        console.log(
-          "Running tests for problem:",
-          problemId,
-          "with code:",
-          currentCode
+        const executionResponse = await SessionTerminalService.executeCode(
+          currentCode,
+          currentTerminal.terminal_id
         );
 
-        setTestResults({
-          results: [
-            { passed: true, output: "[0,1]" },
-            { passed: false, output: "[1,3]" },
-          ],
-        });
+        setTestResults(executionResponse.runResult);
       } catch (error) {
         console.error("Test execution failed:", error);
         throw error;
       }
     },
-    [language, codeStates]
+    [language, codeStates, currentTerminal]
   );
 
   const value = {
-    code: codeStates[language],
+    code: language ? codeStates[language] : "",
     language,
     theme,
     testResults,
+    currentTerminal,
+    error,
     updateCode,
     updateLanguage,
     updateTheme,
