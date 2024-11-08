@@ -3,6 +3,27 @@ import { getTokenBearer } from "../utils/token";
 
 const createProblemSession = async (teamId, problemId) => {
   try {
+    // First check if there's already an active session for this problem and team
+    const existingSessions = await http.get(
+      `/sessions/session/team/${teamId}`,
+      {
+        headers: {
+          Authorization: getTokenBearer(),
+        },
+      }
+    );
+
+    // Find an active session for this specific problem
+    const existingSession = existingSessions.data.find(
+      (session) => session.problem_id === Number(problemId) && !session.ended_at
+    );
+
+    // If we found an existing active session for this problem, return it
+    if (existingSession) {
+      return existingSession;
+    }
+
+    // If no existing session found, create a new one
     const response = await http.post(
       "/sessions/CreateSession",
       {
@@ -29,7 +50,9 @@ const getActiveSession = async (teamId) => {
         Authorization: getTokenBearer(),
       },
     });
-    return response.data;
+    // Filter to only return active sessions (those without an ended_at date)
+    const activeSessions = response.data.filter((session) => !session.ended_at);
+    return activeSessions;
   } catch (err) {
     console.error("Error getting active session:", err);
     throw err;
@@ -53,7 +76,7 @@ const getUserTeam = async (userId) => {
 const updateSession = async (sessionId, problemId) => {
   try {
     const response = await http.put(
-      `/sessions/${sessionId}/updateProblem`,
+      `/sessions/${sessionId}/updateSesh`,
       {
         problem_id: Number(problemId),
       },
@@ -68,7 +91,27 @@ const updateSession = async (sessionId, problemId) => {
     console.error("Session update error:", err);
     throw err;
   }
-}
+};
+
+const endSession = async (sessionId) => {
+  try {
+    const response = await http.put(
+      `/sessions/${sessionId}/end`,
+      {},
+      {
+        headers: {
+          Authorization: getTokenBearer(),
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Session end error:", err);
+    throw err;
+  }
+};
+
+//terminal things
 
 const createTerminal = async (sessionId, language) => {
   try {
@@ -127,12 +170,12 @@ const executeCode = async (userId, code, terminalId) => {
   }
 };
 
-
 const SessionTerminalService = {
   createProblemSession,
   createTerminal,
   executeCode,
   updateSession,
+  endSession,
   getActiveSession,
   getUserTeam,
 };

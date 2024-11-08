@@ -23,7 +23,7 @@ router.get("/session/team/:id", auth, getSessionByTeamController);
 
 router.put('/:id/end', auth, endSessionController);
 
-router.put("/:id/updateProblem", auth, updateSessionController);
+router.put("/:id/updateSesh", auth, updateSessionController);
 
 router.delete('/session/:id/delete', auth, deleteSessionController);
 

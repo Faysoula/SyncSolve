@@ -75,38 +75,54 @@ const ProblemCard = ({ problem, username }) => {
     checkStatus();
   }, [user]);
 
-  const handleProblemClick = async (e) => {
-    e.preventDefault();
+const handleProblemClick = async (e) => {
+  e.preventDefault();
 
-    if (!teamId) {
-      setError("You need to be in a team first!");
-      return;
-    }
+  if (!teamId) {
+    setError("You need to be in a team first!");
+    return;
+  }
 
-    if (isAdmin) {
-      // If admin already has an active session on a different problem
+  if (isAdmin) {
+    try {
+      // Create or get existing session
+      const sessionResponse = await SessionTerminalService.createProblemSession(
+        teamId,
+        problem.problem_id
+      );
+
+      // If we have an active session for a different problem, end it
       if (activeSession && activeSession.problem_id !== problem.problem_id) {
-        setShowSwitchDialog(true);
-        return;
+        await SessionTerminalService.endSession(activeSession.session_id);
       }
 
-      await startNewSession();
-      return;
+      navigate(
+        `/problems/${problem.problem_id}/session/${sessionResponse.session_id}`
+      );
+    } catch (err) {
+      console.error("Error handling session:", err);
+      setError("Failed to manage session");
     }
+    return;
+  }
 
-    // Handle member clicks
-    if (activeSession) {
-      if (activeSession.problem_id === problem.problem_id) {
-        navigate(
-          `/problems/${activeSession.problem_id}/session/${activeSession.session_id}`
-        );
-      } else {
-        setError("Your team needs you somewhere else!");
-      }
+  // Handle member clicks
+  if (activeSession) {
+    const currentProblemSession = activeSession.find(
+      (session) => session.problem_id === problem.problem_id
+    );
+
+    if (currentProblemSession) {
+      navigate(
+        `/problems/${currentProblemSession.problem_id}/session/${currentProblemSession.session_id}`
+      );
     } else {
-      setError("Wait for admin to start a session");
+      setError("Your team needs you somewhere else!");
     }
-  };
+  } else {
+    setError("Wait for admin to start a session");
+  }
+};
 
   const startNewSession = async () => {
     try {
