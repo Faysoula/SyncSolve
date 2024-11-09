@@ -1,10 +1,27 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, memo, useCallback } from "react";
 import { Box, Stack, Button } from "@mui/material";
 import Editor from "@monaco-editor/react";
-import { Play,Save } from "lucide-react";
+import { Play, Save } from "lucide-react";
 import { useEditor } from "../../context/editorContext";
 import LanguageSelector from "./LanguageSelector";
 import ThemeSelector from "./ThemeSelector";
+
+// Create a memoized Editor component to prevent unnecessary re-renders
+const CodeEditor = memo(
+  ({ language, theme, code, onChange, onMount, options }) => (
+    <Editor
+      height="100%"
+      language={language}
+      theme={theme}
+      value={code}
+      onChange={onChange}
+      onMount={onMount}
+      options={options}
+    />
+  )
+);
+
+CodeEditor.displayName = "CodeEditor";
 
 const EditorPanel = ({ onRunTests }) => {
   const {
@@ -22,7 +39,8 @@ const EditorPanel = ({ onRunTests }) => {
   const decorationsRef = useRef([]);
   const editorRef = useRef(null);
 
-  useEffect(() => {
+  // Memoize the updateDecorations function
+  const updateDecorations = useCallback(() => {
     if (editorRef.current) {
       const editor = editorRef.current;
       decorationsRef.current = editor.deltaDecorations(
@@ -47,10 +65,57 @@ const EditorPanel = ({ onRunTests }) => {
     }
   }, [collaborators]);
 
-  const handleEditorMount = (editor) => {
-    editorRef.current = editor;
-    handleEditorDidMount(editor);
+  // Use effect for cursor updates
+  useEffect(() => {
+    updateDecorations();
+  }, [updateDecorations]);
+
+  const handleEditorMount = useCallback(
+    (editor) => {
+      editorRef.current = editor;
+      handleEditorDidMount(editor);
+    },
+    [handleEditorDidMount]
+  );
+
+  // Memoize editor options
+  const editorOptions = {
+    minimap: { enabled: false },
+    fontSize: 13,
+    lineHeight: 1.5,
+    padding: { top: 8, bottom: 8 },
+    scrollBeyondLastLine: false,
+    automaticLayout: true,
+    tabSize: 2,
+    wordWrap: "on",
+    contextmenu: true,
+    smoothScrolling: true,
+    cursorBlinking: "smooth",
+    cursorSmoothCaretAnimation: true,
+    folding: true,
+    lineNumbers: "on",
+    lineNumbersMinChars: -1,
+    renderLineHighlight: "line",
+    fontFamily: "JetBrains Mono, monospace",
+    roundedSelection: false,
+    renderIndentGuides: true,
+    colorDecorators: true,
+    bracketPairColorization: {
+      enabled: true,
+    },
+    "semanticHighlighting.enabled": true,
+    formatOnPaste: true,
+    formatOnType: true,
   };
+
+  // Memoize button handlers
+  const handleSave = useCallback(() => {
+    saveCodeSnapshot();
+  }, [saveCodeSnapshot]);
+
+  const handleRunTests = useCallback(() => {
+    onRunTests();
+  }, [onRunTests]);
 
   return (
     <Stack
@@ -154,7 +219,7 @@ const EditorPanel = ({ onRunTests }) => {
         {/* Right side controls */}
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button
-            onClick={saveCodeSnapshot}
+            onClick={handleSave}
             variant="outlined"
             disabled={isSaving || !language}
             startIcon={<Save size={16} />}
@@ -171,7 +236,7 @@ const EditorPanel = ({ onRunTests }) => {
           </Button>
 
           <Button
-            onClick={onRunTests}
+            onClick={handleRunTests}
             variant="contained"
             startIcon={<Play size={16} />}
             sx={{
@@ -195,45 +260,18 @@ const EditorPanel = ({ onRunTests }) => {
       </Box>
 
       <Box sx={{ flex: 1, position: "relative" }}>
-        <Editor
-          height="100%"
+        <CodeEditor
           language={language}
           theme={theme}
-          value={code}
+          code={code}
           onChange={updateCode}
           onMount={handleEditorMount}
-          options={{
-            minimap: { enabled: false },
-            fontSize: 13,
-            lineHeight: 1.5,
-            padding: { top: 8, bottom: 8 },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: 2,
-            wordWrap: "on",
-            contextmenu: true,
-            smoothScrolling: true,
-            cursorBlinking: "smooth",
-            cursorSmoothCaretAnimation: true,
-            folding: true,
-            lineNumbers: "on",
-            lineNumbersMinChars: -1,
-            renderLineHighlight: "line",
-            fontFamily: "JetBrains Mono, monospace",
-            roundedSelection: false,
-            renderIndentGuides: true,
-            colorDecorators: true,
-            bracketPairColorization: {
-              enabled: true,
-            },
-            "semanticHighlighting.enabled": true,
-            formatOnPaste: true,
-            formatOnType: true,
-          }}
+          options={editorOptions}
         />
       </Box>
     </Stack>
   );
 };
 
-export default EditorPanel;
+
+export default memo(EditorPanel);

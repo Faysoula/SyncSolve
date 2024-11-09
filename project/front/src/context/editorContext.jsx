@@ -7,7 +7,6 @@ import React, {
   useRef,
 } from "react";
 import { loader } from "@monaco-editor/react";
-import { importThemes } from "../utils/editorThemes";
 import { useParams } from "react-router-dom";
 import { useAuth } from "./authContext";
 import SessionTerminalService from "../Services/sessionService";
@@ -81,24 +80,49 @@ export const EditorProvider = ({ children }) => {
   const editorRef = useRef(null);
   const isLocalChange = useRef(false);
 
+  const [sharedCodeStates, setSharedCodeStates] = useState({
+    python: STARTING_CODE_TEMPLATES.python,
+    cpp: STARTING_CODE_TEMPLATES.cpp,
+    java: STARTING_CODE_TEMPLATES.java,
+  });
+
   useEffect(() => {
     if (sessionId && problemId && user) {
       socketService.connect();
       socketService.joinRoom(sessionId, problemId, user.user_id);
 
-      // Listen for code changes from other users
-      socketService.onCodeChange(({ code, language, userId }) => {
+      socketService.onCodeChange(({ code, language: codeLang, userId }) => {
         if (userId !== user.user_id) {
-          isLocalChange.current = true;
-          setCodeStates((prev) => ({
-            ...prev,
-            [language]: code,
-          }));
-          isLocalChange.current = false;
+          const editor = editorRef.current;
+          if (editor && language === codeLang) {
+            isLocalChange.current = true;
+
+            const currentPosition = editor.getPosition();
+            const currentSelection = editor.getSelection();
+
+            setCodeStates((prev) => ({
+              ...prev,
+              [codeLang]: code,
+            }));
+
+            setTimeout(() => {
+              if (currentPosition) {
+                editor.setPosition(currentPosition);
+              }
+              if (currentSelection) {
+                editor.setSelection(currentSelection);
+              }
+              isLocalChange.current = false;
+            }, 0);
+          } else {
+            setCodeStates((prev) => ({
+              ...prev,
+              [codeLang]: code,
+            }));
+          }
         }
       });
 
-      // Listen for cursor updates
       socketService.onCursorMove(({ position, userId }) => {
         if (userId !== user.user_id) {
           setCollaborators((prev) => {
@@ -117,19 +141,27 @@ export const EditorProvider = ({ children }) => {
         socketService.disconnect();
       };
     }
-  }, [sessionId, problemId, user]);
+  }, [sessionId, problemId, user, language]);
 
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
+
+    let cursorUpdateTimeout;
     editor.onDidChangeCursorPosition((e) => {
       if (!isLocalChange.current) {
-        socketService.emitCursorMove(
-          {
-            lineNumber: e.position.lineNumber,
-            column: e.position.column,
-          },
-          user.user_id
-        );
+        if (cursorUpdateTimeout) {
+          clearTimeout(cursorUpdateTimeout);
+        }
+
+        cursorUpdateTimeout = setTimeout(() => {
+          socketService.emitCursorMove(
+            {
+              lineNumber: e.position.lineNumber,
+              column: e.position.column,
+            },
+            user.user_id
+          );
+        }, 50);
       }
     });
   };
@@ -140,49 +172,81 @@ export const EditorProvider = ({ children }) => {
       cpp: STARTING_CODE_TEMPLATES.cpp,
       java: STARTING_CODE_TEMPLATES.java,
     });
+    setSharedCodeStates({
+      python: STARTING_CODE_TEMPLATES.python,
+      cpp: STARTING_CODE_TEMPLATES.cpp,
+      java: STARTING_CODE_TEMPLATES.java,
+    });
   }, [problemId]);
 
   useEffect(() => {
     const loadSnapshots = async () => {
-      if (!sessionId || !language || !problemId) return;
+      if (!sessionId || !problemId) return;
 
       try {
         const snapshots = await SessionSnapshotService.getSnapshotsBySessionId(
           sessionId
         );
-        const relevantSnapshots = snapshots.filter((snap) => {
+        const latestSnapshots = {};
+
+        for (const snapshot of snapshots) {
           try {
-            const parsedSnapshot = JSON.parse(snap.code_snapshot);
-            return (
-              parsedSnapshot.language === language &&
-              parsedSnapshot.problemId === problemId
-            ); // Filter by both language and problemId
-          } catch (e) {
-            return false;
+            let parsedSnapshot;
+            try {
+              parsedSnapshot = JSON.parse(snapshot.code_snapshot);
+            } catch (error) {
+              console.log("Using legacy snapshot format");
+              parsedSnapshot = {
+                code: snapshot.code_snapshot,
+                language: snapshot.language,
+                problemId: snapshot.problem_id,
+              };
+            }
+
+            const snapshotLang = parsedSnapshot.language;
+
+            if (parsedSnapshot.problemId === problemId) {
+              if (
+                !latestSnapshots[snapshotLang] ||
+                new Date(snapshot.created_at) >
+                  new Date(latestSnapshots[snapshotLang].created_at)
+              ) {
+                let codeContent = parsedSnapshot.code;
+                if (
+                  typeof codeContent === "string" &&
+                  codeContent.startsWith('"')
+                ) {
+                  try {
+                    codeContent = JSON.parse(codeContent);
+                  } catch (e) {
+                    console.log("Using raw code string");
+                  }
+                }
+
+                latestSnapshots[snapshotLang] = {
+                  code: codeContent,
+                  created_at: snapshot.created_at,
+                };
+              }
+            }
+          } catch (err) {
+            console.error("Error processing snapshot:", err);
+            continue;
           }
+        }
+
+        setCodeStates((prev) => {
+          const newStates = { ...prev };
+          Object.entries(latestSnapshots).forEach(([lang, data]) => {
+            if (data.code) {
+              newStates[lang] = data.code;
+            }
+          });
+          return newStates;
         });
 
-        // Get the most recent snapshot for this problem and language
-        if (relevantSnapshots.length > 0) {
-          const latestSnapshot = relevantSnapshots.reduce((latest, current) => {
-            return new Date(current.created_at) > new Date(latest.created_at)
-              ? current
-              : latest;
-          });
-
-          const parsedSnapshot = JSON.parse(latestSnapshot.code_snapshot);
-          setCodeStates((prev) => ({
-            ...prev,
-            [language]: parsedSnapshot.code,
-          }));
-          setLastSaved(new Date(latestSnapshot.created_at));
-        } else {
-          // If no snapshot found, set to template code
-          setCodeStates((prev) => ({
-            ...prev,
-            [language]: STARTING_CODE_TEMPLATES[language],
-          }));
-          setLastSaved(null);
+        if (language && latestSnapshots[language]) {
+          setLastSaved(new Date(latestSnapshots[language].created_at));
         }
       } catch (err) {
         console.error("Failed to load snapshots:", err);
@@ -190,7 +254,7 @@ export const EditorProvider = ({ children }) => {
     };
 
     loadSnapshots();
-  }, [sessionId, language, problemId]);
+  }, [sessionId, problemId, language]);
 
   const saveCodeSnapshot = async () => {
     if (!sessionId || !language || !problemId) {
@@ -204,7 +268,7 @@ export const EditorProvider = ({ children }) => {
       setIsSaving(true);
       const snapshotData = {
         language,
-        problemId, // Include problemId in snapshot data
+        problemId,
         code: codeStates[language],
         timestamp: new Date().toISOString(),
       };
@@ -226,7 +290,6 @@ export const EditorProvider = ({ children }) => {
   const createTerminalForLanguage = async (lang) => {
     if (!lang) return null;
     try {
-      // Check if we already have a terminal for this language
       if (terminals[lang] && terminals[lang].active) {
         console.log(`Reusing existing terminal for ${lang}:`, terminals[lang]);
         setCurrentTerminal(terminals[lang]);
@@ -258,7 +321,6 @@ export const EditorProvider = ({ children }) => {
     }
   };
 
-  // Initialize terminal only once on mount
   useEffect(() => {
     if (sessionId && !isInitialized) {
       createTerminalForLanguage(language).then(() => {
@@ -269,14 +331,29 @@ export const EditorProvider = ({ children }) => {
 
   const updateCode = useCallback(
     (newCode) => {
-      if (!isLocalChange.current) {
+      if (!isLocalChange.current && language) {
+        isLocalChange.current = true;
+
+        const editor = editorRef.current;
+        const currentPosition = editor?.getPosition();
+        const currentSelection = editor?.getSelection();
+
         setCodeStates((prev) => ({
           ...prev,
           [language]: newCode,
         }));
 
-        // Emit code change to other users
         socketService.emitCodeChange(newCode, language, user.user_id);
+
+        setTimeout(() => {
+          if (editor && currentPosition) {
+            editor.setPosition(currentPosition);
+            if (currentSelection) {
+              editor.setSelection(currentSelection);
+            }
+          }
+          isLocalChange.current = false;
+        }, 0);
       }
     },
     [language, user]
@@ -287,52 +364,8 @@ export const EditorProvider = ({ children }) => {
       if (newLanguage === language) return;
 
       try {
-        // Set language first
         setLanguage(newLanguage);
 
-        // If there's a problemId, try to load existing snapshot
-        if (problemId && sessionId) {
-          const snapshots =
-            await SessionSnapshotService.getSnapshotsBySessionId(sessionId);
-          const relevantSnapshots = snapshots.filter((snap) => {
-            try {
-              const parsedSnapshot = JSON.parse(snap.code_snapshot);
-              return (
-                parsedSnapshot.language === newLanguage &&
-                parsedSnapshot.problemId === problemId
-              );
-            } catch (e) {
-              return false;
-            }
-          });
-
-          if (relevantSnapshots.length > 0) {
-            const latestSnapshot = relevantSnapshots.reduce(
-              (latest, current) => {
-                return new Date(current.created_at) >
-                  new Date(latest.created_at)
-                  ? current
-                  : latest;
-              }
-            );
-
-            const parsedSnapshot = JSON.parse(latestSnapshot.code_snapshot);
-            setCodeStates((prev) => ({
-              ...prev,
-              [newLanguage]: parsedSnapshot.code,
-            }));
-            setLastSaved(new Date(latestSnapshot.created_at));
-          } else {
-            // If no snapshot found, use template code
-            setCodeStates((prev) => ({
-              ...prev,
-              [newLanguage]: STARTING_CODE_TEMPLATES[newLanguage],
-            }));
-            setLastSaved(null);
-          }
-        }
-
-        // Create new terminal if needed
         if (!terminals[newLanguage] || !terminals[newLanguage].active) {
           await createTerminalForLanguage(newLanguage);
         } else {
@@ -343,7 +376,7 @@ export const EditorProvider = ({ children }) => {
         setError(err.message);
       }
     },
-    [language, terminals, problemId, sessionId]
+    [language, terminals]
   );
 
   const updateTheme = useCallback((newTheme) => {
@@ -353,53 +386,50 @@ export const EditorProvider = ({ children }) => {
     });
   }, []);
 
-  const runTests = useCallback(
-    async () => {
-      if (!currentTerminal) {
-        setError("No active terminal session");
-        return;
-      }
+  const runTests = useCallback(async () => {
+    if (!currentTerminal) {
+      setError("No active terminal session");
+      return;
+    }
 
-      if (!language) {
-        setError("Please select a programming language");
-        return;
-      }
+    if (!language) {
+      setError("Please select a programming language");
+      return;
+    }
 
-      if (!user) {
-        setError("You must be logged in to run tests");
-        return;
-      }
+    if (!user) {
+      setError("You must be logged in to run tests");
+      return;
+    }
 
-      try {
-        setTestResults({ isLoading: true, results: null });
+    try {
+      setTestResults({ isLoading: true, results: null });
 
-        const executionResponse = await SessionTerminalService.executeCode(
-          user.user_id,
-          codeStates[language],
-          currentTerminal.terminal_id
-        );
+      const executionResponse = await SessionTerminalService.executeCode(
+        user.user_id,
+        codeStates[language],
+        currentTerminal.terminal_id
+      );
 
-        const { execution, runResult } = executionResponse;
+      const { execution, runResult } = executionResponse;
 
-        setTestResults({
-          isLoading: false,
-          allPassed: runResult.allPassed,
-          results: runResult.results,
-          executionId: execution.execution_id,
-        });
-      } catch (error) {
-        console.error("Test execution failed:", error);
-        setTestResults({
-          isLoading: false,
-          error: error.message || "Failed to execute tests",
-        });
-      }
-    },
-    [language, codeStates, currentTerminal, user] // Add user to dependencies
-  );
+      setTestResults({
+        isLoading: false,
+        allPassed: runResult.allPassed,
+        results: runResult.results,
+        executionId: execution.execution_id,
+      });
+    } catch (error) {
+      console.error("Test execution failed:", error);
+      setTestResults({
+        isLoading: false,
+        error: error.message || "Failed to execute tests",
+      });
+    }
+  }, [language, codeStates, currentTerminal, user]);
 
   const value = {
-    code: codeStates[language],
+    code: codeStates[language] || STARTING_CODE_TEMPLATES[language],
     language,
     theme,
     testResults,
