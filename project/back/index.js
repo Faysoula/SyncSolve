@@ -3,6 +3,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const fs = require("fs");
+const initializeSocket = require("./utils/socket");
+const http = require("http");
 const { testConnection } = require("./config/db");
 require("dotenv").config();
 
@@ -29,9 +31,18 @@ const uploadRoutes = require("./routes/uploadRoute");
 
 const app = express();
 
+const server = http.createServer(app);
+
+initializeSocket(server);
+
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
@@ -63,7 +74,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`====================================`);
   console.log(`Server running on port ${PORT}`);
   testConnection();

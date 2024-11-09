@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { loader } from "@monaco-editor/react";
 import { importThemes } from "../utils/editorThemes";
@@ -11,6 +12,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "./authContext";
 import SessionTerminalService from "../Services/sessionService";
 import SessionSnapshotService from "../Services/SessionSnapshotService";
+import socketService from "../Services/socketService";
 
 const LANGUAGE_MAPPING = {
   cpp: "Cpp",
@@ -75,6 +77,62 @@ export const EditorProvider = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [collaborators, setCollaborators] = useState(new Map());
+  const editorRef = useRef(null);
+  const isLocalChange = useRef(false);
+
+  useEffect(() => {
+    if (sessionId && problemId && user) {
+      socketService.connect();
+      socketService.joinRoom(sessionId, problemId, user.user_id);
+
+      // Listen for code changes from other users
+      socketService.onCodeChange(({ code, language, userId }) => {
+        if (userId !== user.user_id) {
+          isLocalChange.current = true;
+          setCodeStates((prev) => ({
+            ...prev,
+            [language]: code,
+          }));
+          isLocalChange.current = false;
+        }
+      });
+
+      // Listen for cursor updates
+      socketService.onCursorMove(({ position, userId }) => {
+        if (userId !== user.user_id) {
+          setCollaborators((prev) => {
+            const newMap = new Map(prev);
+            const collaborator = newMap.get(userId) || {};
+            newMap.set(userId, {
+              ...collaborator,
+              cursor: position,
+            });
+            return newMap;
+          });
+        }
+      });
+
+      return () => {
+        socketService.disconnect();
+      };
+    }
+  }, [sessionId, problemId, user]);
+
+  const handleEditorDidMount = (editor) => {
+    editorRef.current = editor;
+    editor.onDidChangeCursorPosition((e) => {
+      if (!isLocalChange.current) {
+        socketService.emitCursorMove(
+          {
+            lineNumber: e.position.lineNumber,
+            column: e.position.column,
+          },
+          user.user_id
+        );
+      }
+    });
+  };
 
   useEffect(() => {
     setCodeStates({
@@ -211,13 +269,17 @@ export const EditorProvider = ({ children }) => {
 
   const updateCode = useCallback(
     (newCode) => {
-      if (!language) return;
-      setCodeStates((prev) => ({
-        ...prev,
-        [language]: newCode,
-      }));
+      if (!isLocalChange.current) {
+        setCodeStates((prev) => ({
+          ...prev,
+          [language]: newCode,
+        }));
+
+        // Emit code change to other users
+        socketService.emitCodeChange(newCode, language, user.user_id);
+      }
     },
-    [language]
+    [language, user]
   );
 
   const updateLanguage = useCallback(
@@ -350,6 +412,8 @@ export const EditorProvider = ({ children }) => {
     updateTheme,
     runTests,
     saveCodeSnapshot,
+    collaborators,
+    handleEditorDidMount,
   };
 
   return (

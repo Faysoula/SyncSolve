@@ -1,7 +1,7 @@
-import React from "react";
-import { Box, Stack, Button, Tooltip } from "@mui/material";
+import React, { useRef, useEffect } from "react";
+import { Box, Stack, Button } from "@mui/material";
 import Editor from "@monaco-editor/react";
-import { Play, Save } from "lucide-react";
+import { Play,Save } from "lucide-react";
 import { useEditor } from "../../context/editorContext";
 import LanguageSelector from "./LanguageSelector";
 import ThemeSelector from "./ThemeSelector";
@@ -15,7 +15,42 @@ const EditorPanel = ({ onRunTests }) => {
     saveCodeSnapshot,
     isSaving,
     lastSaved,
+    handleEditorDidMount,
+    collaborators,
   } = useEditor();
+
+  const decorationsRef = useRef([]);
+  const editorRef = useRef(null);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const editor = editorRef.current;
+      decorationsRef.current = editor.deltaDecorations(
+        decorationsRef.current,
+        Array.from(collaborators.values())
+          .filter((c) => c.cursor)
+          .map((collaborator, index) => ({
+            range: {
+              startLineNumber: collaborator.cursor.lineNumber,
+              startColumn: collaborator.cursor.column,
+              endLineNumber: collaborator.cursor.lineNumber,
+              endColumn: collaborator.cursor.column + 1,
+            },
+            options: {
+              className: `collaborator-cursor cursor-${index}`,
+              hoverMessage: { value: `Collaborator ${index + 1}` },
+              beforeContentClassName: `cursor-${index}-before`,
+              afterContentClassName: `cursor-${index}-after`,
+            },
+          }))
+      );
+    }
+  }, [collaborators]);
+
+  const handleEditorMount = (editor) => {
+    editorRef.current = editor;
+    handleEditorDidMount(editor);
+  };
 
   return (
     <Stack
@@ -26,6 +61,64 @@ const EditorPanel = ({ onRunTests }) => {
         position: "relative",
       }}
     >
+      <style>
+        {`
+          .collaborator-cursor {
+            background: transparent !important;
+            border-left: 2px solid;
+            width: 0 !important;
+          }
+          .cursor-0-before { border-color: #ff0000; }
+          .cursor-1-before { border-color: #00ff00; }
+          .cursor-2-before { border-color: #0000ff; }
+          .cursor-3-before { border-color: #ffff00; }
+          
+          .cursor-0-after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            padding: 2px 4px;
+            background: #ff0000;
+            color: white;
+            border-radius: 3px;
+            z-index: 1000;
+          }
+          .cursor-1-after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            padding: 2px 4px;
+            background: #00ff00;
+            color: white;
+            border-radius: 3px;
+            z-index: 1000;
+          }
+          .cursor-2-after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            padding: 2px 4px;
+            background: #0000ff;
+            color: white;
+            border-radius: 3px;
+            z-index: 1000;
+          }
+          .cursor-3-after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+            padding: 2px 4px;
+            background: #ffff00;
+            color: black;
+            border-radius: 3px;
+            z-index: 1000;
+          }
+        `}
+      </style>
       <Box
         sx={{
           display: "flex",
@@ -46,17 +139,15 @@ const EditorPanel = ({ onRunTests }) => {
           <LanguageSelector />
           <ThemeSelector />
           {lastSaved && (
-            <Tooltip title={`Last saved: ${lastSaved.toLocaleTimeString()}`}>
-              <Box
-                sx={{
-                  fontSize: "12px",
-                  color: "#9D4EDD",
-                  opacity: 0.8,
-                }}
-              >
-                Saved
-              </Box>
-            </Tooltip>
+            <Box
+              sx={{
+                fontSize: "12px",
+                color: "#9D4EDD",
+                opacity: 0.8,
+              }}
+            >
+              Last saved: {new Date(lastSaved).toLocaleTimeString()}
+            </Box>
           )}
         </Box>
 
@@ -110,6 +201,7 @@ const EditorPanel = ({ onRunTests }) => {
           theme={theme}
           value={code}
           onChange={updateCode}
+          onMount={handleEditorMount}
           options={{
             minimap: { enabled: false },
             fontSize: 13,
