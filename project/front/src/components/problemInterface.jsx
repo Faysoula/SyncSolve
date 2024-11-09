@@ -123,7 +123,7 @@ const ProblemContent = () => {
       sx={{
         display: "grid",
         gridTemplateColumns: "380px 1fr",
-        gridTemplateRows: "1fr 200px",
+        gridTemplateRows: "1fr 400px",
         gap: 1.5,
         height: "100vh",
         p: 1.5,
