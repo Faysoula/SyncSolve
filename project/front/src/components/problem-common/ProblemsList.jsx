@@ -84,6 +84,10 @@ const handleProblemClick = async (e) => {
   }
 
   if (isAdmin) {
+    if (activeSession && activeSession.problem_id !== problem.problem_id) {
+      setShowSwitchDialog(true);
+      return;
+    }
     try {
       // Create or get existing session
       const sessionResponse = await SessionTerminalService.createProblemSession(
@@ -328,7 +332,7 @@ const handleProblemClick = async (e) => {
       <DialogContent>
         <Typography sx={{ color: "#FAF0CA", opacity: 0.9 }}>
           Your current session will be transferred to "{problem.title}". The previous work 
-          will be saved. Do you want to continue?
+          wont be saved but were woeking on it. Do you want to continue?
         </Typography>
       </DialogContent>
       <DialogActions sx={{ p: 2, pt: 0 }}>

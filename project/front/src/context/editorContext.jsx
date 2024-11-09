@@ -8,6 +8,7 @@ import React, {
 import { loader } from "@monaco-editor/react";
 import { importThemes } from "../utils/editorThemes";
 import { useParams } from "react-router-dom";
+import { useAuth } from "./authContext";
 import SessionTerminalService from "../Services/sessionService";
 
 const LANGUAGE_MAPPING = {
@@ -57,6 +58,7 @@ const EditorContext = createContext(null);
 
 export const EditorProvider = ({ children }) => {
   const { sessionId } = useParams();
+  const { user } = useAuth();
   const [codeStates, setCodeStates] = useState({
     python: STARTING_CODE_TEMPLATES.python,
     cpp: STARTING_CODE_TEMPLATES.cpp,
@@ -154,25 +156,48 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const runTests = useCallback(
-    async (problemId) => {
+    async () => {
       if (!currentTerminal) {
-        throw new Error("No active terminal session");
+        setError("No active terminal session");
+        return;
+      }
+
+      if (!language) {
+        setError("Please select a programming language");
+        return;
+      }
+
+      if (!user) {
+        setError("You must be logged in to run tests");
+        return;
       }
 
       try {
-        const currentCode = codeStates[language];
+        setTestResults({ isLoading: true, results: null });
+
         const executionResponse = await SessionTerminalService.executeCode(
-          currentCode,
+          user.user_id,
+          codeStates[language],
           currentTerminal.terminal_id
         );
 
-        setTestResults(executionResponse.runResult);
+        const { execution, runResult } = executionResponse;
+
+        setTestResults({
+          isLoading: false,
+          allPassed: runResult.allPassed,
+          results: runResult.results,
+          executionId: execution.execution_id,
+        });
       } catch (error) {
         console.error("Test execution failed:", error);
-        throw error;
+        setTestResults({
+          isLoading: false,
+          error: error.message || "Failed to execute tests",
+        });
       }
     },
-    [language, codeStates, currentTerminal]
+    [language, codeStates, currentTerminal, user] // Add user to dependencies
   );
 
   const value = {
