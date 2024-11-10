@@ -5,6 +5,7 @@ import { Play, Save } from "lucide-react";
 import { useEditor } from "../../context/editorContext";
 import LanguageSelector from "./LanguageSelector";
 import ThemeSelector from "./ThemeSelector";
+import * as monaco from "monaco-editor";
 
 // Create a memoized Editor component to prevent unnecessary re-renders
 const CodeEditor = memo(
@@ -39,31 +40,40 @@ const EditorPanel = ({ onRunTests }) => {
   const decorationsRef = useRef([]);
   const editorRef = useRef(null);
 
-  // Memoize the updateDecorations function
-  const updateDecorations = useCallback(() => {
-    if (editorRef.current) {
-      const editor = editorRef.current;
-      decorationsRef.current = editor.deltaDecorations(
-        decorationsRef.current,
-        Array.from(collaborators.values())
-          .filter((c) => c.cursor)
-          .map((collaborator, index) => ({
-            range: {
-              startLineNumber: collaborator.cursor.lineNumber,
-              startColumn: collaborator.cursor.column,
-              endLineNumber: collaborator.cursor.lineNumber,
-              endColumn: collaborator.cursor.column + 1,
-            },
-            options: {
-              className: `collaborator-cursor cursor-${index}`,
-              hoverMessage: { value: `Collaborator ${index + 1}` },
-              beforeContentClassName: `cursor-${index}-before`,
-              afterContentClassName: `cursor-${index}-after`,
-            },
-          }))
-      );
-    }
-  }, [collaborators]);
+ const updateDecorations = useCallback(() => {
+   if (editorRef.current) {
+     const editor = editorRef.current;
+     const model = editor.getModel();
+     if (!model) return;
+
+     decorationsRef.current = editor.deltaDecorations(
+       decorationsRef.current,
+       Array.from(collaborators.values())
+         .filter((c) => c.cursor)
+         .map((collaborator, index) => {
+           const position = collaborator.cursor;
+           const lineContent = model.getLineContent(position.lineNumber);
+
+           return {
+             range: {
+               startLineNumber: position.lineNumber,
+               startColumn: position.column,
+               endLineNumber: position.lineNumber,
+               endColumn: position.column + 1,
+             },
+             options: {
+               className: `collaborator-cursor cursor-${index}-before`,
+               hoverMessage: null,
+               beforeContentClassName: `cursor-${index}-before`,
+               stickiness:
+                 monaco.editor.TrackedRangeStickiness
+                   .NeverGrowsWhenTypingAtEdges,
+             },
+           };
+         })
+     );
+   }
+ }, [collaborators]);
 
   // Use effect for cursor updates
   useEffect(() => {
@@ -128,61 +138,82 @@ const EditorPanel = ({ onRunTests }) => {
     >
       <style>
         {`
-          .collaborator-cursor {
-            background: transparent !important;
-            border-left: 2px solid;
-            width: 0 !important;
-          }
-          .cursor-0-before { border-color: #ff0000; }
-          .cursor-1-before { border-color: #00ff00; }
-          .cursor-2-before { border-color: #0000ff; }
-          .cursor-3-before { border-color: #ffff00; }
-          
-          .cursor-0-after {
-            content: '';
-            position: absolute;
-            top: -20px;
-            font-size: 12px;
-            padding: 2px 4px;
-            background: #ff0000;
-            color: white;
-            border-radius: 3px;
-            z-index: 1000;
-          }
-          .cursor-1-after {
-            content: '';
-            position: absolute;
-            top: -20px;
-            font-size: 12px;
-            padding: 2px 4px;
-            background: #00ff00;
-            color: white;
-            border-radius: 3px;
-            z-index: 1000;
-          }
-          .cursor-2-after {
-            content: '';
-            position: absolute;
-            top: -20px;
-            font-size: 12px;
-            padding: 2px 4px;
-            background: #0000ff;
-            color: white;
-            border-radius: 3px;
-            z-index: 1000;
-          }
-          .cursor-3-after {
-            content: '';
-            position: absolute;
-            top: -20px;
-            font-size: 12px;
-            padding: 2px 4px;
-            background: #ffff00;
-            color: black;
-            border-radius: 3px;
-            z-index: 1000;
-          }
-        `}
+    .collaborator-cursor {
+      background: transparent !important;
+      border-left: 2px solid;
+      width: 0 !important;
+      position: relative;
+      transition: all 0.1s ease-in-out;
+    }
+
+    /* Cursor styles with unique colors for each user */
+    .cursor-0-before { 
+      border-color: #FF5D8F;
+      box-shadow: 0 0 8px rgba(255, 93, 143, 0.4);
+    }
+    .cursor-1-before { 
+      border-color: #00FFB3;
+      box-shadow: 0 0 8px rgba(0, 255, 179, 0.4);
+    }
+    .cursor-2-before { 
+      border-color: #00B8FF;
+      box-shadow: 0 0 8px rgba(0, 184, 255, 0.4);
+    }
+    .cursor-3-before { 
+      border-color: #FFB800;
+      box-shadow: 0 0 8px rgba(255, 184, 0, 0.4);
+    }
+    
+    /* User labels */
+    .cursor-label {
+      position: absolute;
+      top: -20px;
+      left: 0;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      z-index: 1000;
+      font-family: 'Inter', sans-serif;
+      transform: translateY(-2px);
+      opacity: 0.9;
+      transition: all 0.1s ease-in-out;
+    }
+
+    .cursor-0-after {
+      background: #FF5D8F;
+      color: white;
+      box-shadow: 0 2px 4px rgba(255, 93, 143, 0.3);
+    }
+    
+    .cursor-1-after {
+      background: #00FFB3;
+      color: black;
+      box-shadow: 0 2px 4px rgba(0, 255, 179, 0.3);
+    }
+    
+    .cursor-2-after {
+      background: #00B8FF;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0, 184, 255, 0.3);
+    }
+    
+    .cursor-3-after {
+      background: #FFB800;
+      color: black;
+      box-shadow: 0 2px 4px rgba(255, 184, 0, 0.3);
+    }
+
+    /* Cursor animation */
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .collaborator-cursor {
+      animation: cursorBlink 1s ease-in-out infinite;
+    }
+  `}
       </style>
       <Box
         sx={{

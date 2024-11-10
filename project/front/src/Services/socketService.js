@@ -32,49 +32,53 @@ class SocketService {
   joinRoom(sessionId, problemId, userId) {
     this.room = `${sessionId}-${problemId}`;
     this.socket.emit("joinRoom", { sessionId, problemId, userId });
-  };
+  }
 
-  emitCodeChange(code, language, userId){
-    if(this.socket && this.room){
+  emitCodeChange(code, language, userId, position) {
+    if (this.socket && this.room) {
       this.socket.emit("codeChange", {
         room: this.room,
         code,
         language,
-        userId
-       });
+        userId,
+        cursorPosition: {
+          lineNumber: position.lineNumber,
+          column: position.column,
+        },
+      });
     }
   }
 
-  emitCursorMove(position, userId){
-    if(this.socket && this.room){
+  emitCursorMove(position, userId) {
+    if (this.socket && this.room) {
       this.socket.emit("cursorMove", {
         room: this.room,
         position,
-        userId
-       });
+        userId,
+      });
     }
   }
 
-  onCodeChange(callback){
-    if(this.socket){
+  onCodeChange(callback) {
+    if (this.socket) {
       this.socket.on("codeChange", callback);
     }
   }
 
-  onCursorMove(callback){
-    if(this.socket){
+  onCursorMove(callback) {
+    if (this.socket) {
       this.socket.on("cursorMove", callback);
     }
   }
 
-  onUserJoined(callback){
-    if(this.socket){
+  onUserJoined(callback) {
+    if (this.socket) {
       this.socket.on("userJoined", callback);
     }
   }
 
-  disconnect(){
-    if(this.socket){
+  disconnect() {
+    if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
       this.room = null;

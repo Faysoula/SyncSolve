@@ -92,3 +92,46 @@ export const STORAGE_KEYS = {
   user: "user_data",
   theme: "user_theme",
 };
+
+export const LANGUAGE_MAPPING = {
+  cpp: "Cpp",
+  python: "Python",
+  java: "Java",
+};
+
+export const STARTING_CODE_TEMPLATES = {
+  python: `def solution():
+    # Write your solution here
+    pass`,
+
+  cpp: `#include <vector>
+#include <string>
+#include <iostream>
+using namespace std;
+
+class Solution {
+public:
+    void solve() {
+        // Write your solution here
+        cout << "Hello World!" << endl;
+    }
+};
+
+int main() {
+    Solution solution;
+    solution.solve();
+    return 0;
+}`,
+
+  java: `public class Solution {
+    public void solve() {
+        // Write your solution here
+        System.out.println("Hello World!");
+    }
+
+    public static void main(String[] args) {
+        Solution solution = new Solution();
+        solution.solve();
+    }
+}`,
+};

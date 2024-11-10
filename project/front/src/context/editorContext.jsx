@@ -12,49 +12,9 @@ import { useAuth } from "./authContext";
 import SessionTerminalService from "../Services/sessionService";
 import SessionSnapshotService from "../Services/SessionSnapshotService";
 import socketService from "../Services/socketService";
+import { LANGUAGE_MAPPING, STARTING_CODE_TEMPLATES } from "../utils/constants";
 
-const LANGUAGE_MAPPING = {
-  cpp: "Cpp",
-  python: "Python",
-  java: "Java",
-};
 
-const STARTING_CODE_TEMPLATES = {
-  python: `def solution():
-    # Write your solution here
-    pass`,
-
-  cpp: `#include <vector>
-#include <string>
-#include <iostream>
-using namespace std;
-
-class Solution {
-public:
-    void solve() {
-        // Write your solution here
-        cout << "Hello World!" << endl;
-    }
-};
-
-int main() {
-    Solution solution;
-    solution.solve();
-    return 0;
-}`,
-
-  java: `public class Solution {
-    public void solve() {
-        // Write your solution here
-        System.out.println("Hello World!");
-    }
-
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        solution.solve();
-    }
-}`,
-};
 
 const EditorContext = createContext(null);
 
@@ -86,42 +46,55 @@ export const EditorProvider = ({ children }) => {
     java: STARTING_CODE_TEMPLATES.java,
   });
 
+  
+
   useEffect(() => {
     if (sessionId && problemId && user) {
       socketService.connect();
       socketService.joinRoom(sessionId, problemId, user.user_id);
 
-      socketService.onCodeChange(({ code, language: codeLang, userId }) => {
-        if (userId !== user.user_id) {
-          const editor = editorRef.current;
-          if (editor && language === codeLang) {
-            isLocalChange.current = true;
+     socketService.onCodeChange(
+       ({ code, language: codeLang, userId, cursorPosition }) => {
+         if (userId !== user.user_id) {
+           const editor = editorRef.current;
+           if (editor && language === codeLang) {
+             isLocalChange.current = true;
 
-            const currentPosition = editor.getPosition();
-            const currentSelection = editor.getSelection();
+             // Save current position and selection
+             const currentPosition = editor.getPosition();
+             const currentSelection = editor.getSelection();
 
-            setCodeStates((prev) => ({
-              ...prev,
-              [codeLang]: code,
-            }));
+             // Update code
+             setCodeStates((prev) => ({
+               ...prev,
+               [codeLang]: code,
+             }));
 
-            setTimeout(() => {
-              if (currentPosition) {
-                editor.setPosition(currentPosition);
-              }
-              if (currentSelection) {
-                editor.setSelection(currentSelection);
-              }
-              isLocalChange.current = false;
-            }, 0);
-          } else {
-            setCodeStates((prev) => ({
-              ...prev,
-              [codeLang]: code,
-            }));
-          }
-        }
-      });
+             // Update collaborator cursor position
+             setCollaborators((prev) => {
+               const newMap = new Map(prev);
+               const collaborator = newMap.get(userId) || {};
+               newMap.set(userId, {
+                 ...collaborator,
+                 cursor: cursorPosition || collaborator.cursor,
+               });
+               return newMap;
+             });
+
+             // Restore position after code update
+             setTimeout(() => {
+               if (currentPosition) {
+                 editor.setPosition(currentPosition);
+               }
+               if (currentSelection) {
+                 editor.setSelection(currentSelection);
+               }
+               isLocalChange.current = false;
+             }, 0);
+           }
+         }
+       }
+     );
 
       socketService.onCursorMove(({ position, userId }) => {
         if (userId !== user.user_id) {
@@ -329,35 +302,41 @@ export const EditorProvider = ({ children }) => {
     }
   }, [sessionId, isInitialized]);
 
-  const updateCode = useCallback(
-    (newCode) => {
-      if (!isLocalChange.current && language) {
-        isLocalChange.current = true;
+ const updateCode = useCallback(
+   (newCode) => {
+     if (!isLocalChange.current && language) {
+       isLocalChange.current = true;
 
-        const editor = editorRef.current;
-        const currentPosition = editor?.getPosition();
-        const currentSelection = editor?.getSelection();
+       const editor = editorRef.current;
+       const currentPosition = editor?.getPosition();
+       const currentSelection = editor?.getSelection();
 
-        setCodeStates((prev) => ({
-          ...prev,
-          [language]: newCode,
-        }));
+       setCodeStates((prev) => ({
+         ...prev,
+         [language]: newCode,
+       }));
 
-        socketService.emitCodeChange(newCode, language, user.user_id);
+       // Emit both code and cursor position
+       socketService.emitCodeChange(
+         newCode,
+         language,
+         user.user_id,
+         currentPosition
+       );
 
-        setTimeout(() => {
-          if (editor && currentPosition) {
-            editor.setPosition(currentPosition);
-            if (currentSelection) {
-              editor.setSelection(currentSelection);
-            }
-          }
-          isLocalChange.current = false;
-        }, 0);
-      }
-    },
-    [language, user]
-  );
+       setTimeout(() => {
+         if (editor && currentPosition) {
+           editor.setPosition(currentPosition);
+           if (currentSelection) {
+             editor.setSelection(currentSelection);
+           }
+         }
+         isLocalChange.current = false;
+       }, 0);
+     }
+   },
+   [language, user]
+ );
 
   const updateLanguage = useCallback(
     async (newLanguage) => {
