@@ -112,13 +112,10 @@ const handleProblemClick = async (e) => {
 
   // Handle member clicks
   if (activeSession) {
-    const currentProblemSession = activeSession.find(
-      (session) => session.problem_id === problem.problem_id
-    );
-
-    if (currentProblemSession) {
+    // Changed this part - instead of using find, we just check the problem_id directly
+    if (activeSession.problem_id === problem.problem_id) {
       navigate(
-        `/problems/${currentProblemSession.problem_id}/session/${currentProblemSession.session_id}`
+        `/problems/${problem.problem_id}/session/${activeSession.session_id}`
       );
     } else {
       setError("Your team needs you somewhere else!");
