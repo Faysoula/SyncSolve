@@ -1,0 +1,47 @@
+export const styles = {
+  textField: {
+    "& .MuiOutlinedInput-root": {
+      color: "#FAF0CA",
+      "& fieldset": { borderColor: "#5A189A" },
+    },
+    "& .MuiInputLabel-root": { color: "#FAF0CA" },
+  },
+  difficultySelect: {
+    width: 200,
+    "& .MuiOutlinedInput-root": {
+      color: "#FAF0CA",
+      "& fieldset": { borderColor: "#5A189A" },
+    },
+    "& .MuiInputLabel-root": { color: "#FAF0CA" },
+  },
+  tag: {
+    backgroundColor: "rgba(157, 78, 221, 0.3)",
+    color: "#FAF0CA",
+    "& .MuiChip-deleteIcon": {
+      color: "#FAF0CA",
+      "&:hover": {
+        color: "#ff4444",
+      },
+    },
+  },
+  tagAutocomplete: {
+    "& .MuiAutocomplete-tag": {
+      backgroundColor: "rgba(157, 78, 221, 0.3)",
+      color: "#FAF0CA",
+    },
+  },
+  testCaseCard: {
+    bgcolor: "#240046",
+    p: 3,
+  },
+  cancelButton: {
+    color: "#FAF0CA",
+    borderColor: "#5A189A",
+    "&:hover": { borderColor: "#7B2CBF", bgcolor: "#240046" },
+  },
+  submitButton: {
+    bgcolor: "#7B2CBF",
+    "&:hover": { bgcolor: "#9D4EDD" },
+    "&:disabled": { bgcolor: "#5A189A" },
+  },
+};

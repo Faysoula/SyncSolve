@@ -9,7 +9,7 @@ import Footer from "./components/common/Footer";
 import { theme } from "./theme";
 import { AuthProvider } from "./context/authContext";
 import Header from "./components/common/Header";
-import AddProblemPage from "./components/AddProblemPage";
+import AddProblemContainer from "./components/problem-form/AddProblemContainer";
 import ProblemSolvingInterface from "./components/problemInterface";
 import TeamJoin from "./components/TeamJoin";
 
@@ -31,17 +31,16 @@ function App() {
               <Route path="/Register" element={<SignUp />} />
               <Route path="/Signin" element={<LoginForm />} />
               <Route path="/problems" element={<ProblemsPage />} />
-              {/* Update this route to include session parameter */}
               <Route
                 path="/problems/:problemId/session/:sessionId"
                 element={<ProblemSolvingInterface />}
               />
               <Route
                 path="/problems/edit/:problemId"
-                element={<AddProblemPage mode="edit" />}
+                element={<AddProblemContainer mode="edit" />}
               />
               <Route path="/teams/join/:teamId" element={<TeamJoin />} />
-              <Route path="/problems/add" element={<AddProblemPage />} />
+              <Route path="/problems/add" element={<AddProblemContainer />} />
               <Route path="/" element={<LandingPage />} />
             </Routes>
           </Box>
