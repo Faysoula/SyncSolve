@@ -46,20 +46,43 @@ const EditorPanel = ({ onRunTests }) => {
      const model = editor.getModel();
      if (!model) return;
 
+     const lineCount = model.getLineCount();
+
      decorationsRef.current = editor.deltaDecorations(
        decorationsRef.current,
        Array.from(collaborators.values())
          .filter((c) => c.cursor)
          .map((collaborator, index) => {
            const position = collaborator.cursor;
-           const lineContent = model.getLineContent(position.lineNumber);
+
+           // Validate line number is within bounds
+           if (
+             !position ||
+             position.lineNumber < 1 ||
+             position.lineNumber > lineCount
+           ) {
+             return null;
+           }
+
+           // Safely get line content with validation
+           let lineContent;
+           try {
+             lineContent = model.getLineContent(position.lineNumber);
+           } catch (e) {
+             console.warn("Error getting line content:", e);
+             return null;
+           }
+
+           // Validate column is within bounds
+           const maxColumn = model.getLineMaxColumn(position.lineNumber);
+           const safeColumn = Math.min(Math.max(1, position.column), maxColumn);
 
            return {
              range: {
                startLineNumber: position.lineNumber,
-               startColumn: position.column,
+               startColumn: safeColumn,
                endLineNumber: position.lineNumber,
-               endColumn: position.column + 1,
+               endColumn: safeColumn + 1,
              },
              options: {
                className: `collaborator-cursor cursor-${index}-before`,
@@ -71,6 +94,7 @@ const EditorPanel = ({ onRunTests }) => {
              },
            };
          })
+         .filter(Boolean) // Remove any null decorations from invalid positions
      );
    }
  }, [collaborators]);
