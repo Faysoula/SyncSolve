@@ -45,3 +45,22 @@ export const styles = {
     "&:disabled": { bgcolor: "#5A189A" },
   },
 };
+
+export const teamstyles = {
+  dialogPaper: {
+    sx: {
+      bgcolor: "#1A1626",
+      color: "#FAF0CA",
+    },
+  },
+  dialogTitle: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    pb: 1,
+  },
+  dialogActions: {
+    p: 3,
+    pt: 1,
+  },
+};
