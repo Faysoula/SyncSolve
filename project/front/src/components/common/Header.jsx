@@ -12,7 +12,7 @@ import {
   Stack,
   Button,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 import TeamDropdown from "../TeamDropdown";
@@ -20,9 +20,12 @@ import TeamInviteModal from "../TeamInviteModal";
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+
+  const isLandingPage = location.pathname === "/";
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -72,8 +75,8 @@ const Header = () => {
             {/* Spacer */}
             <Box sx={{ flexGrow: 1 }} />
 
-            {/* Team Section - Only show if user is logged in */}
-            {user && (
+            {/* Team Section - Only show if user is logged in AND not on landing page */}
+            {user && !isLandingPage && (
               <Box sx={{ mr: 2 }}>
                 <TeamDropdown onCreateTeam={() => setIsTeamModalOpen(true)} />
               </Box>
