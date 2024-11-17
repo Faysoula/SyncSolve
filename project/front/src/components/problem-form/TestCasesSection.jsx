@@ -1,10 +1,8 @@
 import React from "react";
-import { Box, Typography, Stack, Card } from "@mui/material";
+import { Box, Typography, Stack, Button } from "@mui/material";
+import { Plus } from "lucide-react";
 import { styles } from "../../utils/styles";
-import TestCaseInput from "./TestCaseInput";
-import TestCaseHeader from "./TestCaseHeader";
-import TestCaseImageUpload from "./TestCaseImageUpload";
-import AddTestCaseButton from "./AddTestCaseButton";
+import TestCase from "./TestCases";
 
 const TestCasesSection = ({
   testCases,
@@ -12,47 +10,40 @@ const TestCasesSection = ({
   onTestCaseChange,
   onImageUpload,
   onImageRemove,
-}) => (
-  <Card sx={styles.testCaseCard}>
+  onAddTestCase, // Add this prop
+}) => {
+  return (
     <Box>
       <Typography variant="h6" sx={{ color: "#FAF0CA", mb: 2 }}>
         Test Cases
       </Typography>
       <Stack spacing={3}>
         {testCases.map((testCase, index) => (
-          <Card key={index} sx={styles.testCaseCard}>
-            <Stack spacing={2}>
-              <TestCaseHeader
-                index={index}
-                onRemove={() => onTestCaseChange(index)}
-              />
-              <TestCaseInput
-                label="Input"
-                value={testCase.input}
-                onChange={(e) =>
-                  onTestCaseChange(index, "input", e.target.value)
-                }
-              />
-              <TestCaseInput
-                label="Expected Output"
-                value={testCase.expected_output}
-                onChange={(e) =>
-                  onTestCaseChange(index, "expected_output", e.target.value)
-                }
-              />
-              <TestCaseImageUpload
-                index={index}
-                image={testCaseImages[index]}
-                onUpload={onImageUpload}
-                onRemove={onImageRemove}
-              />
-            </Stack>
-          </Card>
+          <TestCase
+            key={index}
+            index={index}
+            testCase={testCase}
+            image={testCaseImages[index]}
+            onTestCaseChange={onTestCaseChange}
+            onImageUpload={onImageUpload}
+            onImageRemove={onImageRemove}
+          />
         ))}
-        <AddTestCaseButton onClick={onTestCaseChange} />
+        <Button
+          startIcon={<Plus />}
+          onClick={onAddTestCase} // Use the new prop here
+          variant="outlined"
+          sx={{
+            color: "#FAF0CA",
+            borderColor: "#5A189A",
+            "&:hover": { borderColor: "#7B2CBF", bgcolor: "#240046" },
+          }}
+        >
+          Add Test Case
+        </Button>
       </Stack>
     </Box>
-  </Card>
-);
+  );
+};
 
 export default TestCasesSection;

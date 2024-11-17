@@ -61,6 +61,8 @@ const AddProblemContainer = ({ mode = "create" }) => {
     loadProblem();
   }, [problemId, mode, user, navigate]);
 
+  
+
   const validateForm = () => {
     if (!formData.title.trim()) {
       setError("ohh so cool no name huh");
@@ -120,6 +122,12 @@ const AddProblemContainer = ({ mode = "create" }) => {
       test_cases: newTestCases,
     }));
     setError("");
+  };
+  const handleAddTestCase = () => {
+    setFormData((prev) => ({
+      ...prev,
+      test_cases: [...prev.test_cases, { input: "", expected_output: "" }],
+    }));
   };
 
   const handleImageUpload = async (index, file) => {
@@ -231,6 +239,7 @@ const AddProblemContainer = ({ mode = "create" }) => {
       onTestCaseChange={handleTestCaseChange}
       onImageUpload={handleImageUpload}
       onImageRemove={handleImageRemove}
+      onAddTestCase={handleAddTestCase}
     />
   );
 };

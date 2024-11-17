@@ -19,6 +19,7 @@ const ProblemForm = ({
   onImageUpload,
   onImageRemove,
   onTagsChange,
+  onAddTestCase,
 }) => {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#0a0118", pt: 12, pb: 6 }}>
@@ -55,6 +56,7 @@ const ProblemForm = ({
                 onTestCaseChange={onTestCaseChange}
                 onImageUpload={onImageUpload}
                 onImageRemove={onImageRemove}
+                onAddTestCase={onAddTestCase}
               />
 
               <FormActions
