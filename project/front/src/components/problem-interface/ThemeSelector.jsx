@@ -28,7 +28,7 @@ const ThemeSelector = () => {
 
   return (
     <Select
-      value={theme || "vs-dark"}
+      value={theme || "monokai"}
       onChange={handleThemeChange}
       size="small"
       sx={{

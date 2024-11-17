@@ -115,7 +115,7 @@ const EditorPanel = ({ onRunTests }) => {
   // Memoize editor options
   const editorOptions = {
     minimap: { enabled: false },
-    fontSize: 13,
+    fontSize: 15,
     lineHeight: 1.5,
     padding: { top: 8, bottom: 8 },
     scrollBeyondLastLine: false,

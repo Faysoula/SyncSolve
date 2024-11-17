@@ -9,7 +9,7 @@ export const useEditorState = () => {
   });
 
   const [language, setLanguage] = useState("");
-  const [theme, setTheme] = useState("vs-dark");
+  const [theme, setTheme] = useState("monokai");
   const [testResults, setTestResults] = useState(null);
   const [terminals, setTerminals] = useState({});
   const [currentTerminal, setCurrentTerminal] = useState(null);
