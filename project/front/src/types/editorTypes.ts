@@ -1,5 +1,3 @@
-import { Monaco } from "@monaco-editor/react";
-
 export interface CodeStates {
   python: string;
   cpp: string;

@@ -133,5 +133,3 @@ export const updateEditorTheme = (newTheme, setTheme) => {
     setTheme(newTheme);
   });
 };
-
-

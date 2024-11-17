@@ -1,5 +1,3 @@
-
-
 export const importThemes = async () => {
   const themeFiles = {
     "active4d": await import("monaco-themes/themes/Active4D.json"),
