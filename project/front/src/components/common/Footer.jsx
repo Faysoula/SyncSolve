@@ -36,8 +36,7 @@ const Footer = () => {
             direction="row"
             spacing={2}
             sx={{ color: theme.palette.secondary.light }}
-          >
-          </Stack>
+          ></Stack>
         </Stack>
       </Container>
     </Box>

@@ -4,8 +4,8 @@ import { Box, Container, Alert } from "@mui/material";
 import { useAuth } from "../context/authContext";
 import useProblemsData from "../hooks/useProblemData";
 import ProblemsHeader from "../components/problem-common/ProblemsHeader";
-import FilterSection from "../components/FilterSelect.jsx"; // New import
-import ProblemsList from "../components/problem-common/ProblemsList";
+import FilterSection from "../components/FilterSelect.jsx";
+import ProblemsList from "../components/problem-common/problem-list-com/ProblemsList";
 import AuthRequiredCard from "./common/AuthRequiredCard.jsx";
 import LoadingState from "./common/LoadingState.jsx";
 

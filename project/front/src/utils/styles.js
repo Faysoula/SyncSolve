@@ -64,3 +64,22 @@ export const teamstyles = {
     pt: 1,
   },
 };
+
+export const problemListStyles = {
+  problemCard: {
+    bgcolor: "#3C096C",
+    borderRadius: 2,
+    transition: "all 0.2s",
+    cursor: "pointer",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      bgcolor: "#5A189A",
+    },
+  },
+  emptyState: {
+    bgcolor: "#3C096C",
+    borderRadius: 2,
+    p: 4,
+    textAlign: "center",
+  },
+};
