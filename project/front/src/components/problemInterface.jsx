@@ -17,7 +17,6 @@ const ProblemContent = () => {
 
   // Handle resize observer errors and setup
   useEffect(() => {
-    // Create a custom ResizeObserver with error handling
     const resizeObserver = new ResizeObserver((entries) => {
       // Use requestAnimationFrame to throttle updates
       window.requestAnimationFrame(() => {
@@ -27,7 +26,6 @@ const ProblemContent = () => {
       });
     });
 
-    // Add error handler for ResizeObserver
     const errorHandler = (event) => {
       if (event.message && event.message.includes("ResizeObserver")) {
         event.stopPropagation();

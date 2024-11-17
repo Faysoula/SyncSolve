@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   if (loading) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (

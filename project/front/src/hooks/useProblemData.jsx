@@ -9,8 +9,8 @@ const useProblemsData = () => {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     searchQuery: "",
-    difficulty: "all", // Changed from difficultyFilter
-    sort: "newest", // Changed from sortBy
+    difficulty: "all",
+    sort: "newest",
     tags: [],
   });
 

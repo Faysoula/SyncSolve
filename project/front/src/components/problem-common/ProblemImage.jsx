@@ -25,7 +25,7 @@ const ProblemImage = ({ imagePath }) => {
           src={imageUrl}
           alt="Test case example"
           style={{
-            width: "300px", // Increased base size
+            width: "300px",
             height: "auto",
             borderRadius: "8px",
             cursor: "pointer",

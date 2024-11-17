@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { STARTING_CODE_TEMPLATES } from "../utils/constants";
 
 export const useEditorState = () => {
-  const [codeStates, setCodeStates] = useState({}); // Start with empty state
+  const [codeStates, setCodeStates] = useState({});
   const [language, setLanguage] = useState("");
   const [theme, setTheme] = useState("monokai");
   const [testResults, setTestResults] = useState(null);

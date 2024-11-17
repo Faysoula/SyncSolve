@@ -221,5 +221,3 @@ export const generateStartingCode = (language, testCases) => {
   }
   return STARTING_CODE_TEMPLATES[language];
 };
-
-

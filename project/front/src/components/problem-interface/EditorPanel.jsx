@@ -7,7 +7,6 @@ import LanguageSelector from "./LanguageSelector";
 import ThemeSelector from "./ThemeSelector";
 import * as monaco from "monaco-editor";
 
-// Create a memoized Editor component to prevent unnecessary re-renders
 const CodeEditor = memo(
   ({ language, theme, code, onChange, onMount, options }) => (
     <Editor
@@ -40,64 +39,67 @@ const EditorPanel = ({ onRunTests }) => {
   const decorationsRef = useRef([]);
   const editorRef = useRef(null);
 
- const updateDecorations = useCallback(() => {
-   if (editorRef.current) {
-     const editor = editorRef.current;
-     const model = editor.getModel();
-     if (!model) return;
+  const updateDecorations = useCallback(() => {
+    if (editorRef.current) {
+      const editor = editorRef.current;
+      const model = editor.getModel();
+      if (!model) return;
 
-     const lineCount = model.getLineCount();
+      const lineCount = model.getLineCount();
 
-     decorationsRef.current = editor.deltaDecorations(
-       decorationsRef.current,
-       Array.from(collaborators.values())
-         .filter((c) => c.cursor)
-         .map((collaborator, index) => {
-           const position = collaborator.cursor;
+      decorationsRef.current = editor.deltaDecorations(
+        decorationsRef.current,
+        Array.from(collaborators.values())
+          .filter((c) => c.cursor)
+          .map((collaborator, index) => {
+            const position = collaborator.cursor;
 
-           // Validate line number is within bounds
-           if (
-             !position ||
-             position.lineNumber < 1 ||
-             position.lineNumber > lineCount
-           ) {
-             return null;
-           }
+            // Validate line number is within bounds
+            if (
+              !position ||
+              position.lineNumber < 1 ||
+              position.lineNumber > lineCount
+            ) {
+              return null;
+            }
 
-           // Safely get line content with validation
-           let lineContent;
-           try {
-             lineContent = model.getLineContent(position.lineNumber);
-           } catch (e) {
-             console.warn("Error getting line content:", e);
-             return null;
-           }
+            // Safely get line content with validation
+            let lineContent;
+            try {
+              lineContent = model.getLineContent(position.lineNumber);
+            } catch (e) {
+              console.warn("Error getting line content:", e);
+              return null;
+            }
 
-           // Validate column is within bounds
-           const maxColumn = model.getLineMaxColumn(position.lineNumber);
-           const safeColumn = Math.min(Math.max(1, position.column), maxColumn);
+            // Validate column is within bounds
+            const maxColumn = model.getLineMaxColumn(position.lineNumber);
+            const safeColumn = Math.min(
+              Math.max(1, position.column),
+              maxColumn
+            );
 
-           return {
-             range: {
-               startLineNumber: position.lineNumber,
-               startColumn: safeColumn,
-               endLineNumber: position.lineNumber,
-               endColumn: safeColumn + 1,
-             },
-             options: {
-               className: `collaborator-cursor cursor-${index}-before`,
-               hoverMessage: null,
-               beforeContentClassName: `cursor-${index}-before`,
-               stickiness:
-                 monaco.editor.TrackedRangeStickiness
-                   .NeverGrowsWhenTypingAtEdges,
-             },
-           };
-         })
-         .filter(Boolean) // Remove any null decorations from invalid positions
-     );
-   }
- }, [collaborators]);
+            return {
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: safeColumn,
+                endLineNumber: position.lineNumber,
+                endColumn: safeColumn + 1,
+              },
+              options: {
+                className: `collaborator-cursor cursor-${index}-before`,
+                hoverMessage: null,
+                beforeContentClassName: `cursor-${index}-before`,
+                stickiness:
+                  monaco.editor.TrackedRangeStickiness
+                    .NeverGrowsWhenTypingAtEdges,
+              },
+            };
+          })
+          .filter(Boolean)
+      );
+    }
+  }, [collaborators]);
 
   // Use effect for cursor updates
   useEffect(() => {
@@ -327,6 +329,5 @@ const EditorPanel = ({ onRunTests }) => {
     </Stack>
   );
 };
-
 
 export default memo(EditorPanel);

@@ -22,7 +22,6 @@ export const setEditorTheme = async (newTheme, editor) => {
   try {
     const monaco = await loader.init();
 
-    // If it's a custom theme, ensure themes are defined
     if (!["vs", "vs-dark", "hc-black"].includes(newTheme)) {
       await defineThemes();
     }

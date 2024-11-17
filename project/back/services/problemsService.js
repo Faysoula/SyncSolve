@@ -25,7 +25,7 @@ const addProblem = async (
       throw new Error("User not found");
     }
 
-    // Instead of storing full base64 strings, we just store the filenames
+    // store the filenames
     const metadata = {
       example_images: example_images.filter((img) => img !== null), //just filenames
       tags: tags

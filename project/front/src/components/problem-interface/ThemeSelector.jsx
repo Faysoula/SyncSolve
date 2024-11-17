@@ -15,7 +15,7 @@ const THEME_CATEGORIES = {
     { id: "github-light", label: "GitHub Light", icon: "🐱" },
     { id: "vs", label: "VS Light", icon: "☀️" },
     { id: "solarized-light", label: "Solarized", icon: "🌞" },
-  ],
+  ],//ha zid more later bas like enough for more
 };
 
 const ThemeSelector = () => {

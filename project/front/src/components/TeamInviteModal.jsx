@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Typography,
   IconButton,
   CircularProgress,
 } from "@mui/material";
@@ -78,7 +77,6 @@ const TeamInviteModal = ({ open, onClose }) => {
           alignItems: "center",
         }}
       >
-        {/* Changed from Typography to span to avoid heading nesting issues */}
         <span
           style={{ fontSize: "1.25rem", fontWeight: 600, color: "#FAF0CA" }}
         >

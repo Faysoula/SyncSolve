@@ -1,6 +1,3 @@
-/**
- * Renders a list of team members with their roles and avatars
- */
 const TeamMembersList = ({ members, onRemoveMember }) => {
   return (
     <>

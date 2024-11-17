@@ -10,7 +10,10 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "./authContext";
 import { useEditorState } from "../hooks/useEditorState";
 import { useCollaboration } from "../hooks/useCollaboration";
-import { STARTING_CODE_TEMPLATES, generateStartingCode } from "../utils/constants";
+import {
+  STARTING_CODE_TEMPLATES,
+  generateStartingCode,
+} from "../utils/constants";
 import socketService from "../Services/socketService";
 import {
   createTerminalForLanguage,
@@ -54,7 +57,6 @@ export const EditorProvider = ({ children }) => {
     isLocalChange,
   } = editorState;
 
-  // Set up collaboration
   useCollaboration({
     sessionId,
     problemId,
@@ -106,8 +108,6 @@ export const EditorProvider = ({ children }) => {
           // Fetch problem details
           const response = await ProblemService.getProblemById(problemId);
           const problem = response.data;
-
-          // Generate appropriate starting code for each language
           setCodeStates({
             cpp: generateStartingCode("cpp", problem.test_cases),
             python: STARTING_CODE_TEMPLATES.python,
@@ -256,7 +256,6 @@ export const EditorProvider = ({ children }) => {
         currentTerminal.terminal_id
       );
 
-      // Check if we have a valid response
       if (!response || !response.runResult) {
         throw new Error("Invalid response from execution service");
       }

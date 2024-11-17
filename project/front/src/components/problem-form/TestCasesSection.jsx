@@ -10,7 +10,7 @@ const TestCasesSection = ({
   onTestCaseChange,
   onImageUpload,
   onImageRemove,
-  onAddTestCase, // Add this prop
+  onAddTestCase,
 }) => {
   return (
     <Box>
@@ -31,7 +31,7 @@ const TestCasesSection = ({
         ))}
         <Button
           startIcon={<Plus />}
-          onClick={onAddTestCase} // Use the new prop here
+          onClick={onAddTestCase}
           variant="outlined"
           sx={{
             color: "#FAF0CA",

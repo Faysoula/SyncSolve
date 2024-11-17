@@ -83,7 +83,6 @@ const createTerminal = async (sessionId, language) => {
 
     return response.data;
   } catch (error) {
-    // Enhanced error handling with specific messages
     const errorMessage = error.response?.data?.message || error.message;
     if (errorMessage.includes("language not supported")) {
       throw new Error(`${ERROR_MESSAGES.INVALID_LANGUAGE}: ${language}`);
@@ -93,7 +92,6 @@ const createTerminal = async (sessionId, language) => {
 };
 
 const executeCode = async (userId, code, terminalId) => {
-  // Input validation
   if (!userId) throw new Error("User ID is required");
   if (!code?.trim()) throw new Error("Code cannot be empty");
   if (!terminalId) throw new Error("Terminal ID is required");
@@ -114,14 +112,12 @@ const executeCode = async (userId, code, terminalId) => {
       }
     );
 
-    // Ensure we have a valid response
     if (!response.data) {
       throw new Error("No response from execution service");
     }
 
     const { success, execution, runResult } = response.data;
 
-    // Validate and format the response
     return {
       success: Boolean(success),
       execution: execution || null,

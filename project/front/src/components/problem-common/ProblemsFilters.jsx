@@ -101,5 +101,4 @@ export const ProblemsFilters = ({ filters, onFilterChange }) => {
   );
 };
 
-// Need to export as default as well
 export default ProblemsFilters;
