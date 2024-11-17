@@ -1,4 +1,4 @@
-# SyncSolve Documentation
+# SyncSolve
 
 ## Overview
 SyncSolve is a collaborative programming platform that enables teams to practice coding interview questions and programming competitions together in real-time. The platform features a synchronized code editor, real-time collaboration tools, and integrated testing capabilities.
