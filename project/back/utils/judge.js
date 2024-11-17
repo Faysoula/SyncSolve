@@ -7,113 +7,213 @@ const LANGUAGE_MAP = {
   Python: 71,
 };
 
-const CODE_TEMPLATES = {
-  Cpp: `#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <algorithm>
-using namespace std;
+// Helper function to detect input type from test cases
+const detectInputType = (testCases) => {
+  const firstInput = testCases[0].input;
+  const inputStr = String(firstInput).trim();
 
-class Solution {
-public:
-    %CODE%
+  // Check if it's a matrix
+  if (inputStr.startsWith("[[")) {
+    return "matrix";
+  }
+  // Check if it's multiple arrays (has newline or multiple arrays)
+  if (inputStr.includes("\n") && inputStr.includes("[")) {
+    return "multiple_arrays";
+  }
+  // Check if it's a single array
+  if (inputStr.startsWith("[")) {
+    // Check if there's an additional integer input
+    if (testCases[0].hasOwnProperty("second_input")) {
+      return "array_and_integer";
+    }
+    return "single_array";
+  }
+  // Check if it's multiple integers
+  if (inputStr.includes(" ")) {
+    return "multiple_integers";
+  }
+  // Single integer is the default case
+  return "single_integer";
 };
 
-vector<int> parseInput(const string& input) {
+// Function to generate the appropriate solve() signature
+const generateSolveSignature = (inputType) => {
+  switch (inputType) {
+    case "matrix":
+      return "int solve(vector<vector<int>>& matrix)";
+    case "multiple_arrays":
+      return "int solve(vector<int>& nums1, vector<int>& nums2)";
+    case "single_array":
+      return "int solve(vector<int>& nums)";
+    case "array_and_integer":
+      return "int solve(vector<int>& nums, int target)";
+    case "multiple_integers":
+      return "int solve(int a, int b)";
+    case "single_integer":
+    default:
+      return "int solve(int num)";
+  }
+};
+
+const getInputParsingCode = (inputType) => {
+  switch (inputType) {
+    case "matrix":
+      return `
+vector<vector<int>> parseMatrix(const string& input) {
+    vector<vector<int>> matrix;
+    string s = input;
+    s.erase(remove(s.begin(), s.end(), ' '), s.end());
+    s = s.substr(1, s.length() - 2);
+    
+    vector<int> row;
+    bool inNumber = false;
+    string num = "";
+    
+    for (char c : s) {
+        if (c == '[') {
+            row.clear();
+        } else if (c == ']') {
+            if (!num.empty()) {
+                row.push_back(stoi(num));
+                num = "";
+            }
+            if (!row.empty()) {
+                matrix.push_back(row);
+            }
+        } else if (c == ',') {
+            if (!num.empty()) {
+                row.push_back(stoi(num));
+                num = "";
+            }
+        } else if (isdigit(c) || c == '-') {
+            num += c;
+        }
+    }
+    return matrix;
+}`;
+
+    case "single_array":
+    case "multiple_arrays":
+      return `
+vector<int> parseArray(const string& input) {
     vector<int> nums;
-    string trimmed = input;
+    string s = input;
+    s.erase(remove(s.begin(), s.end(), ' '), s.end());
+    if (s.front() == '[') s = s.substr(1);
+    if (s.back() == ']') s.pop_back();
     
-    // Remove brackets
-    if (!trimmed.empty() && trimmed.front() == '[') {
-        trimmed = trimmed.substr(1);
-    }
-    if (!trimmed.empty() && trimmed.back() == ']') {
-        trimmed = trimmed.substr(0, trimmed.length() - 1);
-    }
-    
-    // Parse numbers
-    stringstream ss(trimmed);
-    string number;
-    while (getline(ss, number, ',')) {
-        // Skip any whitespace
-        stringstream numberStream(number);
-        int value;
-        if (numberStream >> value) {
-            nums.push_back(value);
+    stringstream ss(s);
+    string item;
+    while (getline(ss, item, ',')) {
+        if (!item.empty()) {
+            nums.push_back(stoi(item));
         }
     }
     return nums;
-}
+}`;
 
+    default:
+      return "";
+  }
+};
+
+const generateMainFunction = (inputType) => {
+  switch (inputType) {
+    case "matrix":
+      return `
 int main() {
     string input;
     getline(cin, input);
+    auto matrix = parseMatrix(input);
     
-    try {
-        vector<int> nums = parseInput(input);
-        Solution solution;
-        int result = solution.solve(nums);
-        cout << result << endl;
-    } catch (const exception& e) {
-        cerr << "Error: " << e.what() << endl;
-        return 1;
-    }
+    Solution solution;
+    cout << solution.solve(matrix) << endl;
     return 0;
-}`,
+}`;
 
-  Java: `
-import java.util.*;
-
-public class Solution {
-    %CODE%
+    case "multiple_arrays":
+      return `
+int main() {
+    string input1, input2;
+    getline(cin, input1);
+    getline(cin, input2);
+    auto nums1 = parseArray(input1);
+    auto nums2 = parseArray(input2);
     
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String[] parts = scanner.nextLine().trim().split("\\s+");
-        int[] nums = new int[parts.length];
-        
-        for (int i = 0; i < parts.length; i++) {
-            nums[i] = Integer.parseInt(parts[i]);
-        }
-        
-        Solution solution = new Solution();
-        try {
-            int result = solution.solve(nums);
-            System.out.println(result);
-        } catch (Exception e) {
-            System.err.println("Runtime error: " + e.getMessage());
-            System.exit(1);
-        }
-    }
-}`,
+    Solution solution;
+    cout << solution.solve(nums1, nums2) << endl;
+    return 0;
+}`;
 
-  Python: `
-class Solution:
-    %CODE%
+    case "single_array":
+      return `
+int main() {
+    string input;
+    getline(cin, input);
+    auto nums = parseArray(input);
+    
+    Solution solution;
+    cout << solution.solve(nums) << endl;
+    return 0;
+}`;
 
-def main():
-    try:
-        nums = list(map(int, input().strip().split()))
-        solution = Solution()
-        result = solution.solve(nums)
-        print(result)
-    except Exception as e:
-        print(f"Runtime error: {str(e)}", file=sys.stderr)
-        sys.exit(1)
+    case "array_and_integer":
+      return `
+int main() {
+    string array_input;
+    getline(cin, array_input);
+    auto nums = parseArray(array_input);
+    
+    int target;
+    cin >> target;
+    
+    Solution solution;
+    cout << solution.solve(nums, target) << endl;
+    return 0;
+}`;
 
-if __name__ == "__main__":
-    main()
-`,
+    case "multiple_integers":
+      return `
+int main() {
+    int a, b;
+    cin >> a >> b;
+    
+    Solution solution;
+    cout << solution.solve(a, b) << endl;
+    return 0;
+}`;
+
+    case "single_integer":
+    default:
+      return `
+int main() {
+    int num;
+    cin >> num;
+    
+    Solution solution;
+    cout << solution.solve(num) << endl;
+    return 0;
+}`;
+  }
 };
 
-const checkTestCases = async (code, language, testCases) => {
+const generateFullTemplate = (userCode, inputType) => {
+  const headers =
+    "#include <iostream>\n#include <vector>\n#include <string>\n#include <sstream>\n#include <algorithm>\nusing namespace std;\n\n";
+  const inputParser = getInputParsingCode(inputType);
+  const mainFunction = generateMainFunction(inputType);
+
+  return `${headers}class Solution {\npublic:\n    ${userCode}\n};\n\n${inputParser}\n${mainFunction}`;
+};
+
+const checkTestCases = async (userCode, language, testCases) => {
+  const inputType = detectInputType(testCases);
+  const fullCode = generateFullTemplate(userCode, inputType);
   const languageId = LANGUAGE_MAP[language];
   if (!languageId) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
-  const fullCode = prepareCode(code, language);
   const results = [];
 
   for (const testCase of testCases) {
@@ -234,15 +334,10 @@ const checkTestCases = async (code, language, testCases) => {
   };
 };
 
-const prepareCode = (userCode, language) => {
-  const template = CODE_TEMPLATES[language];
-  if (!template) {
-    throw new Error(`No template found for language: ${language}`);
-  }
-  return template.replace("%CODE%", userCode.trim());
-};
-
 module.exports = {
   checkTestCases,
   LANGUAGE_MAP,
+  // Export for testing purposes
+  detectInputType,
+  generateSolveSignature,
 };

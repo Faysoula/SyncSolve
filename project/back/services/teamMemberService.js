@@ -79,7 +79,6 @@ const getTeamMembers = async (team_id) => {
   }
 };
 
-
 const getTeamMemberById = async (user_id) => {
   try {
     const teamMembers = await TeamMember.findAll({
@@ -102,7 +101,7 @@ const getTeamMemberById = async (user_id) => {
   }
 };
 
-const getUserTeam = async(user_id) => {
+const getUserTeam = async (user_id) => {
   try {
     const teamMembers = await TeamMember.findAll({
       where: { user_id },
@@ -122,11 +121,7 @@ const getUserTeam = async(user_id) => {
   } catch (error) {
     throw new Error(`Error getting team member: ${error.message}`);
   }
-}
-
-
-
-
+};
 
 const updateTeamMemberRole = async (team_member_id, role) => {
   try {

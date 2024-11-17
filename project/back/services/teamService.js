@@ -87,7 +87,7 @@ const getTeamById = async (team_id) => {
   } catch (err) {
     throw new Error(`Error getting team by id: ${err.message}`);
   }
-}
+};
 
 const updateTeamName = async (team_id, team_name) => {
   const [updatedRows] = await Team.update(
@@ -99,26 +99,25 @@ const updateTeamName = async (team_id, team_name) => {
 };
 
 const deleteTeam = async (team_id) => {
-    try {
-        const team = await Team.findByPk(team_id);
-        if (!team) {
-        throw new Error("Team not found");
-        }
-    
-        await team.destroy();
-        return {message: "Team deleted successfully"};
-    } catch (err) {
-        throw new Error(`Error deleting team: ${err.message}`);
+  try {
+    const team = await Team.findByPk(team_id);
+    if (!team) {
+      throw new Error("Team not found");
     }
 
-}
+    await team.destroy();
+    return { message: "Team deleted successfully" };
+  } catch (err) {
+    throw new Error(`Error deleting team: ${err.message}`);
+  }
+};
 
 module.exports = {
-    createTeam,
-    getTeams,
-    getTeamByName,
-    getTeamMembers,
-    getTeamById,
-    updateTeamName,
-    deleteTeam,
-    };
+  createTeam,
+  getTeams,
+  getTeamByName,
+  getTeamMembers,
+  getTeamById,
+  updateTeamName,
+  deleteTeam,
+};

@@ -78,7 +78,6 @@ const createExecution = async (user_id, code, terminal_id) => {
   }
 };
 
-// 2. Get all executions
 const getAllExecutions = async () => {
   try {
     const executions = await Execution.findAll({
@@ -102,7 +101,6 @@ const getAllExecutions = async () => {
   }
 };
 
-// 3. Get executions by session ID
 const getExecutionsBySessionId = async (session_id) => {
   try {
     const executions = await Execution.findAll({
@@ -124,7 +122,6 @@ const getExecutionsBySessionId = async (session_id) => {
   }
 };
 
-// 4. Get executions by user ID
 const getExecutionsByUserId = async (user_id) => {
   try {
     const executions = await Execution.findAll({
@@ -145,7 +142,6 @@ const getExecutionsByUserId = async (user_id) => {
   }
 };
 
-// 5. Get a specific execution by execution ID
 const getExecutionById = async (execution_id) => {
   try {
     const execution = await Execution.findByPk(execution_id, {
@@ -165,7 +161,6 @@ const getExecutionById = async (execution_id) => {
   }
 };
 
-// 6. Update an execution
 const updateExecution = async (execution_id, updates) => {
   try {
     const execution = await Execution.findByPk(execution_id);
@@ -181,7 +176,6 @@ const updateExecution = async (execution_id, updates) => {
   }
 };
 
-// 7. Delete an execution
 const deleteExecution = async (execution_id) => {
   try {
     const execution = await Execution.findByPk(execution_id);

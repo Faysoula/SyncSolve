@@ -172,27 +172,35 @@ export const AVAILABLE_TAGS = [
   "Biconnected Component",
 ].sort();
 
+export const detectInputSignature = (testCases) => {
+  const firstInput = testCases[0].input;
+  const inputStr = String(firstInput).trim();
+
+  if (inputStr.startsWith("[[")) {
+    return "int solve(vector<vector<int>>& matrix)";
+  }
+  if (inputStr.includes("\n") && inputStr.includes("[")) {
+    return "int solve(vector<int>& nums1, vector<int>& nums2)";
+  }
+  if (inputStr.startsWith("[")) {
+    if (testCases[0].hasOwnProperty("second_input")) {
+      return "int solve(vector<int>& nums, int target)";
+    }
+    return "int solve(vector<int>& nums)";
+  }
+  if (inputStr.includes(" ")) {
+    return "int solve(int a, int b)";
+  }
+  return "int solve(int num)";
+};
+
 export const STARTING_CODE_TEMPLATES = {
   python: `def solution():
     # Write your solution here
     pass`,
 
-  cpp: `#include <vector>
-#include <string>
-#include <iostream>
-using namespace std;
-
-class Solution {
-public:
-    void solve() {
-        // Write your solution here
-        cout << "Hello World!" << endl;
-    }
-};
-
-int main() {
-    Solution solution;
-    solution.solve();
+  cpp: `int solve(%SIGNATURE%) {
+    // Write your solution here
     return 0;
 }`,
 
@@ -201,12 +209,17 @@ int main() {
         // Write your solution here
         System.out.println("Hello World!");
     }
-
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        solution.solve();
-    }
 }`,
+};
+
+export const generateStartingCode = (language, testCases) => {
+  if (language === "cpp") {
+    const signature = detectInputSignature(testCases)
+      .replace("int solve(", "")
+      .replace(")", "");
+    return STARTING_CODE_TEMPLATES.cpp.replace("%SIGNATURE%", signature);
+  }
+  return STARTING_CODE_TEMPLATES[language];
 };
 
 

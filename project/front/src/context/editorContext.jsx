@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "./authContext";
 import { useEditorState } from "../hooks/useEditorState";
 import { useCollaboration } from "../hooks/useCollaboration";
-import { STARTING_CODE_TEMPLATES } from "../utils/constants";
+import { STARTING_CODE_TEMPLATES, generateStartingCode } from "../utils/constants";
 import socketService from "../Services/socketService";
 import {
   createTerminalForLanguage,
@@ -18,6 +18,7 @@ import {
   loadSnapshots,
 } from "../Services/editorService";
 import SessionTerminalService from "../Services/sessionService";
+import ProblemService from "../Services/problemService";
 
 const EditorContext = createContext(null);
 
@@ -97,6 +98,29 @@ export const EditorProvider = ({ children }) => {
     },
     [theme, user?.user_id]
   );
+
+  useEffect(() => {
+    const initializeCodeStates = async () => {
+      if (problemId) {
+        try {
+          // Fetch problem details
+          const response = await ProblemService.getProblemById(problemId);
+          const problem = response.data;
+
+          // Generate appropriate starting code for each language
+          setCodeStates({
+            cpp: generateStartingCode("cpp", problem.test_cases),
+            python: STARTING_CODE_TEMPLATES.python,
+            java: STARTING_CODE_TEMPLATES.java,
+          });
+        } catch (err) {
+          console.error("Error initializing code states:", err);
+        }
+      }
+    };
+
+    initializeCodeStates();
+  }, [problemId]);
 
   const updateTheme = useCallback(async (newTheme) => {
     try {

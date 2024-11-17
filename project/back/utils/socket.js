@@ -1,6 +1,8 @@
 // utils/socket.js
 const { Server } = require("socket.io");
 
+//hi Dr im new to sockets so if this is wrong please spare me :D
+
 function initializeSocket(server) {
   const io = new Server(server, {
     cors: {

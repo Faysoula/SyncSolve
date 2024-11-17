@@ -27,7 +27,7 @@ const addProblem = async (
 
     // Instead of storing full base64 strings, we just store the filenames
     const metadata = {
-      example_images: example_images.filter((img) => img !== null), // These should now be just filenames
+      example_images: example_images.filter((img) => img !== null), //just filenames
       tags: tags
         .map((tag) => tag.toLowerCase().trim())
         .filter((tag) => tag !== ""),
@@ -123,7 +123,6 @@ const updateProblem = async (
       };
     }
 
-    // Update the problem with new fields
     await problem.update({
       title: title || problem.title,
       description: description || problem.description,
@@ -183,29 +182,32 @@ const searchProblemsByTags = async (tags) => {
   }
 };
 
-// Helper function to add tags to a problem
-const addTagsToProblem = async (problemId, tags) => {
-  try {
-    const problem = await Problems.findByPk(problemId);
-    if (!problem) {
-      throw new Error("Problem not found");
-    }
 
-    const currentMetadata = problem.metadata || { tags: [] };
-    const updatedTags = [...new Set([...currentMetadata.tags, ...tags])];
+//i may use this later
+// // Helper function to add tags to a problem
+// const addTagsToProblem = async (problemId, tags) => {
+//   try {
+//     const problem = await Problems.findByPk(problemId);
+//     if (!problem) {
+//       throw new Error("Problem not found");
+//     }
 
-    await problem.update({
-      metadata: {
-        ...currentMetadata,
-        tags: updatedTags,
-      },
-    });
+//     const currentMetadata = problem.metadata || { tags: [] };
+//     const updatedTags = [...new Set([...currentMetadata.tags, ...tags])];
 
-    return problem;
-  } catch (err) {
-    throw new Error(`Error adding tags to problem: ${err.message}`);
-  }
-};
+//     await problem.update({
+//       metadata: {
+//         ...currentMetadata,
+//         tags: updatedTags,
+//       },
+//     });
+
+//     return problem;
+//   } catch (err) {
+//     throw new Error(`Error adding tags to problem: ${err.message}`);
+//   }
+// };
+
 const deleteProblem = async (problem_id) => {
   try {
     const toDelete = await Problems.findByPk(problem_id);
