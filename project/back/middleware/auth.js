@@ -4,7 +4,6 @@ require("dotenv").config();
 const auth = (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
-
     if (!authHeader) {
       return res.status(401).json({ message: "No authorization header found" });
     }

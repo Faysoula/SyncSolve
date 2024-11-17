@@ -1,36 +1,35 @@
+// components/problem-interface/ThemeSelector.jsx
 import React from "react";
 import { Box, Select, MenuItem } from "@mui/material";
-import { Palette } from "lucide-react";
 import { useEditor } from "../../context/editorContext";
 
-// Simplified theme list for better UX
 const THEME_CATEGORIES = {
   "Dark Themes": [
-    { id: "vs-dark", label: "VS Dark", icon: "🌑" },
     { id: "dracula", label: "Dracula", icon: "🧛" },
     { id: "github-dark", label: "GitHub Dark", icon: "🐱" },
     { id: "monokai", label: "Monokai", icon: "🌙" },
-    { id: "tomorrow-night", label: "Tomorrow Night", icon: "🌌" },
-    { id: "one-dark-pro", label: "One Dark Pro", icon: "🌚" },
-    { id: "ayu-dark", label: "Ayu Dark", icon: "🌘" },
     { id: "nord", label: "Nord", icon: "❄️" },
-    { id: "material-palenight", label: "Material Palenight", icon: "🌃" },
-    { id: "solarized-dark", label: "Solarized Dark", icon: "🌞" },
+    { id: "vs-dark", label: "VS Dark", icon: "🌑" },
   ],
   "Light Themes": [
-    { id: "github-light", label: "GitHub Light", icon: "☀️" },
-    { id: "vs", label: "VS Light", icon: "💡" },
-    { id: "xcode-default", label: "Xcode", icon: "🍎" },
+    { id: "github-light", label: "GitHub Light", icon: "🐱" },
+    { id: "vs", label: "VS Light", icon: "☀️" },
+    { id: "solarized-light", label: "Solarized", icon: "🌞" },
   ],
 };
 
 const ThemeSelector = () => {
   const { theme, updateTheme } = useEditor();
 
+  const handleThemeChange = (e) => {
+    const newTheme = e.target.value;
+    updateTheme(newTheme);
+  };
+
   return (
     <Select
-      value={theme}
-      onChange={(e) => updateTheme(e.target.value)}
+      value={theme || "vs-dark"}
+      onChange={handleThemeChange}
       size="small"
       sx={{
         color: "#FAF0CA",
@@ -45,7 +44,7 @@ const ThemeSelector = () => {
           borderColor: "rgba(157, 78, 221, 0.7)",
         },
         backgroundColor: "rgba(26, 22, 38, 0.4)",
-        width: "150px", // Slightly wider for theme names
+        width: "150px",
         height: "32px",
         "& .MuiSelect-select": {
           padding: "4px 8px",
