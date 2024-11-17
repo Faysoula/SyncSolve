@@ -9,7 +9,6 @@ SyncSolve is a collaborative programming platform that enables teams to practice
 - [Database Schema](#database-schema)
 - [API Documentation](#api-documentation)
 - [Third-Party Dependencies](#third-party-dependencies)
-- [Testing](#testing)
 
 ## Project Setup
 
