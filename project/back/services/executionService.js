@@ -10,45 +10,71 @@ const { getProblemById } = require("../services/problemsService");
 
 const createExecution = async (user_id, code, terminal_id) => {
   try {
-    // Retrieve the terminal session to get the language and other data
+    // Get terminal session
     const terminalSession = await TerminalSession.findByPk(terminal_id);
     if (!terminalSession) {
       throw new Error("Terminal session not found");
     }
 
-    const session = await Session.findByPk(terminalSession.session_id);
-    const teamMembers = await getTeamMembers(session.team_id);
-    const isTeamMember = teamMembers.some(
-      (member) => member.user_id === user_id
+    // Get session and problem
+    const session = await Session.findByPk(terminalSession.session_id, {
+      include: [
+        {
+          model: require("../models/problems"),
+          attributes: ["test_cases"],
+        },
+      ],
+    });
+
+    if (!session || !session.Problem) {
+      throw new Error("Session or problem not found");
+    }
+
+    const testCases = session.Problem.test_cases;
+    if (!testCases || !Array.isArray(testCases)) {
+      throw new Error("Invalid test cases");
+    }
+
+    // Execute code
+    const runResult = await judge.checkTestCases(
+      code,
+      terminalSession.language,
+      testCases
     );
-    if (!isTeamMember) {
-      throw new Error("User not authorized for this team session");
-    }
 
-    const { language, session_id } = terminalSession;
-
-    const problem = await getProblemById(session.problem_id);
-    if (!problem || !problem.test_cases) {
-      throw new Error("Problem not found or has no test cases");
-    }
-
-    const runResult = await judge(code, language, problem.test_cases);
-
-    const status = runResult.allPassed ? "success" : "error";
-    
+    // Create execution record
     const execution = await Execution.create({
       user_id,
       code,
       terminal_id,
       result: JSON.stringify(runResult),
-      status,
+      status: runResult.allPassed ? "success" : "error",
     });
 
-    await createSessionSnapshot(session_id, code);
+    // Save snapshot
+    await createSessionSnapshot(terminalSession.session_id, code);
 
-    return {execution, runResult};
+    return {
+      success: true,
+      execution: {
+        execution_id: execution.execution_id,
+        status: execution.status,
+      },
+      runResult: {
+        allPassed: runResult.allPassed,
+        results: runResult.results.map((result) => ({
+          passed: result.passed,
+          input: result.input,
+          expectedOutput: result.expectedOutput,
+          output: result.output,
+          error: result.error,
+          status: result.status,
+        })),
+      },
+    };
   } catch (error) {
-    throw new Error(`Error creating execution: ${error.message}`);
+    console.error("Execution error:", error);
+    throw new Error(`Execution failed: ${error.message}`);
   }
 };
 

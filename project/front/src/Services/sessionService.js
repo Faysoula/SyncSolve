@@ -1,29 +1,32 @@
 import http from "../http-common";
 import { getTokenBearer } from "../utils/token";
 
+// Constants for error handling
+const ERROR_MESSAGES = {
+  NO_CODE: "No code provided",
+  NO_TERMINAL: "No active terminal session",
+  NO_USER: "User not authenticated",
+  INVALID_LANGUAGE: "Invalid programming language",
+  EXECUTION_FAILED: "Code execution failed",
+};
+
 const createProblemSession = async (teamId, problemId) => {
   try {
-    // First check if there's already an active session for this problem and team
     const existingSessions = await http.get(
       `/sessions/session/team/${teamId}`,
       {
-        headers: {
-          Authorization: getTokenBearer(),
-        },
+        headers: { Authorization: getTokenBearer() },
       }
     );
 
-    // Find an active session for this specific problem
     const existingSession = existingSessions.data.find(
       (session) => session.problem_id === Number(problemId) && !session.ended_at
     );
 
-    // If we found an existing active session for this problem, return it
     if (existingSession) {
       return existingSession;
     }
 
-    // If no existing session found, create a new one
     const response = await http.post(
       "/sessions/CreateSession",
       {
@@ -31,45 +34,121 @@ const createProblemSession = async (teamId, problemId) => {
         problem_id: Number(problemId),
       },
       {
-        headers: {
-          Authorization: getTokenBearer(),
-        },
+        headers: { Authorization: getTokenBearer() },
       }
     );
     return response.data;
   } catch (err) {
-    console.error("Session creation error:", err);
-    throw err;
+    throw new Error(
+      `Session creation failed: ${err.response?.data?.message || err.message}`
+    );
   }
 };
 
 const getActiveSession = async (teamId) => {
   try {
     const response = await http.get(`/sessions/session/team/${teamId}`, {
-      headers: {
-        Authorization: getTokenBearer(),
-      },
+      headers: { Authorization: getTokenBearer() },
     });
-    // Filter to only return active sessions (those without an ended_at date)
-    const activeSessions = response.data.filter((session) => !session.ended_at);
-    return activeSessions;
+    return response.data.filter((session) => !session.ended_at);
   } catch (err) {
-    console.error("Error getting active session:", err);
-    throw err;
+    throw new Error(
+      `Failed to get active sessions: ${
+        err.response?.data?.message || err.message
+      }`
+    );
   }
 };
 
-const getUserTeam = async (userId) => {
+const createTerminal = async (sessionId, language) => {
+  if (!sessionId || !language) {
+    throw new Error(ERROR_MESSAGES.INVALID_LANGUAGE);
+  }
+
   try {
-    const response = await http.get(`/team-members/${userId}`, {
-      headers: {
-        Authorization: getTokenBearer(),
+    const response = await http.post(
+      "/terminal/createTerminal",
+      {
+        session_id: Number(sessionId),
+        language: language,
       },
-    });
-    return response.data.teamMembers[0]?.team_id;
-  } catch (err) {
-    console.error("Error getting user team:", err);
-    throw err;
+      {
+        headers: { Authorization: getTokenBearer() },
+      }
+    );
+
+    if (!response.data) {
+      throw new Error(ERROR_MESSAGES.EXECUTION_FAILED);
+    }
+
+    return response.data;
+  } catch (error) {
+    // Enhanced error handling with specific messages
+    const errorMessage = error.response?.data?.message || error.message;
+    if (errorMessage.includes("language not supported")) {
+      throw new Error(`${ERROR_MESSAGES.INVALID_LANGUAGE}: ${language}`);
+    }
+    throw new Error(`Terminal creation failed: ${errorMessage}`);
+  }
+};
+
+const executeCode = async (userId, code, terminalId) => {
+  // Input validation
+  if (!userId) throw new Error("User ID is required");
+  if (!code?.trim()) throw new Error("Code cannot be empty");
+  if (!terminalId) throw new Error("Terminal ID is required");
+
+  try {
+    const response = await http.post(
+      "/executions/createEx",
+      {
+        user_id: Number(userId),
+        code: code.trim(),
+        terminal_id: Number(terminalId),
+      },
+      {
+        headers: {
+          Authorization: getTokenBearer(),
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Ensure we have a valid response
+    if (!response.data) {
+      throw new Error("No response from execution service");
+    }
+
+    const { success, execution, runResult } = response.data;
+
+    // Validate and format the response
+    return {
+      success: Boolean(success),
+      execution: execution || null,
+      runResult: {
+        allPassed: runResult?.allPassed || false,
+        results:
+          runResult?.results?.map((result) => ({
+            passed: Boolean(result.passed),
+            input: result.input,
+            expectedOutput: result.expectedOutput,
+            output: result.output,
+            error: result.error,
+            status: result.status,
+          })) || [],
+      },
+    };
+  } catch (error) {
+    console.error("Code execution error:", error);
+    return {
+      success: false,
+      execution: null,
+      runResult: {
+        allPassed: false,
+        results: [],
+        error: error.response?.data?.message || error.message,
+      },
+    };
   }
 };
 
@@ -77,19 +156,14 @@ const updateSession = async (sessionId, problemId) => {
   try {
     const response = await http.put(
       `/sessions/${sessionId}/updateSesh`,
-      {
-        problem_id: Number(problemId),
-      },
-      {
-        headers: {
-          Authorization: getTokenBearer(),
-        },
-      }
+      { problem_id: Number(problemId) },
+      { headers: { Authorization: getTokenBearer() } }
     );
     return response.data;
   } catch (err) {
-    console.error("Session update error:", err);
-    throw err;
+    throw new Error(
+      `Session update failed: ${err.response?.data?.message || err.message}`
+    );
   }
 };
 
@@ -98,74 +172,25 @@ const endSession = async (sessionId) => {
     const response = await http.put(
       `/sessions/${sessionId}/end`,
       {},
-      {
-        headers: {
-          Authorization: getTokenBearer(),
-        },
-      }
+      { headers: { Authorization: getTokenBearer() } }
     );
     return response.data;
   } catch (err) {
-    console.error("Session end error:", err);
-    throw err;
-  }
-};
-
-//terminal things
-
-const createTerminal = async (sessionId, language) => {
-  try {
-    console.log("Creating terminal with:", { sessionId, language }); // Debug log
-    const response = await http.post(
-      "/terminal/createTerminal",
-      {
-        session_id: Number(sessionId),
-        language: language,
-      },
-      {
-        headers: {
-          Authorization: getTokenBearer(),
-        },
-      }
-    );
-    console.log("Terminal creation response:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Full error object:", error);
-    console.error("Error response data:", error.response?.data);
     throw new Error(
-      `Failed to create terminal: ${
-        error.response?.data?.message || error.message
-      }`
+      `Failed to end session: ${err.response?.data?.message || err.message}`
     );
   }
 };
 
-const executeCode = async (userId, code, terminalId) => {
+const getUserTeam = async (userId) => {
   try {
-    console.log("Executing code with:", { userId, terminalId }); // Debug log
-    const response = await http.post(
-      "/executions/createEx",
-      {
-        user_id: Number(userId),
-        code: code,
-        terminal_id: Number(terminalId),
-      },
-      {
-        headers: {
-          Authorization: getTokenBearer(),
-        },
-      }
-    );
-    console.log("Code execution response:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Full error object:", error);
-    console.error("Error response data:", error.response?.data);
+    const response = await http.get(`/team-members/${userId}`, {
+      headers: { Authorization: getTokenBearer() },
+    });
+    return response.data.teamMembers[0]?.team_id;
+  } catch (err) {
     throw new Error(
-      `Failed to execute code: ${
-        error.response?.data?.message || error.message
-      }`
+      `Failed to get user team: ${err.response?.data?.message || err.message}`
     );
   }
 };

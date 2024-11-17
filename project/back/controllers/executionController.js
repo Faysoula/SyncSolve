@@ -10,15 +10,38 @@ const {
 
 const createExecutionController = async (req, res) => {
   const { user_id, code, terminal_id } = req.body;
+
   try {
-    const execution = await createExecution(
-      user_id,
-      code,
-      terminal_id
-    );
-    res.status(201).json(execution);
+    // Input validation
+    if (!user_id || !code || !terminal_id) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        details: {
+          user_id: !user_id ? "User ID is required" : null,
+          code: !code ? "Code is required" : null,
+          terminal_id: !terminal_id ? "Terminal ID is required" : null,
+        },
+      });
+    }
+
+    const result = await createExecution(user_id, code, terminal_id);
+
+    // Send back a properly structured response
+    return res.status(200).json({
+      success: true,
+      execution: result.execution,
+      runResult: result.runResult,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Execution error:", error);
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+      error: {
+        type: "EXECUTION_ERROR",
+        details: error.stack,
+      },
+    });
   }
 };
 

@@ -226,21 +226,32 @@ export const EditorProvider = ({ children }) => {
     try {
       setTestResults({ isLoading: true, results: null });
 
-      const executionResponse = await SessionTerminalService.executeCode(
+      const response = await SessionTerminalService.executeCode(
         user.user_id,
         codeStates[language],
         currentTerminal.terminal_id
       );
 
+      // Check if we have a valid response
+      if (!response || !response.runResult) {
+        throw new Error("Invalid response from execution service");
+      }
+
+      const { runResult, execution } = response;
+
       setTestResults({
         isLoading: false,
-        allPassed: executionResponse.runResult.allPassed,
-        results: executionResponse.runResult.results,
-        executionId: executionResponse.execution.execution_id,
+        allPassed: Boolean(runResult.allPassed),
+        results: runResult.results || [],
+        executionId: execution?.execution_id,
+        error: runResult.error || null,
       });
     } catch (error) {
+      console.error("Test execution error:", error);
       setTestResults({
         isLoading: false,
+        allPassed: false,
+        results: [],
         error: error.message || "Failed to execute tests",
       });
     }
