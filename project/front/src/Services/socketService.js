@@ -40,6 +40,16 @@ class SocketService {
       this.socket.emit("joinRoom", { teamId, userId });
     }
   }
+  emitTyping(teamId, userId, userName, isTyping) {
+    if (this.socket) {
+      this.socket.emit("userTyping", {
+        teamId,
+        userId,
+        userName,
+        isTyping,
+      });
+    }
+  }
 
   emitCodeChange(code, language, userId, position) {
     if (this.socket && this.room) {

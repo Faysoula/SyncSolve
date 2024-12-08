@@ -39,6 +39,14 @@ function initializeSocket(server) {
         timestamp: new Date(),
       });
     });
+    socket.on("userTyping", ({ teamId, userId, userName, isTyping }) => {
+      const chatRoom = `team-${teamId}`;
+      socket.to(chatRoom).emit("userTyping", {
+        userId,
+        userName,
+        isTyping,
+      });
+    });
 
     // Handle code changes
     socket.on("codeChange", ({ room, code, language, userId }) => {

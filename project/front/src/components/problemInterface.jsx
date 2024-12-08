@@ -128,13 +128,14 @@ const ProblemContent = () => {
         gridTemplateColumns: "380px 1fr",
         gridTemplateRows: "1fr 400px",
         gap: 1.5,
-        height: "100vh",
+        height: "calc(100vh - 64px)", // Subtract header height
         p: 1.5,
+        pb: "80px", // Add padding at bottom to prevent footer overlap
         backgroundColor: "#0E0B1A",
         pt: { xs: 9, md: 1.5 },
         overflow: "hidden",
-        minWidth: "800px", // Add minimum width
-        minHeight: "600px", // Add minimum height
+        minWidth: "800px",
+        minHeight: "600px",
         "& .monaco-editor, & .overflow-guard": {
           width: "100% !important",
           height: "100% !important",

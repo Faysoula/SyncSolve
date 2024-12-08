@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, Paper, Typography, TextField, IconButton } from "@mui/material";
 import { Send, X } from "lucide-react";
-import { useAuth } from "../../context/authContext"; // Fix path
-import socketService from "../../Services/socketService"; // Fix path
-import ChatService from "../../Services/chatService"; // Fix path
+import { useAuth } from "../../context/authContext";
+import socketService from "../../Services/socketService";
+import ChatService from "../../Services/chatService";
 
 const ChatWindow = ({ teamId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [typingUsers, setTypingUsers] = useState(new Set());
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
+  let typingTimeout = null;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,10 +27,6 @@ const ChatWindow = ({ teamId, onClose }) => {
       }
     };
 
-    loadMessages();
-    scrollToBottom();
-  }, [teamId]);
-  useEffect(() => {
     // Connect to socket if not already connected
     if (!socketService.socket) {
       socketService.connect();
@@ -36,14 +34,14 @@ const ChatWindow = ({ teamId, onClose }) => {
 
     // Join the chat room
     socketService.joinChatRoom(teamId, user.user_id);
-
-    return () => {
-      // Optional: Handle cleanup if needed
-    };
+    loadMessages();
+    scrollToBottom();
   }, [teamId, user.user_id]);
 
   useEffect(() => {
-    socketService.socket?.on("newMessage", (message) => {
+    if (!socketService.socket) return;
+
+    socketService.socket.on("newMessage", (message) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -56,10 +54,57 @@ const ChatWindow = ({ teamId, onClose }) => {
       scrollToBottom();
     });
 
+    socketService.socket.on("userTyping", ({ userId, userName, isTyping }) => {
+      setTypingUsers((prev) => {
+        const newSet = new Set(prev);
+        if (isTyping) {
+          newSet.add(userName);
+        } else {
+          newSet.delete(userName);
+        }
+        return newSet;
+      });
+    });
+
     return () => {
-      socketService.socket?.off("newMessage");
+      socketService.socket.off("newMessage");
+      socketService.socket.off("userTyping");
     };
   }, []);
+
+  // Auto scroll on new messages or typing indicators
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, typingUsers]);
+
+  const handleTyping = (isTyping) => {
+    if (!socketService.socket) return;
+
+    socketService.socket.emit("userTyping", {
+      teamId,
+      userId: user.user_id,
+      userName: user.name || user.username,
+      isTyping,
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setNewMessage(value);
+
+    // Clear existing timeout
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    // Only emit typing if there's content
+    handleTyping(value.length > 0);
+
+    // Only set timeout to stop typing indicator if the input is empty
+    if (value.length === 0) {
+      typingTimeout = setTimeout(() => {
+        handleTyping(false);
+      }, 1000);
+    }
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -77,7 +122,6 @@ const ChatWindow = ({ teamId, onClose }) => {
         },
       });
 
-      // Add the sent message immediately to the UI
       setMessages((prev) => [
         ...prev,
         {
@@ -92,10 +136,68 @@ const ChatWindow = ({ teamId, onClose }) => {
       ]);
 
       setNewMessage("");
+      // Explicitly stop typing when message is sent
+      handleTyping(false);
       scrollToBottom();
     } catch (err) {
       console.error("Error sending message:", err);
     }
+  };
+
+  const renderTypingIndicator = () => {
+    if (typingUsers.size === 0) return null;
+
+    return (
+      <Box
+        sx={{
+          p: 1,
+          color: "#9D4EDD",
+          fontSize: "0.875rem",
+          fontStyle: "italic",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Box
+          component="span"
+          sx={{
+            display: "inline-flex",
+            gap: 0.5,
+            alignItems: "center",
+            "& .dot": {
+              width: 4,
+              height: 4,
+              backgroundColor: "#9D4EDD",
+              borderRadius: "50%",
+              animation: "typing 1.4s infinite",
+              "&:nth-of-type(2)": {
+                animationDelay: "0.2s",
+              },
+              "&:nth-of-type(3)": {
+                animationDelay: "0.4s",
+              },
+            },
+            "@keyframes typing": {
+              "0%, 60%, 100%": {
+                transform: "translateY(0)",
+              },
+              "30%": {
+                transform: "translateY(-4px)",
+              },
+            },
+          }}
+        >
+          <div className="dot" />
+          <div className="dot" />
+          <div className="dot" />
+        </Box>
+        <span>
+          {Array.from(typingUsers).join(", ")}{" "}
+          {typingUsers.size === 1 ? "is" : "are"} typing...
+        </span>
+      </Box>
+    );
   };
 
   return (
@@ -111,6 +213,7 @@ const ChatWindow = ({ teamId, onClose }) => {
         bgcolor: "#1A1626",
         borderRadius: 2,
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        zIndex: 1300,
       }}
     >
       {/* Chat Header */}
@@ -181,6 +284,7 @@ const ChatWindow = ({ teamId, onClose }) => {
             </Box>
           </Box>
         ))}
+        {renderTypingIndicator()}
         <div ref={messagesEndRef} />
       </Box>
 
@@ -199,7 +303,13 @@ const ChatWindow = ({ teamId, onClose }) => {
           fullWidth
           size="small"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={handleInputChange}
+          onBlur={() => {
+            // Only stop typing indicator if input is empty
+            if (!newMessage.trim()) {
+              handleTyping(false);
+            }
+          }}
           placeholder="Type a message..."
           sx={{
             "& .MuiOutlinedInput-root": {
