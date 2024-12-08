@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Box, CircularProgress, Alert, Typography } from "@mui/material";
+import { Box, CircularProgress, Alert } from "@mui/material";
 import ProblemService from "../Services/problemService";
 import { EditorProvider, useEditor } from "../context/editorContext";
+import { useAuth } from "../context/authContext";
+import { useTeam } from "../hooks/useTeam"; // Import useTeam hook
 import ProblemDetails from "./problem-interface/ProblemDetails";
 import EditorPanel from "./problem-interface/EditorPanel";
 import TestResults from "./problem-interface/TestResults";
+import ChatButton from "./chat/chatButton"; // Fix import path
 
 const ProblemContent = () => {
   const { problemId } = useParams();
+  const { user } = useAuth();
+  const { teamData } = useTeam(user?.user_id);
   const { runTests } = useEditor();
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -214,6 +219,7 @@ const ProblemContent = () => {
           }}
         />
       </Box>
+      {teamData?.team?.team_id && <ChatButton teamId={teamData.team.team_id} />}
     </Box>
   );
 };

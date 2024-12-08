@@ -6,6 +6,7 @@ const Session = require("./session");
 const TerminalSession = require("./terminal_sessions");
 const SessionSnapshot = require("./sessionSnapshots");
 const Execution = require("./executions");
+const Chat = require("./Chat");
 
 // Set up associations
 Team.hasMany(TeamMember, { foreignKey: "team_id", onDelete: "CASCADE" });
@@ -84,6 +85,24 @@ TerminalSession.hasMany(Execution, {
 Execution.belongsTo(TerminalSession, {
   foreignKey: "terminal_id",
   onDelete: "SET NULL",
+});
+
+Team.hasMany(Chat, {
+  foreignKey: "team_id",
+  onDelete: "CASCADE",
+});
+
+Chat.belongsTo(Team, {
+  foreignKey: "team_id",
+});
+
+User.hasMany(Chat, {
+  foreignKey: "sender_id",
+  onDelete: "SET NULL",
+});
+
+Chat.belongsTo(User, {
+  foreignKey: "sender_id",
 });
 
 module.exports = {

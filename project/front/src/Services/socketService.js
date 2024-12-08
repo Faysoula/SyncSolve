@@ -34,6 +34,13 @@ class SocketService {
     this.socket.emit("joinRoom", { sessionId, problemId, userId });
   }
 
+  joinChatRoom(teamId, userId) {
+    if (this.socket) {
+      const chatRoom = `team-${teamId}`;
+      this.socket.emit("joinRoom", { teamId, userId });
+    }
+  }
+
   emitCodeChange(code, language, userId, position) {
     if (this.socket && this.room) {
       this.socket.emit("codeChange", {

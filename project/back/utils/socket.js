@@ -16,16 +16,27 @@ function initializeSocket(server) {
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
-    // Join a room based on session and problem
-    socket.on("joinRoom", ({ sessionId, problemId, userId }) => {
+    socket.on("joinRoom", ({ sessionId, problemId, userId, teamId }) => {
       const room = `${sessionId}-${problemId}`;
+      const chatRoom = `team-${teamId}`;
       socket.join(room);
-      console.log(`User ${userId} joined room ${room}`);
+      socket.join(chatRoom);
+      console.log(
+        `User ${userId} joined room ${room} and chat room ${chatRoom}`
+      );
 
-      // Notify others in the room
       socket.to(room).emit("userJoined", {
         userId,
         socketId: socket.id,
+      });
+    });
+    socket.on("chatMessage", ({ teamId, message, userId, User }) => {
+      const chatRoom = `team-${teamId}`;
+      socket.to(chatRoom).emit("newMessage", {
+        message,
+        userId,
+        User,
+        timestamp: new Date(),
       });
     });
 

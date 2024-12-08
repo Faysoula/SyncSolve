@@ -28,6 +28,7 @@ const terminalRoutes = require("./routes/terminalRoutes");
 const sessionSnapshot = require("./routes/sessionSnapRoutes");
 const ExecutionRoutes = require("./routes/executionRoutes");
 const uploadRoutes = require("./routes/uploadRoute");
+const chatRoutes = require("./routes/chatRoutes");
 
 const app = express();
 
@@ -61,9 +62,9 @@ app.use("/api/terminal", terminalRoutes);
 app.use("/api/snapshots", sessionSnapshot);
 app.use("/api/executions", ExecutionRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 
 app.get("/", (req, res) => {
   res.send("api running yay");
