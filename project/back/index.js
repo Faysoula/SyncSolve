@@ -38,12 +38,7 @@ initializeSocket(server);
 
 const PORT = process.env.PORT || 3001;
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
+app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
@@ -75,7 +70,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0',() => {
   console.log(`====================================`);
   console.log(`Server running on port ${PORT}`);
   testConnection();

@@ -28,7 +28,8 @@
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "sequelize": "^6.37.5",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "webrtc-adapter": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.9.0"

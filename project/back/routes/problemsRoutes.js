@@ -16,7 +16,7 @@ const auth = require("../middleware/auth");
 
 router.get("/Tags", getAllTagsController);
 // Add a new problem
-router.post("/addProblem", auth ,addProblemController);
+router.post("/addProblem", auth, addProblemController);
 
 // Get a problem by ID
 
@@ -24,7 +24,10 @@ router.post("/addProblem", auth ,addProblemController);
 router.get("/getAllProblems", getAllProblemsController);
 
 // Get problems by difficulty
-router.get("/getProblemBYDifficulty/:difficulty", getProblemBYDifficultyController);
+router.get(
+  "/getProblemBYDifficulty/:difficulty",
+  getProblemBYDifficultyController
+);
 
 // Get problems by tags
 router.get("/searchByTags", searchByTagsController);
@@ -37,7 +40,5 @@ router.put("/updateProblem/:id", auth, updateProblemController);
 router.get("/:id", getProblemByIdController);
 // Delete a problem
 router.delete("/deleteProblem/:id", auth, deleteProblemController);
-
-
 
 module.exports = router;

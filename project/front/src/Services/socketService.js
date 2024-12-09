@@ -7,7 +7,7 @@ class SocketService {
   }
 
   connect() {
-    this.socket = io("http://localhost:3001", {
+    this.socket = io("http://192.168.10.208:3001", {
       transports: ["websocket"],
       timeout: 10000,
       reconnection: true,
@@ -96,6 +96,8 @@ class SocketService {
 
   disconnect() {
     if (this.socket) {
+      // Remove all listeners before disconnecting
+      this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
       this.room = null;

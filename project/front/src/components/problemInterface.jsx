@@ -9,11 +9,13 @@ import ProblemDetails from "./problem-interface/ProblemDetails";
 import EditorPanel from "./problem-interface/EditorPanel";
 import TestResults from "./problem-interface/TestResults";
 import ChatButton from "./chat/chatButton"; // Fix import path
+import CallButton from "./chat/callButton"; // Fix import path
 
 const ProblemContent = () => {
-  const { problemId } = useParams();
+  const { problemId,sessionId } = useParams();
   const { user } = useAuth();
   const { teamData } = useTeam(user?.user_id);
+  const teamId = teamData?.team?.team_id;
   const { runTests } = useEditor();
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -220,7 +222,12 @@ const ProblemContent = () => {
           }}
         />
       </Box>
-      {teamData?.team?.team_id && <ChatButton teamId={teamData.team.team_id} />}
+      {user && teamId && (
+        <>
+          <ChatButton teamId={teamId} />
+          <CallButton teamId={teamId} sessionId={sessionId} />
+        </>
+      )}
     </Box>
   );
 };

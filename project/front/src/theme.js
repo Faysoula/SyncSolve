@@ -51,6 +51,14 @@ export const theme = createTheme({
     },
   },
   components: {
+    MuiBadge: {
+      styleOverrides: {
+        badge: {
+          backgroundColor: "#4ade80",
+          color: "#FAF0CA",
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {
