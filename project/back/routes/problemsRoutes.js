@@ -7,6 +7,7 @@ const {
   deleteProblemController,
   searchByTagsController,
   getAllTagsController,
+  getDailyProblemController,
 } = require("../controllers/problemController");
 
 const express = require("express");
@@ -37,6 +38,7 @@ router.get("/searchByTags", searchByTagsController);
 // Update a problem
 router.put("/updateProblem/:id", auth, updateProblemController);
 
+router.get("/daily", getDailyProblemController);
 router.get("/:id", getProblemByIdController);
 // Delete a problem
 router.delete("/deleteProblem/:id", auth, deleteProblemController);

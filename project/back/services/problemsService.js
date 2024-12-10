@@ -2,6 +2,7 @@ const { getUserById } = require("./userService");
 const { Op } = require("sequelize");
 const { db } = require("../config/db");
 const Problems = require("../models/problems");
+const axios = require("axios");
 
 const addProblem = async (
   title,
@@ -137,31 +138,30 @@ const updateProblem = async (
   }
 };
 
-
 const getAllTags = async () => {
-  try{
+  try {
     const problems = await Problems.findAll({
-		where:{
-			metadata: {
-				tags: {
-					[Op.ne]: null
-				}
-			}
-		},
-		attributes: ['metadata']
-	});
-	const tags = new Set();
-	problems.forEach(problem => {
-		const metadata = problem.metadata;
-		if(metadata && Array.isArray(metadata.tags)){
-			metadata.tags.forEach(tag => tags.add(tag.toLowerCase().trim()));
-		}
-	})
-	return Array.from(tags);
-  }catch(err){
-	throw new Error(`Error getting all tags: ${err.message}`);
-}
-}
+      where: {
+        metadata: {
+          tags: {
+            [Op.ne]: null,
+          },
+        },
+      },
+      attributes: ["metadata"],
+    });
+    const tags = new Set();
+    problems.forEach((problem) => {
+      const metadata = problem.metadata;
+      if (metadata && Array.isArray(metadata.tags)) {
+        metadata.tags.forEach((tag) => tags.add(tag.toLowerCase().trim()));
+      }
+    });
+    return Array.from(tags);
+  } catch (err) {
+    throw new Error(`Error getting all tags: ${err.message}`);
+  }
+};
 const searchProblemsByTags = async (tags) => {
   try {
     const normalizedTags = tags.map((tag) => tag.toLowerCase().trim());
@@ -181,7 +181,6 @@ const searchProblemsByTags = async (tags) => {
     throw new Error(`Error searching problems by tags: ${err.message}`);
   }
 };
-
 
 //i may use this later
 // // Helper function to add tags to a problem
@@ -221,6 +220,87 @@ const deleteProblem = async (problem_id) => {
   }
 };
 
+//daily stuff
+const getDailyProblem = async () => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // First check for existing daily problem
+    const existingProblem = await Problems.findOne({
+      where: {
+        metadata: {
+          is_daily: true,
+        },
+        created_at: {
+          [Op.gte]: today,
+        },
+      },
+    });
+
+    if (existingProblem) {
+      return existingProblem;
+    }
+
+    // Fetch new daily problem from LeetCode API
+    const response = await axios.get(
+      "https://alfa-leetcode-api.onrender.com/dailyQuestion"
+    );
+
+    // The actual problem data is nested in the response
+    const dailyData =
+      response.data?.data?.activeDailyCodingChallengeQuestion?.question;
+    if (!dailyData) {
+      throw new Error("Invalid response from LeetCode API");
+    }
+
+    // Convert HTML content to plain text
+    const stripHtml = (html) => {
+      return html
+        .replace(/<[^>]*>/g, "") // Remove HTML tags
+        .replace(/&quot;/g, '"') // Replace HTML entities
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/\n\n/g, "\n") // Clean up multiple newlines
+        .trim();
+    };
+
+    // Parse example test cases from the exampleTestcases string
+    const parseTestCases = (exampleTests) => {
+      try {
+        const tests = exampleTests.split("\n").filter(Boolean);
+        return tests.map((test) => ({
+          input: test,
+          expected_output: test, // Since the API doesn't provide expected output, we'll use same for now
+        }));
+      } catch (err) {
+        console.error("Error parsing test cases:", err);
+        return [];
+      }
+    };
+
+    // Create new problem in database
+    const newProblem = await Problems.create({
+      title: dailyData.title,
+      description: stripHtml(dailyData.content), // Clean HTML from content
+      difficulty: dailyData.difficulty.toLowerCase(),
+      created_by: 1, // System user ID
+      test_cases: parseTestCases(dailyData.exampleTestcases),
+      metadata: {
+        is_daily: true,
+        tags: dailyData.topicTags.map((tag) => tag.name.toLowerCase()),
+        leetcode_id: dailyData.questionId,
+        example_images: [],
+      },
+    });
+
+    return newProblem;
+  } catch (err) {
+    console.error("Error fetching daily problem:", err);
+    throw new Error(`Error getting daily problem: ${err.message}`);
+  }
+};
 module.exports = {
   addProblem,
   getAllProblems,
@@ -230,4 +310,5 @@ module.exports = {
   updateProblem,
   searchProblemsByTags,
   getAllTags,
+  getDailyProblem,
 };

@@ -67,7 +67,6 @@ export const ProblemCard = ({ problem, username }) => {
       return;
     }
 
-    // Handle member clicks
     if (activeSession) {
       if (activeSession.problem_id === problem.problem_id) {
         navigate(
@@ -118,6 +117,12 @@ export const ProblemCard = ({ problem, username }) => {
             borderWidth: 1,
             borderStyle: "solid",
           }),
+          ...(problem.metadata?.is_daily && {
+            position: "relative",
+            borderColor: "#ffab40",
+            borderWidth: 1,
+            borderStyle: "solid",
+          }),
         }}
         onClick={handleProblemClick}
       >
@@ -129,89 +134,100 @@ export const ProblemCard = ({ problem, username }) => {
           >
             <Box sx={{ flex: { xs: "1", md: "3" } }}>
               <Stack spacing={2}>
-                <Stack spacing={2}>
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Stack direction="row" spacing={2} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction="row" spacing={1} alignItems="center">
                       <Typography
                         variant="h6"
                         sx={{ color: "#FAF0CA", fontWeight: 600 }}
                       >
                         {problem.title}
-                        {activeSession?.problem_id === problem.problem_id &&
-                          !isAdmin && (
-                            <Chip
-                              label="Session Active"
-                              size="small"
-                              sx={{
-                                ml: 2,
-                                bgcolor: "rgba(74, 222, 128, 0.1)",
-                                color: "#4ade80",
-                                borderColor: "#4ade80",
-                                border: "1px solid",
-                              }}
-                            />
-                          )}
                       </Typography>
-                      <Chip
-                        label={difficultyConfig[problem.difficulty].label}
-                        sx={{
-                          color: difficultyConfig[problem.difficulty].color,
-                          bgcolor:
-                            difficultyConfig[problem.difficulty].background,
-                          fontWeight: 600,
-                        }}
-                      />
+                      {problem.metadata?.is_daily && (
+                        <Chip
+                          label="Daily"
+                          size="small"
+                          sx={{
+                            bgcolor: "rgba(255, 171, 64, 0.1)",
+                            color: "#ffab40",
+                            borderColor: "#ffab40",
+                            border: "1px solid",
+                          }}
+                        />
+                      )}
+                      {activeSession?.problem_id === problem.problem_id &&
+                        !isAdmin && (
+                          <Chip
+                            label="Session Active"
+                            size="small"
+                            sx={{
+                              bgcolor: "rgba(74, 222, 128, 0.1)",
+                              color: "#4ade80",
+                              borderColor: "#4ade80",
+                              border: "1px solid",
+                            }}
+                          />
+                        )}
                     </Stack>
-
-                    {isCreator && (
-                      <IconButton
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          navigate(`/problems/edit/${problem.problem_id}`, {
-                            state: { problem },
-                            replace: true,
-                          });
-                        }}
-                        sx={{
-                          color: "#FAF0CA",
-                          "&:hover": {
-                            bgcolor: "rgba(250, 240, 202, 0.1)",
-                          },
-                        }}
-                      >
-                        <Edit size={20} />
-                      </IconButton>
-                    )}
+                    <Chip
+                      label={difficultyConfig[problem.difficulty].label}
+                      sx={{
+                        color: difficultyConfig[problem.difficulty].color,
+                        bgcolor:
+                          difficultyConfig[problem.difficulty].background,
+                        fontWeight: 600,
+                      }}
+                    />
                   </Stack>
 
-                  {error && (
-                    <Alert
-                      severity="error"
-                      sx={{
-                        bgcolor: "rgba(248, 113, 113, 0.1)",
-                        color: "#f87171",
+                  {isCreator && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/problems/edit/${problem.problem_id}`, {
+                          state: { problem },
+                          replace: true,
+                        });
                       }}
-                      onClose={() => setError("")}
+                      sx={{
+                        color: "#FAF0CA",
+                        "&:hover": {
+                          bgcolor: "rgba(250, 240, 202, 0.1)",
+                        },
+                      }}
                     >
-                      {error}
-                    </Alert>
+                      <Edit size={20} />
+                    </IconButton>
                   )}
-
-                  <ProblemTags tags={problem.metadata?.tags} />
-
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#FAF0CA", opacity: 0.8 }}
-                  >
-                    {problem.description}
-                  </Typography>
                 </Stack>
+
+                {error && (
+                  <Alert
+                    severity="error"
+                    sx={{
+                      bgcolor: "rgba(248, 113, 113, 0.1)",
+                      color: "#f87171",
+                    }}
+                    onClose={() => setError("")}
+                  >
+                    {error}
+                  </Alert>
+                )}
+
+                <ProblemTags tags={problem.metadata?.tags} />
+
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#FAF0CA", opacity: 0.8 }}
+                >
+                  {problem.description}
+                </Typography>
               </Stack>
             </Box>
 

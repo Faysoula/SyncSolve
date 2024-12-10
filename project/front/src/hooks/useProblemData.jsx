@@ -15,35 +15,47 @@ const useProblemsData = () => {
   });
 
   // Fetch problems and user data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const [usersResponse, problemsResponse] = await Promise.all([
+      const [usersResponse, problemsResponse, dailyProblemResponse] =
+        await Promise.all([
           UserService.getAllUsers(),
           ProblemService.getAllProblems(),
+          ProblemService.getDailyProblem().catch(() => null), // Handle failure gracefully
         ]);
 
-        // Create user map
-        const userDataMap = usersResponse.data.users.reduce((acc, user) => {
-          acc[user.user_id] = user;
-          return acc;
-        }, {});
+      const userDataMap = usersResponse.data.users.reduce((acc, user) => {
+        acc[user.user_id] = user;
+        return acc;
+      }, {});
 
-        setUserMap(userDataMap);
-        setProblems(problemsResponse.data.problems);
-      } catch (err) {
-        setError("Failed to fetch data. Please try again later.");
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
+      setUserMap(userDataMap);
+
+      let allProblems = problemsResponse.data.problems || [];
+
+      // Filter out any existing daily problems
+      allProblems = allProblems.filter((p) => !p.metadata?.is_daily);
+
+      // Add new daily problem at the start if it exists
+      if (dailyProblemResponse?.data) {
+        allProblems.unshift(dailyProblemResponse.data);
       }
-    };
 
-    fetchData();
-  }, []);
+      setProblems(allProblems);
+    } catch (err) {
+      setError("Failed to fetch data. Please try again later.");
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
 
   // Filter and sort problems
   const filteredProblems = useMemo(() => {

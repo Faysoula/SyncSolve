@@ -7,6 +7,7 @@ const {
   updateProblem,
   searchProblemsByTags,
   getAllTags,
+  getDailyProblem,
 } = require("../services/problemsService");
 
 const addProblemController = async (req, res) => {
@@ -134,6 +135,18 @@ const deleteProblemController = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const getDailyProblemController = async (req, res) => {
+  try {
+    const problem = await getDailyProblem();
+    if (!problem) {
+      return res.status(404).json({ message: "No daily problem available" });
+    }
+    res.status(200).json(problem);
+  } catch (err) {
+    console.error("Error getting daily problem:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
 
 module.exports = {
   addProblemController,
@@ -144,4 +157,5 @@ module.exports = {
   deleteProblemController,
   searchByTagsController,
   getAllTagsController,
+  getDailyProblemController,
 };

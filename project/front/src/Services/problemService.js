@@ -27,11 +27,11 @@ const addProblem = (data) => {
 
 const getProblemById = (id) => {
   return http.get(`/problems/${id}`, {
-    headers:{
+    headers: {
       Authorization: getTokenBearer(),
-    }
-})
-}
+    },
+  });
+};
 
 const getAllTags = () => {
   return http.get("/problems/tags", {
@@ -65,6 +65,13 @@ const deleteProblem = (id) => {
     },
   });
 };
+const getDailyProblem = () => {
+  return http.get("/problems/daily", {
+    headers: {
+      Authorization: getTokenBearer(),
+    },
+  });
+};
 
 const ProblemService = {
   getAllProblems,
@@ -75,6 +82,7 @@ const ProblemService = {
   searchByTags,
   updateProblem,
   deleteProblem,
+  getDailyProblem,
 };
 
 export default ProblemService;

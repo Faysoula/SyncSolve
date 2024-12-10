@@ -43,6 +43,7 @@ const Problems = db.define("Problems", {
     allowNull: false,
     defaultValue: {
       tags: [],
+      is_daily: false,
       example_images: []
     },
   }
