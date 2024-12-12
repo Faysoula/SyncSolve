@@ -1,259 +1,248 @@
-# SyncSolve
+# **SyncSolve Platform**
 
-## Overview
-SyncSolve is a collaborative programming platform that enables teams to practice coding interview questions and programming competitions together in real-time. The platform features a synchronized code editor, real-time collaboration tools, and integrated testing capabilities.
+## **Project Description**
 
-## Table of Contents
-- [Project Setup](#project-setup)
-- [Architecture](#architecture)
-- [Database Schema](#database-schema)
-- [API Documentation](#api-documentation)
-- [Third-Party Dependencies](#third-party-dependencies)
+SyncSolve is a real-time collaborative coding platform that enables teams to solve programming challenges together. Users can work simultaneously on coding problems with features like live code synchronization, team management, and AI-powered assistance. The platform emphasizes scalability, real-time collaboration, and test-driven development with a secure Node.js backend and responsive React frontend.
 
-## Project Setup
+---
 
-### Prerequisites
-- Node.js (v14 or higher)
-- PostgreSQL (v12 or higher)
-- npm package manager
+## **Features**
 
-### Environment Setup
-1. Clone the repository:
-```bash
-git clone [repository-url]
-cd syncsolve
+- **Real-Time Collaboration**: Multiple users can code together with synchronized editing
+- **Team Management**: Support for team creation, roles, and member management
+- **Live Code Testing**: Integrated code execution and test case validation
+- **AI Code Assistance**: Code suggestions and hints using OpenAI APIs
+- **Session Management**: Track and manage coding sessions with automatic progress saving
+- **Built-in Communication**: Real-time chat and voice calls for team collaboration
+- **Multi-language Support**: Support for multiple programming languages (Python, Java, C++)
+
+---
+
+## **Backend Routes**
+
+### **Authentication**
+
+| Method | Endpoint           | Description            | Status Codes |
+|--------|-------------------|------------------------|--------------|
+| POST   | `/users/register` | Register new user      | 201, 400     |
+| POST   | `/users/login`    | Sign in user          | 200, 401     |
+| GET    | `/users/me`       | Get current user      | 200, 401     |
+| PUT    | `/users/:id`      | Update user profile   | 200, 400     |
+
+### **Teams**
+
+| Method | Endpoint                    | Description                  | Status Codes |
+|--------|----------------------------|------------------------------|--------------|
+| POST   | `/teams/Createteam`        | Create new team             | 201, 400     |
+| GET    | `/teams`                   | Get all teams               | 200, 401     |
+| GET    | `/teams/:id`               | Get team by ID              | 200, 404     |
+| GET    | `/teams/:id/members`       | Get team members            | 200, 401     |
+| PUT    | `/teams/:id`               | Update team                 | 200, 400     |
+| DELETE | `/teams/:id`               | Delete team                 | 200, 404     |
+
+### **Problems**
+
+| Method | Endpoint                          | Description                | Status Codes |
+|--------|------------------------------------|---------------------------|--------------|
+| POST   | `/problems/addProblem`            | Create new problem        | 201, 400     |
+| GET    | `/problems/getAllProblems`        | Get all problems          | 200, 401     |
+| GET    | `/problems/:id`                   | Get problem by ID         | 200, 404     |
+| PUT    | `/problems/updateProblem/:id`     | Update problem            | 200, 400     |
+| DELETE | `/problems/deleteProblem/:id`     | Delete problem            | 200, 404     |
+
+### **Sessions**
+
+| Method | Endpoint                      | Description              | Status Codes |
+|--------|------------------------------|--------------------------|--------------|
+| POST   | `/sessions/CreateSession`    | Create coding session    | 201, 400     |
+| GET    | `/sessions`                  | Get all sessions         | 200, 401     |
+| GET    | `/sessions/session/:id`      | Get session by ID        | 200, 404     |
+| PUT    | `/sessions/:id/end`          | End session             | 200, 400     |
+| DELETE | `/sessions/session/:id/delete`| Delete session          | 200, 404     |
+
+### **Executions**
+
+| Method | Endpoint                   | Description              | Status Codes |
+|--------|---------------------------|--------------------------|--------------|
+| POST   | `/executions/createEx`    | Execute code            | 201, 400     |
+| GET    | `/executions`             | Get all executions      | 200, 401     |
+| GET    | `/executions/:id`         | Get execution by ID     | 200, 404     |
+
+### **Terminal Sessions**
+
+| Method | Endpoint                     | Description                | Status Codes |
+|--------|----------------------------|----------------------------|--------------|
+| POST   | `/terminal/createTerminal` | Create terminal session    | 201, 400     |
+| GET    | `/terminal/:id`            | Get terminal session      | 200, 404     |
+| PUT    | `/terminal/:id`            | Update terminal session   | 200, 400     |
+| DELETE | `/terminal/:id`            | Delete terminal session   | 200, 404     |
+
+---
+
+## **Database Diagram**
+
+### **PostgreSQL Tables**
+1. **Users**: User account information
+    - **Columns**: `user_id`, `username`, `email`, `password_hash`, `name`, `last_name`, `created_at`
+
+2. **Teams**: Team information
+    - **Columns**: `team_id`, `team_name`, `created_at`
+
+3. **TeamMembers**: Team membership and roles
+    - **Columns**: `team_member_id`, `team_id`, `user_id`, `role`, `joined_at`
+
+4. **Problems**: Coding problems
+    - **Columns**: `problem_id`, `title`, `description`, `difficulty`, `created_by`, `created_at`, `test_cases`, `metadata`
+
+5. **Sessions**: Coding sessions
+    - **Columns**: `session_id`, `team_id`, `problem_id`, `started_at`, `ended_at`
+
+6. **SessionSnapshots**: Code snapshots
+    - **Columns**: `snapshot_id`, `session_id`, `code_snapshot`, `created_at`
+
+7. **TerminalSessions**: Terminal instances
+    - **Columns**: `terminal_id`, `session_id`, `language`, `active`, `last_active`, `created_at`
+
+8. **Executions**: Code execution records
+    - **Columns**: `execution_id`, `user_id`, `code`, `result`, `status`, `executed_at`, `terminal_id`
+
+---
+
+## **Libraries Used**
+
+### **Frontend**
+- **React.js**: UI framework
+- **Material-UI**: Component library
+- **Monaco Editor**: Code editor
+- **Socket.IO Client**: Real-time features
+- **Axios**: HTTP client
+- **React Router DOM**: Navigation
+- **Tailwind CSS**: Utility styling
+- **Recharts**: Data visualization
+
+### **Backend**
+- **Express.js**: Web framework
+- **Sequelize**: PostgreSQL ORM
+- **Socket.IO**: Real-time communication
+- **JWT**: Authentication
+- **Bcrypt**: Password hashing
+- **Judge0 API**: Code execution
+- **OpenAI API**: AI assistance
+
+---
+
+## **How to Start**
+
+Follow these steps to set up and run the project:
+
+### **Backend Setup**
+1. Navigate to backend directory:
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. Set up environment variables:
+   ```bash
+   # Create .env file with:
+   DB_NAME=your_db_name
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
+   JWT_SECRET=your_jwt_secret
+   OPENAI_API_KEY=your_openai_key
+   ```
+
+3. Start the server:
+   ```bash
+   npm start
+   ```
+
+### **Frontend Setup**
+1. Navigate to frontend directory:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm start
+   ```
+
+Access the application at `http://localhost:3000`
+
+---
+
+## **Use Case Scenario**
+
+### **Scenario: Team Collaboration on Coding Problem**
+
+1. **Actor**: Team Member
+2. **Preconditions**: 
+   - User is registered and logged in
+   - User belongs to a team
+   - Team has active coding session
+3. **Steps**:
+   1. User joins active coding session
+   2. Views problem description and test cases
+   3. Collaborates with team members through:
+      - Synchronized code editing
+      - Real-time chat
+      - Voice communication
+   4. Runs code against test cases
+   5. Gets AI suggestions when needed
+   6. Saves progress automatically
+4. **Postconditions**:
+   - Code changes are synchronized
+   - Execution results are logged
+   - Session progress is saved
+
+---
+
+## **Context Diagram**
+
+### **Context Diagram for Team Collaboration**
+
+```plaintext
+  +-------------------+
+  |                   |
+  |       User        |
+  |                   |
+  +--------+----------+
+           |
+           | 1. Join Session
+           v
+  +--------+----------+
+  |                   |
+  |  Authentication   |
+  |                   |
+  +--------+----------+
+           |
+           | 2. Validate & Route
+           v
+  +--------+----------+
+  |                   |
+  | Coding Interface  |
+  | - Editor          |
+  | - Chat            |
+  | - Voice           |
+  +--------+----------+
+           |
+           | 3. Process Actions
+           v
+  +--------+----------+
+  |                   |
+  | Backend Services  |
+  | - Code Execution  |
+  | - Sync            |
+  | - AI Assistant    |
+  +--------+----------+
+           |
+           | 4. Store/Retrieve
+           v
+  +--------+----------+
+  |                   |
+  |    Database       |
+  |                   |
+  +-------------------+
 ```
-
-2. Install dependencies for both backend and frontend:
-```bash
-# Backend
-cd backend
-npm install
-
-# Frontend
-cd ../frontend
-npm install
-```
-
-3. Create `.env` file in the backend directory with the following variables:
-```env
-# Database
-DB_NAME=your_database_name
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_DIALECT=postgres
-
-# JWT
-JWT_SECRET=your_jwt_secret_key
-
-# Server
-PORT=3001
-
-# Judge0 API
-RAPIDAPI_KEY=your_rapidapi_key
-```
-
-4. Create `.env` file in the frontend directory:
-```env
-REACT_APP_API_URL=http://localhost:3001
-```
-
-### Running the Application
-1. Start the backend server:
-```bash
-cd back
-npm run dev
-```
-
-2. Start the frontend development server:
-```bash
-cd front
-npm start
-```
-
-The application should now be running at `http://localhost:3000`
-
-## Architecture
-
-### Frontend
-- React.js with functional components and hooks
-- Material-UI for UI components
-- Socket.IO client for real-time features
-- Monaco Editor for code editing
-- Context API for state management
-
-### Backend
-- Node.js with Express
-- Socket.IO for real-time communication
-- Sequelize ORM for database operations
-- JWT for authentication
-- Judge0 API integration for code execution
-
-## Database Schema
-
-### Users Table
-```sql
-CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    name VARCHAR(50),
-    last_name VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### Teams Table
-```sql
-CREATE TABLE teams (
-    team_id SERIAL PRIMARY KEY,
-    team_name VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### Problems Table
-```sql
-CREATE TABLE problems (
-    problem_id SERIAL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    description TEXT NOT NULL,
-    difficulty VARCHAR(10) CHECK (difficulty IN ('easy', 'medium', 'hard')),
-    created_by INTEGER REFERENCES users(user_id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    test_cases JSON NOT NULL,
-    metadata JSON NOT NULL DEFAULT '{}'
-);
-```
-
-### Sessions Table
-```sql
-CREATE TABLE sessions (
-    session_id SERIAL PRIMARY KEY,
-    team_id INTEGER REFERENCES teams(team_id),
-    problem_id INTEGER REFERENCES problems(problem_id),
-    started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    ended_at TIMESTAMP WITH TIME ZONE
-);
-```
-
-### Team Members Table
-```sql
-CREATE TABLE team_members (
-    team_member_id SERIAL PRIMARY KEY,
-    team_id INTEGER REFERENCES teams(team_id),
-    user_id INTEGER REFERENCES users(user_id),
-    role VARCHAR(20) CHECK (role IN ('member', 'admin')),
-    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## API Documentation
-
-### Authentication Endpoints
-
-#### POST /api/users/register
-Register a new user
-```json
-{
-  "username": "string",
-  "email": "string",
-  "password": "string",
-  "name": "string",
-  "last_name": "string"
-}
-```
-
-#### POST /api/users/login
-Login user
-```json
-{
-  "email": "string",
-  "password": "string"
-}
-```
-
-### Problems Endpoints
-
-#### GET /api/problems/getAllProblems
-Get all problems
-
-#### POST /api/problems/addProblem
-Create new problem
-```json
-{
-  "title": "string",
-  "description": "string",
-  "difficulty": "easy|medium|hard",
-  "created_by": "number",
-  "test_cases": [
-    {
-      "input": "string",
-      "expected_output": "string"
-    }
-  ],
-  "tags": ["string"]
-}
-```
-
-#### GET /api/problems/getProblemBYDifficulty/:difficulty
-Get problems by difficulty level
-
-### Teams Endpoints
-
-#### POST /api/teams/Createteam
-Create a new team
-```json
-{
-  "team_name": "string",
-  "created_by": "number"
-}
-```
-
-#### GET /api/teams
-Get all teams
-
-#### POST /api/team-members/addMembers
-Add member to team
-```json
-{
-  "team_id": "number",
-  "user_id": "number",
-  "role": "member|admin"
-}
-```
-
-### Sessions Endpoints
-
-#### POST /api/sessions/CreateSession
-Create a new coding session
-```json
-{
-  "team_id": "number",
-  "problem_id": "number"
-}
-```
-
-## Third-Party Dependencies
-
-### Frontend
-- `@monaco-editor/react`: Code editor component
-- `@mui/material`: UI component library
-- `socket.io-client`: Real-time communication
-- `axios`: HTTP client
-- `react-router-dom`: Routing
-- `lucide-react`: Icons
-
-### Backend
-- `express`: Web framework
-- `sequelize`: ORM
-- `socket.io`: Real-time server
-- `jsonwebtoken`: Authentication
-- `bcrypt`: Password hashing
-- `cors`: Cross-origin resource sharing
-- `dotenv`: Environment variables
-- `judge0 api`: running the code
-
