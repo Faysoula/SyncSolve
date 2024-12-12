@@ -42,6 +42,7 @@ const addProblem = async (
       test_cases,
       metadata,
     });
+    await CacheService.clearProblemsCache();
 
     return problem;
   } catch (err) {
@@ -131,7 +132,9 @@ const updateProblem = async (
       test_cases: test_cases || problem.test_cases,
       metadata: updatedMetadata,
     });
+    await CacheService.clearProblemCache(problem_id);
 
+    await CacheService.clearProblemsCache();
     return problem;
   } catch (err) {
     throw new Error(`Error updating problem: ${err.message}`);
@@ -214,6 +217,8 @@ const deleteProblem = async (problem_id) => {
       throw new Error("Problem not found");
     }
     await toDelete.destroy();
+    await CacheService.clearProblemCache(problem_id);
+    await CacheService.clearProblemsCache();
     return { message: "Problem deleted successfully" };
   } catch (err) {
     throw new Error(`Error deleting problem: ${err.message}`);

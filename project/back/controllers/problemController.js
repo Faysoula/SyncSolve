@@ -60,11 +60,18 @@ const getAllTagsController = async (req, res) => {
 };
 
 const getAllProblemsController = async (req, res) => {
+  console.log("⏳ Starting problems fetch...");
+  console.time("Problems Fetch Duration");
+
   try {
     const problems = await getAllProblems();
+    console.timeEnd("Problems Fetch Duration");
+
+    console.log(`📊 Retrieved ${problems.length} problems`);
     res.status(200).json({ problems });
   } catch (err) {
-    console.error("Error getting all problems:", err.message);
+    console.error("❌ Error getting all problems:", err.message);
+    console.timeEnd("Problems Fetch Duration");
     res.status(500).json({ message: err.message });
   }
 };
@@ -82,8 +89,12 @@ const getProblemBYDifficultyController = async (req, res) => {
 
 const getProblemByIdController = async (req, res) => {
   const problem_id = req.params.id;
+  console.time("Problem Fetch Time"); // Start timer
+
   try {
     const problem = await getProblemById(problem_id);
+    console.timeEnd("Problem Fetch Time"); // End timer
+    console.log("Database Query Executed"); // Log when database is hit
     res.status(200).json(problem);
   } catch (err) {
     console.error("Error getting problem by ID:", err.message);
