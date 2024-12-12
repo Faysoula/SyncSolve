@@ -40,6 +40,20 @@ import { ProblemTags } from "../problem-common/problem-list-com/ProblemTags";
 import { SwitchProblemDialog } from "../problem-common/problem-list-com/SwitchProblemDialog";
 import SessionTerminalService from "../../Services/sessionService";
 
+const truncateToTwoSentences = (text) => {
+  // Match periods followed by spaces or end of string, accounting for common sentence endings
+  const sentenceEndings = /[.!?]+[\s\n]+|[.!?]+$/g;
+  const sentences = text.split(sentenceEndings);
+
+  if (sentences.length <= 2) return text;
+
+  // Get first two sentences and add their original endings back
+  const matches = text.match(sentenceEndings);
+  if (!matches) return text;
+
+  return sentences[0] + matches[0] + sentences[1] + matches[1];
+};
+
 export const ProblemCard = ({ problem, username }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -247,7 +261,7 @@ export const ProblemCard = ({ problem, username }) => {
                   variant="body2"
                   sx={{ color: "#FAF0CA", opacity: 0.8 }}
                 >
-                  {problem.description}
+                  {truncateToTwoSentences(problem.description)}
                 </Typography>
               </Stack>
             </Box>
