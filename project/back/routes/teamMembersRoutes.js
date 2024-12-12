@@ -1,26 +1,26 @@
-const express = require('express');
-
+const express = require("express");
 const {
-    addTeamMemberController,
-    getTeamMembersController,
-    getTeamMemberByIdController,
-    getUserTeamController,
-    updateTeamMemberRoleController,
-    removeTeamMemberController,
+  addTeamMemberController,
+  getTeamMembersController,
+  getTeamMemberByIdController,
+  getUserTeamController,
+  updateTeamMemberRoleController,
+  removeTeamMemberController,
 } = require("../controllers/teamMemberController");
 
 const auth = require("../middleware/auth");
 
 const router = express.Router();
+
 /**
  * @swagger
  * tags:
  *   name: Team Members
- *   description: Team membership management
- * 
+ *   description: Team member management
+ *
  * /api/team-members/addMembers:
  *   post:
- *     summary: Add a member to a team
+ *     summary: Add a new team member
  *     tags: [Team Members]
  *     security:
  *       - BearerAuth: []
@@ -46,10 +46,8 @@ const router = express.Router();
  *       201:
  *         description: Team member added successfully
  */
-// Route to add a team member
 router.post("/addMembers", auth, addTeamMemberController);
 
-// Route to get members of a team by team ID
 /**
  * @swagger
  * /api/team-members/members/{team_id}:
@@ -66,37 +64,15 @@ router.post("/addMembers", auth, addTeamMemberController);
  *           type: integer
  *     responses:
  *       200:
- *         description: Team members retrieved successfully
+ *         description: List of team members
  */
 router.get("/members/:team_id", auth, getTeamMembersController);
 
-// Route to get a team by user ID
-/**
- * @swagger
- * /api/team-members/members/{user_id}:
- *   get:
- *     summary: Get team of a user
- *     tags: [Team Members]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: user_id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Team retrieved successfully
- */
-router.get("/members/:user_id", auth, getUserTeamController);
-
-// Route to get a team member by user ID
 /**
  * @swagger
  * /api/team-members/{user_id}:
  *   get:
- *     summary: Get a team member by user ID
+ *     summary: Get teams for a user
  *     tags: [Team Members]
  *     security:
  *       - BearerAuth: []
@@ -108,16 +84,35 @@ router.get("/members/:user_id", auth, getUserTeamController);
  *           type: integer
  *     responses:
  *       200:
- *         description: Team member retrieved successfully
+ *         description: User's team information
  */
 router.get("/:user_id", auth, getTeamMemberByIdController);
 
-// Route to update a team member's role
+/**
+ * @swagger
+ * /api/team-members/members/{user_id}:
+ *   get:
+ *     summary: Get user's team
+ *     tags: [Team Members]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User's team information
+ */
+router.get("/members/:user_id", auth, getUserTeamController);
+
 /**
  * @swagger
  * /api/team-members/members/ChangeRole:
  *   put:
- *     summary: Change a team member's role
+ *     summary: Update team member's role
  *     tags: [Team Members]
  *     security:
  *       - BearerAuth: []
@@ -138,11 +133,10 @@ router.get("/:user_id", auth, getTeamMemberByIdController);
  *                 enum: [member, admin]
  *     responses:
  *       200:
- *         description: Team member role updated successfully
+ *         description: Role updated successfully
  */
 router.put("/members/ChangeRole", auth, updateTeamMemberRoleController);
 
-// Route to remove a team member
 /**
  * @swagger
  * /api/team-members/removeMember/{team_member_id}:
