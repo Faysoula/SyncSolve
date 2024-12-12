@@ -12,7 +12,7 @@ import ChatButton from "./chat/chatButton"; // Fix import path
 import CallButton from "./chat/callButton"; // Fix import path
 
 const ProblemContent = () => {
-  const { problemId,sessionId } = useParams();
+  const { problemId, sessionId } = useParams();
   const { user } = useAuth();
   const { teamData } = useTeam(user?.user_id);
   const teamId = teamData?.team?.team_id;
@@ -132,12 +132,10 @@ const ProblemContent = () => {
         gap: 1.5,
         height: "calc(100vh - 64px)", // Subtract header height
         p: 1.5,
-        pb: "80px", // Add padding at bottom to prevent footer overlap
         backgroundColor: "#0E0B1A",
         pt: { xs: 9, md: 1.5 },
-        overflow: "hidden",
-        minWidth: "800px",
-        minHeight: "600px",
+        overflow: "hidden", // Prevent outer scrolling
+        position: "relative", // For proper button positioning
         "& .monaco-editor, & .overflow-guard": {
           width: "100% !important",
           height: "100% !important",
@@ -154,7 +152,6 @@ const ProblemContent = () => {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          minWidth: 0, // Allow shrinking
         }}
       >
         <Box
@@ -187,20 +184,10 @@ const ProblemContent = () => {
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          minWidth: 0, // Allow shrinking
-          position: "relative", // Needed for Monaco editor
+          position: "relative",
         }}
       >
-        <EditorPanel
-          onRunTests={handleRunTests}
-          sx={{
-            flex: 1,
-            "& .monaco-editor": {
-              width: "100% !important",
-              height: "100% !important",
-            },
-          }}
-        />
+        <EditorPanel onRunTests={runTests} problem={problem} />
       </Box>
 
       {/* Test Results Panel */}
@@ -211,22 +198,27 @@ const ProblemContent = () => {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          minWidth: 0, // Allow shrinking
         }}
       >
-        <TestResults
-          problem={problem}
-          sx={{
-            height: "100%",
-            overflow: "hidden",
-          }}
-        />
+        <TestResults problem={problem} />
       </Box>
+
+      {/* Fixed position buttons */}
       {user && teamId && (
-        <>
-          <ChatButton teamId={teamId} />
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            zIndex: 1000,
+          }}
+        >
           <CallButton teamId={teamId} sessionId={sessionId} />
-        </>
+          <ChatButton teamId={teamId} />
+        </Box>
       )}
     </Box>
   );

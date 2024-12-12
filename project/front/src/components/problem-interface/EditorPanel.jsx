@@ -1,10 +1,11 @@
-import React, { useRef, useEffect, memo, useCallback } from "react";
+import React, { useRef, useState, useEffect, memo, useCallback } from "react";
 import { Box, Stack, Button } from "@mui/material";
+import { Play, Save, Terminal, Brain } from "lucide-react";
 import Editor from "@monaco-editor/react";
-import { Play, Save } from "lucide-react";
 import { useEditor } from "../../context/editorContext";
 import LanguageSelector from "./LanguageSelector";
 import ThemeSelector from "./ThemeSelector";
+import AiAssistant from "./AiAssistant";
 import * as monaco from "monaco-editor";
 
 const CodeEditor = memo(
@@ -23,7 +24,7 @@ const CodeEditor = memo(
 
 CodeEditor.displayName = "CodeEditor";
 
-const EditorPanel = ({ onRunTests }) => {
+const EditorPanel = ({ onRunTests, problem }) => {
   const {
     code,
     language,
@@ -316,15 +317,30 @@ const EditorPanel = ({ onRunTests }) => {
         </Box>
       </Box>
 
-      <Box sx={{ flex: 1, position: "relative" }}>
-        <CodeEditor
-          language={language}
-          theme={theme}
-          code={code}
-          onChange={updateCode}
-          onMount={handleEditorMount}
-          options={editorOptions}
-        />
+      <Box sx={{ flex: 1, display: "flex", minHeight: 0 }}>
+        {/* Editor */}
+        <Box sx={{ flex: 1, position: "relative" }}>
+          <CodeEditor
+            language={language}
+            theme={theme}
+            code={code}
+            onChange={updateCode}
+            onMount={handleEditorMount}
+            options={editorOptions}
+          />
+        </Box>
+
+        {/* AI Assistant Panel */}
+        <Box
+          sx={{
+            width: "300px",
+            borderLeft: "1px solid rgba(157, 78, 221, 0.2)",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <AiAssistant code={code} problem={problem} />
+        </Box>
       </Box>
     </Stack>
   );

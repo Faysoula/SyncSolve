@@ -29,6 +29,7 @@ const sessionSnapshot = require("./routes/sessionSnapRoutes");
 const ExecutionRoutes = require("./routes/executionRoutes");
 const uploadRoutes = require("./routes/uploadRoute");
 const chatRoutes = require("./routes/chatRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use("/api/snapshots", sessionSnapshot);
 app.use("/api/executions", ExecutionRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

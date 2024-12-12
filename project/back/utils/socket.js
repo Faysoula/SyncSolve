@@ -8,7 +8,7 @@ const activeCalls = new Map();
 function initializeSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: "http://192.168.10.208:3000", // frontend URL
+      origin: "http://localhost:3000", // frontend URL
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
