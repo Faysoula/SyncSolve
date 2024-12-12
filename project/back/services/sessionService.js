@@ -4,6 +4,7 @@ const Problem = require('../models/problems');
 const { getTeamById } = require('./teamService');
 const { getProblemById } = require('./problemsService');
 
+// Create a new session
 const createSession = async (team_id, problem_id) => {
     try {
         const team = await getTeamById(team_id);
@@ -26,6 +27,7 @@ const createSession = async (team_id, problem_id) => {
     }
 };
 
+// Retrieve all sessions
 const getSessions = async () => {
     try {
         const sessions = await Session.findAll({
@@ -46,8 +48,10 @@ const getSessions = async () => {
     }
 };
 
+// Retrieve a session by its ID
 const getSessionById = async (session_id) => {
     try {
+        // Include team and problem details
         const session = await Session.findByPk(session_id, {
             include: [
                 {
@@ -69,6 +73,7 @@ const getSessionById = async (session_id) => {
     }
 };
 
+// Retrieve all sessions for a specific team
 const getSessionByTeam = async (team_id) => {
   try {
     const sessions = await Session.findAll({
@@ -84,6 +89,7 @@ const getSessionByTeam = async (team_id) => {
   }
 };
 
+// Update a session with a new problem
 const updateSession = async (session_id, problem_id) => {
     try {
         const session = await Session.findByPk(session_id);
@@ -104,7 +110,7 @@ const updateSession = async (session_id, problem_id) => {
     }
 }
 
-
+// End a session
 const endSession = async (session_id) => {
     try {
         const currSession = await Session.findByPk(session_id);
@@ -120,6 +126,7 @@ const endSession = async (session_id) => {
     }
 };
 
+// Delete a session
 const deleteSession = async (session_id) => {
     try {
         const session = await Session.findByPk(session_id);

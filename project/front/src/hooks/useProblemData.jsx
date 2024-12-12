@@ -1,3 +1,15 @@
+/**
+ * Custom hook to fetch and manage problem data.
+ *
+ * @returns {Object} An object containing:
+ * - problems {Array}: List of all problems.
+ * - loading {boolean}: Loading state.
+ * - error {string|null}: Error message if any.
+ * - filteredProblems {Array}: List of filtered and sorted problems.
+ * - userMap {Object}: Map of user data keyed by user ID.
+ * - filters {Object}: Current filter settings.
+ * - setFilters {Function}: Function to update filter settings.
+ */
 import { useState, useEffect, useMemo } from "react";
 import ProblemService from "../Services/problemService";
 import UserService from "../Services/userService";
@@ -15,64 +27,64 @@ const useProblemsData = () => {
   });
 
   // Fetch problems and user data
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const [usersResponse, problemsResponse, dailyProblemResponse] =
-        await Promise.all([
-          UserService.getAllUsers(),
-          ProblemService.getAllProblems(),
-          ProblemService.getDailyProblem().catch(() => null),
-        ]);
+        const [usersResponse, problemsResponse, dailyProblemResponse] =
+          await Promise.all([
+            UserService.getAllUsers(),
+            ProblemService.getAllProblems(),
+            ProblemService.getDailyProblem().catch(() => null),
+          ]);
 
-      const userDataMap = usersResponse.data.users.reduce((acc, user) => {
-        acc[user.user_id] = user;
-        return acc;
-      }, {});
+        const userDataMap = usersResponse.data.users.reduce((acc, user) => {
+          acc[user.user_id] = user;
+          return acc;
+        }, {});
 
-      setUserMap(userDataMap);
+        setUserMap(userDataMap);
 
-      let allProblems = problemsResponse.data.problems || [];
+        let allProblems = problemsResponse.data.problems || [];
 
-      // Filter out old daily problems to prevent duplicates
-      allProblems = allProblems.filter((p) => {
-        // Keep non-daily problems
-        if (!p.metadata?.is_daily) return true;
+        // Filter out old daily problems to prevent duplicates
+        allProblems = allProblems.filter((p) => {
+          // Keep non-daily problems
+          if (!p.metadata?.is_daily) return true;
 
-        // Only keep the current daily problem
-        const problemDate = new Date(p.created_at);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return problemDate >= today;
-      });
+          // Only keep the current daily problem
+          const problemDate = new Date(p.created_at);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return problemDate >= today;
+        });
 
-      // Add new daily problem at the start if it exists
-      if (dailyProblemResponse?.data) {
-        const dailyExists = allProblems.some(
-          (p) =>
-            p.metadata?.is_daily &&
-            p.created_at === dailyProblemResponse.data.created_at
-        );
+        // Add new daily problem at the start if it exists
+        if (dailyProblemResponse?.data) {
+          const dailyExists = allProblems.some(
+            (p) =>
+              p.metadata?.is_daily &&
+              p.created_at === dailyProblemResponse.data.created_at
+          );
 
-        if (!dailyExists) {
-          allProblems.unshift(dailyProblemResponse.data);
+          if (!dailyExists) {
+            allProblems.unshift(dailyProblemResponse.data);
+          }
         }
+
+        setProblems(allProblems);
+      } catch (err) {
+        setError("Failed to fetch data. Please try again later.");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setProblems(allProblems);
-    } catch (err) {
-      setError("Failed to fetch data. Please try again later.");
-      console.error("Error fetching data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchData();
-}, []);
+    fetchData();
+  }, []);
 
   // Filter and sort problems
   const filteredProblems = useMemo(() => {

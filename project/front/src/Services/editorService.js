@@ -3,6 +3,7 @@ import SessionTerminalService from "../Services/sessionService";
 import SessionSnapshotService from "../Services/SessionSnapshotService";
 import { LANGUAGE_MAPPING } from "../utils/constants";
 
+// Create a terminal for the given language
 export const createTerminalForLanguage = async (
   lang,
   sessionId,
@@ -41,6 +42,7 @@ export const createTerminalForLanguage = async (
   }
 };
 
+// Get the terminal for the given language
 export const saveSnapshot = async (
   sessionId,
   language,
@@ -84,6 +86,7 @@ export const saveSnapshot = async (
   }
 };
 
+// Load the latest code snapshots for the given session and problem
 export const loadSnapshots = async (sessionId, problemId) => {
   try {
     const snapshots = await SessionSnapshotService.getSnapshotsBySessionId(
@@ -127,6 +130,7 @@ export const loadSnapshots = async (sessionId, problemId) => {
   }
 };
 
+// Load the latest code snapshot for the given session, language, and problem
 export const updateEditorTheme = (newTheme, setTheme) => {
   loader.init().then((monaco) => {
     monaco.editor.setTheme(newTheme);

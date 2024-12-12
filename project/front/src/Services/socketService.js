@@ -5,7 +5,7 @@ class SocketService {
     this.socket = null;
     this.room = null;
   }
-
+  // Connect to the socket.IO server
   connect() {
     this.socket = io("http://localhost:3001", {
       transports: ["websocket"],
@@ -33,13 +33,14 @@ class SocketService {
     this.room = `${sessionId}-${problemId}`;
     this.socket.emit("joinRoom", { sessionId, problemId, userId });
   }
-
+  // Emit code change event
   joinChatRoom(teamId, userId) {
     if (this.socket) {
       const chatRoom = `team-${teamId}`;
       this.socket.emit("joinRoom", { teamId, userId });
     }
   }
+  // Emit typing event
   emitTyping(teamId, userId, userName, isTyping) {
     if (this.socket) {
       this.socket.emit("userTyping", {
@@ -51,6 +52,7 @@ class SocketService {
     }
   }
 
+  // Emit code change event
   emitCodeChange(code, language, userId, position) {
     if (this.socket && this.room) {
       this.socket.emit("codeChange", {
@@ -66,6 +68,7 @@ class SocketService {
     }
   }
 
+  // Emit cursor move event
   emitCursorMove(position, userId) {
     if (this.socket && this.room) {
       this.socket.emit("cursorMove", {
@@ -76,17 +79,20 @@ class SocketService {
     }
   }
 
+  // Listen for code change events
   onCodeChange(callback) {
     if (this.socket) {
       this.socket.on("codeChange", callback);
     }
   }
 
+  // Listen for cursor move events
   onCursorMove(callback) {
     if (this.socket) {
       this.socket.on("cursorMove", callback);
     }
   }
+  // Listen for user typing events
 
   onUserJoined(callback) {
     if (this.socket) {
@@ -94,6 +100,7 @@ class SocketService {
     }
   }
 
+  // Listen for user typing events
   disconnect() {
     if (this.socket) {
       // Remove all listeners before disconnecting

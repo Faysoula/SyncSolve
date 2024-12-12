@@ -1,3 +1,31 @@
+
+/**
+ * A component that manages a voice call window with WebRTC functionality.
+ * Handles peer connections, audio streams, and participant management in a team call session.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {string} props.teamId - The ID of the team the call belongs to
+ * @param {string} props.sessionId - The unique identifier for the call session
+ * @param {Function} props.onClose - Callback function to handle closing the call window
+ *
+ * @returns {JSX.Element} A call window interface with mute/unmute and hang up controls
+ *
+ * Features:
+ * - Real-time audio communication using WebRTC
+ * - Participant management
+ * - Mute/unmute functionality
+ * - ICE candidate negotiation
+ * - Automatic cleanup on component unmount
+ * - Error handling for media devices
+ *
+ * @example
+ * <CallWindow 
+ *   teamId="team123"
+ *   sessionId="session456"
+ *   onClose={() => handleCloseCall()}
+ * />
+ */
 import React, { useState, useEffect, useRef } from "react";
 import { IconButton, Box, Typography, Stack, Alert } from "@mui/material";
 import { PhoneOff, Mic, MicOff, Users } from "lucide-react";

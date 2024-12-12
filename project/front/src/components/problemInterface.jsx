@@ -1,3 +1,39 @@
+
+/**
+ * @component
+ * @description A problem solving interface component that provides a layout for coding problems.
+ * It includes sections for problem details, code editor, and test results.
+ * 
+ * @remarks
+ * The component is wrapped with EditorProvider and uses several contexts and services:
+ * - EditorContext for code editor state management
+ * - AuthContext for user authentication
+ * - TeamContext for team-related data
+ * - ProblemService for fetching problem data
+ * 
+ * The layout is divided into three main sections:
+ * 1. Problem Details Panel (left)
+ * 2. Editor Panel (top right)
+ * 3. Test Results Panel (bottom right)
+ * 
+ * It also includes floating chat and call buttons for team collaboration when applicable.
+ * 
+ * @param {Object} props - Component props
+ * @returns {JSX.Element} The rendered problem solving interface
+ * 
+ * @example
+ * ```jsx
+ * <ProblemSolvingInterface />
+ * ```
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires @mui/material
+ * @requires ../Services/problemService
+ * @requires ../context/editorContext
+ * @requires ../context/authContext
+ * @requires ../hooks/useTeam
+ */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Box, CircularProgress, Alert } from "@mui/material";

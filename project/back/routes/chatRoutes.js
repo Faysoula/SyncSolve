@@ -6,7 +6,11 @@ const {
   getTeamMessagesController,
 } = require("../controllers/chatController");
 
+
+// Routes
+// Create a new message
 router.post("/message", auth, createMessageController);
+// Get all messages by team ID
 router.get("/team/:team_id", auth, getTeamMessagesController);
 
 module.exports = router;

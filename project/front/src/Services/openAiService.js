@@ -1,6 +1,7 @@
 import http from "../http-common";
 import { getTokenBearer } from "../utils/token";
 
+// Get code suggestion from OpenAI
 const getCodeSuggestion = async (
   prompt,
   code,

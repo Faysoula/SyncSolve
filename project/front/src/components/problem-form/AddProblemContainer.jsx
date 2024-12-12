@@ -1,3 +1,31 @@
+/**
+ * Container component for adding and editing problems
+ * @component
+ * @param {Object} props - Component props
+ * @param {'create'|'edit'} [props.mode='create'] - Mode of operation - either 'create' for new problems or 'edit' for existing ones
+ * 
+ * @example
+ * // For creating a new problem
+ * <AddProblemContainer mode="create" />
+ * 
+ * // For editing an existing problem
+ * <AddProblemContainer mode="edit" />
+ * 
+ * @returns {JSX.Element} Problem form component with state management and API integration
+ * 
+ * @description
+ * Handles:
+ * - Form state management for problem details
+ * - Image upload for test cases
+ * - Form validation
+ * - API integration for CRUD operations
+ * - Authorization checks
+ * - Navigation after successful submission
+ * - Loading states and error handling
+ * 
+ * Requires authentication context and expects the following route parameters:
+ * - problemId (when mode="edit")
+ */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/authContext";

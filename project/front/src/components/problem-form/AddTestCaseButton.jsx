@@ -1,3 +1,17 @@
+
+/**
+ * AddTestCaseButton component renders a button with a plus icon that triggers a provided onClick handler.
+ *
+ * @component
+ * @example
+ * const handleClick = () => { console.log('Button clicked'); };
+ * return <AddTestCaseButton onClick={handleClick} />;
+ *
+ * @param {Object} props - Component props
+ * @param {function} props.onClick - Function to be called when the button is clicked
+ *
+ * @returns {JSX.Element} A button component with custom styles and an icon
+ */
 import React from "react";
 import { Button } from "@mui/material";
 import { Plus } from "lucide-react";

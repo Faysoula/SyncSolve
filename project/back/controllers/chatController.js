@@ -1,5 +1,8 @@
 const { createMessage, getTeamMessages } = require("../services/chatService");
 
+/**
+ * Create a new message in the chat
+ */
 const createMessageController = async (req, res) => {
   const { team_id, message } = req.body;
   const sender_id = req.user.user_id;
@@ -12,6 +15,7 @@ const createMessageController = async (req, res) => {
   }
 };
 
+// gets all messages for a team
 const getTeamMessagesController = async (req, res) => {
   const { team_id } = req.params;
 

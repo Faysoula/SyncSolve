@@ -8,6 +8,7 @@ const {
   deleteExecution,
 } = require("../services/executionService");
 
+// Create a new execution
 const createExecutionController = async (req, res) => {
   const { user_id, code, terminal_id } = req.body;
 
@@ -24,7 +25,7 @@ const createExecutionController = async (req, res) => {
       });
     }
 
-    const result = await createExecution(user_id, code, terminal_id);
+    const result = await createExecution(user_id, code, terminal_id); // Create a new execution
 
     // Send back a properly structured response
     return res.status(200).json({
@@ -45,6 +46,7 @@ const createExecutionController = async (req, res) => {
   }
 };
 
+// Get all executions
 const getAllExecutionsController = async (req, res) => {
   try {
     const executions = await getAllExecutions();
@@ -54,6 +56,7 @@ const getAllExecutionsController = async (req, res) => {
   }
 };
 
+//get exectusion for a specific session
 const getExecutionsBySessionIdController = async (req, res) => {
   const { session_id } = req.params;
   try {

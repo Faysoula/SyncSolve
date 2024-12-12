@@ -1,3 +1,26 @@
+
+/**
+ * A React component that provides an AI assistant interface for code-related queries.
+ * The assistant can provide suggestions and help based on code, problem description, and test cases.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {string} props.code - The current code being worked on
+ * @param {Object} props.problem - The problem object containing details about the coding problem
+ * @param {string} props.problem.description - The description of the coding problem
+ * @param {Array} props.problem.test_cases - The test cases for the coding problem
+ * 
+ * @returns {JSX.Element} A chat-like interface with a message history display and input form
+ * 
+ * @example
+ * <AiAssistant 
+ *   code="function example() { }"
+ *   problem={{
+ *     description: "Write a function that...",
+ *     test_cases: ["test1", "test2"]
+ *   }}
+ * />
+ */
 import React, { useState, useRef, useEffect } from "react";
 import {
   Box,

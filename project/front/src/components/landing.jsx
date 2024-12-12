@@ -1,3 +1,24 @@
+
+/**
+ * Landing page component for SyncSolve application
+ * @component
+ * @description Displays the main landing page with hero section, features, statistics, and preview.
+ * Includes responsive navigation bar with authentication state handling.
+ * 
+ * @example
+ * return (
+ *   <LandingPage />
+ * )
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires @mui/material
+ * @requires lucide-react
+ * @requires ../context/authContext
+ * 
+ * @returns {JSX.Element} A responsive landing page with navigation, hero section, features,
+ * statistics, and preview sections. Displays different navigation options based on user authentication state.
+ */
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {

@@ -1,3 +1,22 @@
+
+/**
+ * @component ProblemsPage
+ * @description A component that displays a list of problems with filtering capabilities.
+ * Requires authentication to access. Shows loading state while fetching data.
+ * 
+ * @requires React
+ * @requires @mui/material
+ * @requires ../context/authContext
+ * @requires ../hooks/useProblemData
+ * 
+ * @returns {JSX.Element} Returns either:
+ *  - AuthRequiredCard if user is not authenticated
+ *  - LoadingState while data is being fetched
+ *  - The main problems page layout with filters and list of problems
+ * 
+ * @example
+ * <ProblemsPage />
+ */
 import React from "react";
 import { Box, Container, Alert } from "@mui/material";
 

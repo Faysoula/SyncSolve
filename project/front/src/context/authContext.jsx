@@ -1,3 +1,27 @@
+
+/**
+ * @module AuthContext
+ * @description Provides authentication context and functionality for the application.
+ */
+
+/**
+ * @function AuthProvider
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to be wrapped by the provider
+ * @returns {JSX.Element} AuthContext Provider component
+ * @description Manages authentication state and provides authentication-related functions to child components
+ */
+
+/**
+ * @function useAuth
+ * @returns {Object} Authentication context object
+ * @property {Object|null} user - Current authenticated user data
+ * @property {Function} login - Function to handle user login
+ * @property {Function} logout - Function to handle user logout
+ * @property {boolean} loading - Loading state of authentication
+ * @throws {Error} If used outside of AuthProvider
+ * @description Custom hook to access authentication context
+ */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import UserService from "../Services/userService";
 

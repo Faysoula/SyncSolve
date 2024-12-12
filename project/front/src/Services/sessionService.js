@@ -10,6 +10,7 @@ const ERROR_MESSAGES = {
   EXECUTION_FAILED: "Code execution failed",
 };
 
+// Create a new problem session for the team
 const createProblemSession = async (teamId, problemId) => {
   try {
     const existingSessions = await http.get(
@@ -45,6 +46,7 @@ const createProblemSession = async (teamId, problemId) => {
   }
 };
 
+// Get the active session for the team
 const getActiveSession = async (teamId) => {
   try {
     const response = await http.get(`/sessions/session/team/${teamId}`, {
@@ -60,6 +62,7 @@ const getActiveSession = async (teamId) => {
   }
 };
 
+// Create a new terminal for the given language
 const createTerminal = async (sessionId, language) => {
   if (!sessionId || !language) {
     throw new Error(ERROR_MESSAGES.INVALID_LANGUAGE);
@@ -91,6 +94,7 @@ const createTerminal = async (sessionId, language) => {
   }
 };
 
+// Execute the given code in the terminal
 const executeCode = async (userId, code, terminalId) => {
   if (!userId) throw new Error("User ID is required");
   if (!code?.trim()) throw new Error("Code cannot be empty");

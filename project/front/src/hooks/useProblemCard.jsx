@@ -1,3 +1,19 @@
+/**
+ * Custom hook to manage the state and logic for a problem card.
+ *
+ * @param {Object} problem - The problem object.
+ * @param {string} problem.created_by - The ID of the user who created the problem.
+ * @returns {Object} - The state and functions related to the problem card.
+ * @returns {boolean} isAdmin - Indicates if the current user is an admin.
+ * @returns {boolean} isLoading - Indicates if the data is still loading.
+ * @returns {string} error - Error message, if any.
+ * @returns {Function} setError - Function to set the error message.
+ * @returns {Object|null} activeSession - The active session object, if any.
+ * @returns {string|null} teamId - The ID of the team the user is part of.
+ * @returns {boolean} showSwitchDialog - Indicates if the switch dialog should be shown.
+ * @returns {Function} setShowSwitchDialog - Function to set the showSwitchDialog state.
+ * @returns {boolean} isCreator - Indicates if the current user is the creator of the problem.
+ */
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/authContext";
 import TeamService from "../Services/teamService";

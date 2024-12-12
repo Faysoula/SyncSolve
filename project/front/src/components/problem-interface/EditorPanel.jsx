@@ -1,3 +1,28 @@
+/**
+ * A collaborative code editor panel component with real-time cursor tracking and AI assistance.
+ * 
+ * @component
+ * @param {Object} props
+ * @param {Function} props.onRunTests - Callback function to execute when running tests
+ * @param {Object} props.problem - Problem object containing details about the current coding problem
+ * 
+ * @returns {JSX.Element} A stack layout containing:
+ * - Editor controls (language selector, theme selector, save/run buttons)
+ * - Monaco code editor with collaborative cursors
+ * - AI Assistant panel
+ * 
+ * Features:
+ * - Real-time collaborative cursor tracking
+ * - Multiple theme support
+ * - Multiple language support
+ * - Auto-save functionality
+ * - AI assistance
+ * - Test execution
+ * 
+ * Uses monaco-editor for the code editing interface and maintains cursor decorations
+ * for real-time collaboration. Implements custom styling for collaborator cursors
+ * with unique colors for different users.
+ */
 import React, { useRef, useState, useEffect, memo, useCallback } from "react";
 import { Box, Stack, Button } from "@mui/material";
 import { Play, Save, Terminal, Brain } from "lucide-react";

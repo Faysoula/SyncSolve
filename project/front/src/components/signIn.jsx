@@ -1,3 +1,31 @@
+/**
+ * SignIn component for user authentication.
+ *
+ * @component
+ * @example
+ * return (
+ *   <SignIn />
+ * )
+ *
+ * @description
+ * Renders a sign-in form with email and password fields.
+ * Features include:
+ * - Email validation
+ * - Password validation
+ * - Loading state during form submission
+ * - Error handling and display
+ * - Success message and redirect after successful login
+ * - Navigation to registration page
+ *
+ * @returns {JSX.Element} A sign-in form with email and password inputs, submit button,
+ *                       and link to registration page
+ *
+ * @uses {useNavigate} For navigation after successful login
+ * @uses {useAuth} For handling user authentication context
+ * @uses {useState} For managing component state
+ * @uses {useForm} Custom hook for form handling
+ * @uses {UserService} For making login API calls
+ */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Alert, Stack, Button } from "@mui/material";

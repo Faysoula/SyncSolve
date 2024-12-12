@@ -1,6 +1,7 @@
 import http from "../http-common";
 import { getTokenBearer } from "../utils/token";
 
+// Problem service to get, add, update, delete problems
 const getAllProblems = () => {
   return http.get("/problems/getAllProblems", {
     headers: {
@@ -8,7 +9,7 @@ const getAllProblems = () => {
     },
   });
 };
-
+// Get problems by difficulty
 const getProblemsByDifficulty = (difficulty) => {
   return http.get(`/problems/getProblemBYDifficulty/${difficulty}`, {
     headers: {
@@ -16,7 +17,7 @@ const getProblemsByDifficulty = (difficulty) => {
     },
   });
 };
-
+// Add a new problem
 const addProblem = (data) => {
   return http.post("/problems/addProblem", data, {
     headers: {
@@ -24,7 +25,7 @@ const addProblem = (data) => {
     },
   });
 };
-
+// Get a problem by id
 const getProblemById = (id) => {
   return http.get(`/problems/${id}`, {
     headers: {
@@ -32,7 +33,7 @@ const getProblemById = (id) => {
     },
   });
 };
-
+// Get all tags
 const getAllTags = () => {
   return http.get("/problems/tags", {
     headers: {
@@ -40,7 +41,7 @@ const getAllTags = () => {
     },
   });
 };
-
+// Search problems by tags
 const searchByTags = (tags) => {
   const tagString = Array.isArray(tags) ? tags.join(",") : tags;
   return http.get(`/problems/searchByTags?tags=${tagString}`, {
@@ -49,7 +50,7 @@ const searchByTags = (tags) => {
     },
   });
 };
-
+// Update a problem
 const updateProblem = (id, data) => {
   return http.put(`/problems/updateProblem/${id}`, data, {
     headers: {
@@ -57,7 +58,7 @@ const updateProblem = (id, data) => {
     },
   });
 };
-
+// Delete a problem
 const deleteProblem = (id) => {
   return http.delete(`/problems/deleteProblem/${id}`, {
     headers: {
@@ -65,6 +66,7 @@ const deleteProblem = (id) => {
     },
   });
 };
+// Get daily problem
 const getDailyProblem = () => {
   return http.get("/problems/daily", {
     headers: {

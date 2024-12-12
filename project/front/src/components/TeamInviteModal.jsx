@@ -1,3 +1,22 @@
+
+/**
+ * A modal component for creating teams and generating invite links.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Controls visibility of the modal
+ * @param {Function} props.onClose - Callback function triggered when modal is closed
+ * 
+ * @example
+ * return (
+ *   <TeamInviteModal 
+ *     open={showModal}
+ *     onClose={() => setShowModal(false)}
+ *   />
+ * )
+ * 
+ * @returns {JSX.Element} A dialog modal with team creation form and invite link functionality
+ */
 import React, { useState } from "react";
 import {
   Dialog,

@@ -10,6 +10,8 @@ const {
   getDailyProblem,
 } = require("../services/problemsService");
 
+
+// Add a new problem
 const addProblemController = async (req, res) => {
   const {
     title,
@@ -38,6 +40,8 @@ const addProblemController = async (req, res) => {
   }
 };
 
+
+// Search problems by tags
 const searchByTagsController = async (req, res) => {
   const { tags } = req.query;
   try {
@@ -49,6 +53,7 @@ const searchByTagsController = async (req, res) => {
   }
 };
 
+// Get all tags
 const getAllTagsController = async (req, res) => {
   try {
     const tags = await getAllTags();
@@ -59,6 +64,7 @@ const getAllTagsController = async (req, res) => {
   }
 };
 
+// Get all problems
 const getAllProblemsController = async (req, res) => {
   console.log("⏳ Starting problems fetch...");
   console.time("Problems Fetch Duration");
@@ -76,6 +82,7 @@ const getAllProblemsController = async (req, res) => {
   }
 };
 
+// Get problems by difficulty
 const getProblemBYDifficultyController = async (req, res) => {
   const { difficulty } = req.params;
   try {
@@ -87,6 +94,7 @@ const getProblemBYDifficultyController = async (req, res) => {
   }
 };
 
+// Get problem by ID
 const getProblemByIdController = async (req, res) => {
   const problem_id = req.params.id;
   console.time("Problem Fetch Time"); // Start timer

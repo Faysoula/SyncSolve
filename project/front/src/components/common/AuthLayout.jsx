@@ -1,3 +1,11 @@
+
+/**
+ * AuthLayout component that provides a layout for authentication pages.
+ *
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to be rendered inside the layout.
+ * @returns {JSX.Element} The rendered AuthLayout component.
+ */
 import React from "react";
 import { Box, Container, Paper } from "@mui/material";
 

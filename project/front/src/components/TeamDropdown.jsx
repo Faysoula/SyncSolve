@@ -1,3 +1,22 @@
+
+/**
+ * A dropdown component for team-related actions and information display
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onCreateTeam - Callback function triggered when creating a new team
+ * 
+ * @returns {JSX.Element} A dropdown menu component that displays team information and actions
+ * 
+ * The component handles:
+ * - Displaying team name and admin status
+ * - Copying team invite links
+ * - Team member management (leaving team)
+ * - Automatic role reassignment when admin leaves
+ * - Loading states and team creation options
+ * 
+ * Requires authentication context and team data to function properly.
+ */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";

@@ -1,3 +1,32 @@
+/**
+ * @fileoverview Editor context provider that manages the state and functionality of the code editor
+ * including real-time collaboration, code execution, and theme management.
+ *
+ * @context EditorContext
+ * @exports {Object} EditorProvider - React context provider component for editor functionality
+ * @exports {Function} useEditor - Custom hook to access editor context
+ *
+ * @typedef {Object} EditorContextValue
+ * @property {string} code - Current code content for the selected language
+ * @property {string} language - Currently selected programming language
+ * @property {string} theme - Current editor theme
+ * @property {Object} testResults - Results from code execution tests
+ * @property {Object} currentTerminal - Current active terminal instance
+ * @property {string} error - Current error message if any
+ * @property {boolean} isSaving - Flag indicating if code is being saved
+ * @property {string} lastSaved - Timestamp of last successful save
+ * @property {Array} collaborators - List of current collaborating users
+ * @property {Function} updateCode - Updates the code content
+ * @property {Function} updateLanguage - Changes the current programming language
+ * @property {Function} updateTheme - Updates the editor theme
+ * @property {Function} runTests - Executes code tests
+ * @property {Function} saveCodeSnapshot - Saves current code state
+ * @property {Function} handleEditorDidMount - Editor initialization handler
+ *
+ * @requires react
+ * @requires @monaco-editor/react
+ * @requires react-router-dom
+ */
 import React, {
   createContext,
   useContext,

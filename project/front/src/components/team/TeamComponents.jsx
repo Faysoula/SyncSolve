@@ -1,3 +1,40 @@
+/**
+ * @module TeamComponents
+ * @description A collection of reusable team-related UI components built with Material-UI.
+ */
+
+/**
+ * @component LoadingButton
+ * @description A button component that displays a loading spinner.
+ * @returns {JSX.Element} A Material-UI Button with a CircularProgress indicator
+ */
+
+/**
+ * @component CreateTeamButton
+ * @description A button component for team creation with an icon.
+ * @param {Object} props
+ * @param {Function} props.onClick - Click event handler for the button
+ * @returns {JSX.Element} A Material-UI Button with Users icon
+ */
+
+/**
+ * @component SuccessSnackbar
+ * @description A snackbar component that displays a success message for clipboard copy.
+ * @param {Object} props
+ * @param {boolean} props.open - Controls the visibility of the snackbar
+ * @param {Function} props.onClose - Handler for closing the snackbar
+ * @returns {JSX.Element} A Material-UI Snackbar with success Alert
+ */
+
+/**
+ * @component TeamDropdownButton
+ * @description A dropdown button component displaying team information.
+ * @param {Object} props
+ * @param {string} props.teamName - The name of the team to display
+ * @param {boolean} props.isAdmin - Flag indicating if the user is an admin
+ * @param {Function} props.onClick - Click event handler for the button
+ * @returns {JSX.Element} A Material-UI Button with team information
+ */
 import React from "react";
 import {
   Button,

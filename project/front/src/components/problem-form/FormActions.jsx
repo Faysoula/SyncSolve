@@ -1,3 +1,12 @@
+/**
+ * FormActions component renders action buttons for a form.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.mode - The mode of the form, either "edit" or "create".
+ * @param {boolean} props.isLoading - Flag indicating if the form is in a loading state.
+ * @param {Function} props.onCancel - Callback function to handle cancel action.
+ * @returns {JSX.Element} The rendered component.
+ */
 import React from "react";
 import { Stack, Button } from "@mui/material";
 import { Save } from "lucide-react";

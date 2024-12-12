@@ -5,13 +5,16 @@ const jwt = require("jsonwebtoken");
 const { generateToken } = require("../utils/generateToken");
 const SALT_ROUNDS = 10;
 
+// Register a new user
 const registerUser = async (username, email, password, name, last_name) => {
   try {
+    // Check if user already exists
     const userExists = await User.findOne({
       where: {
         [Op.or]: [{ username }, { email }],
       },
     });
+    // If user exists, check if username or email is already taken
     if (userExists) {
       if (userExists.username === username) {
         throw new Error("Username already exists");
@@ -20,6 +23,7 @@ const registerUser = async (username, email, password, name, last_name) => {
         throw new Error("Email already exists");
       }
     }
+    // Hash the password
     const hashedPass = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await User.create({
@@ -37,6 +41,7 @@ const registerUser = async (username, email, password, name, last_name) => {
   }
 };
 
+// Log in a user
 const loginUser = async (email, password) => {
   try {
     const user = await User.findOne({ where: { email } });
@@ -44,11 +49,13 @@ const loginUser = async (email, password) => {
       throw new Error("User not found");
     }
 
+    // Compare the password
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) {
       throw new Error("Incorrect password");
     }
 
+    // Generate a token
     const token = generateToken(user.user_id);
     return { token, user };
   } catch (err) {
@@ -56,6 +63,7 @@ const loginUser = async (email, password) => {
   }
 };
 
+// Get the current user
 const getCurrentUser = async (user_id) => {
   try {
     const user = await User.findByPk(user_id);
@@ -65,6 +73,7 @@ const getCurrentUser = async (user_id) => {
   }
 };
 
+// Get all users
 const getAllUsers = async () => {
   try {
     const users = await User.findAll();
@@ -74,6 +83,7 @@ const getAllUsers = async () => {
   }
 };
 
+// Get a user by their ID
 const getUserById = async (user_id) => {
   try {
     const user = await User.findByPk(parseInt(user_id));
@@ -83,6 +93,7 @@ const getUserById = async (user_id) => {
   }
 };
 
+// Get a user by their username
 const getUserByUsername = async (username) => {
   try {
     const user = await User.findOne({
@@ -96,6 +107,7 @@ const getUserByUsername = async (username) => {
   }
 };
 
+// Update a user
 const updateUser = async (
   user_id,
   username,
@@ -105,8 +117,10 @@ const updateUser = async (
   last_name
 ) => {
   try {
+    // Hash the password
     const haseshPass = await bcrypt.hash(password, SALT_ROUNDS);
 
+    // Update the user
     const [affectedrows] = await User.update(
       {
         username,

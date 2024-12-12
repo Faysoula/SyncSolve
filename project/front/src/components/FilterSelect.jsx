@@ -1,3 +1,29 @@
+/**
+ * A component that renders a filter section for problems with search, difficulty, sorting, and topic filtering capabilities.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {Object} props.filters - The current filter state object
+ * @param {string} [props.filters.searchQuery] - The current search query
+ * @param {string} [props.filters.difficulty] - The selected difficulty level ('all', 'easy', 'medium', 'hard')
+ * @param {string} [props.filters.sort] - The selected sort order ('newest', 'oldest')
+ * @param {string[]} [props.filters.tags] - Array of currently selected topic tags
+ * @param {Function} props.onFilterChange - Callback function that handles filter state changes
+ * 
+ * @returns {JSX.Element} A filter section component with search bar, difficulty selector,
+ *                        sort options, and collapsible topics section
+ *
+ * @example
+ * <FilterSection 
+ *   filters={{
+ *     searchQuery: "",
+ *     difficulty: "all",
+ *     sort: "newest",
+ *     tags: []
+ *   }}
+ *   onFilterChange={(newFilters) => handleFilterChange(newFilters)}
+ * />
+ */
 import React, { useState, useEffect } from "react";
 import {
   Box,

@@ -4,6 +4,7 @@ const { db } = require("../config/db");
 const Problems = require("../models/problems");
 const axios = require("axios");
 
+// addProblem function to add a new problem to the database with the provided details
 const addProblem = async (
   title,
   description,
@@ -50,6 +51,7 @@ const addProblem = async (
   }
 };
 
+// getAllProblems function to get all problems from the database
 const getAllProblems = async () => {
   try {
     const problems = await Problems.findAll();
@@ -59,6 +61,7 @@ const getAllProblems = async () => {
   }
 };
 
+// getProblemBYDifficulty function to get all problems from the database by difficulty
 const getProblemBYDifficulty = async (difficulty) => {
   try {
     const problems = await Problems.findAll({
@@ -85,6 +88,7 @@ const getProblemById = async (problem_id) => {
   }
 };
 
+// updateProblem function to update an existing problem in the database with the provided details
 const updateProblem = async (
   problem_id,
   title,
@@ -226,15 +230,27 @@ const deleteProblem = async (problem_id) => {
 };
 
 //daily stuff
+/**
+ * Fetches or retrieves the daily programming problem
+ * First checks for an existing daily problem, if none exists, fetches a new one from LeetCode API
+ * 
+ * @async
+ * @function getDailyProblem
+ * @returns {Promise<Problem>} A problem object with daily challenge properties
+ * @throws {Error} If there's an issue fetching or creating the daily problem
+ */
 const getDailyProblem = async () => {
   try {
+    // Set today's date to midnight for accurate daily comparisons
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    // Reset is_daily flag for all previous daily problems
     await Problems.update(
       {
         metadata: db.literal(`
-      jsonb_set(metadata::jsonb, '{is_daily}', 'false'::jsonb, true)
-    `),
+          jsonb_set(metadata::jsonb, '{is_daily}', 'false'::jsonb, true)
+        `),
       },
       {
         where: {
@@ -248,7 +264,7 @@ const getDailyProblem = async () => {
       }
     );
 
-    // First check for existing daily problem
+    // Check if we already have a daily problem for today
     const existingProblem = await Problems.findOne({
       where: {
         metadata: {
@@ -260,23 +276,28 @@ const getDailyProblem = async () => {
       },
     });
 
+    // Return existing problem if found
     if (existingProblem) {
       return existingProblem;
     }
 
-    // Fetch new daily problem from LeetCode API
+    // Fetch new problem from LeetCode API if no existing problem found
     const response = await axios.get(
       "https://alfa-leetcode-api.onrender.com/dailyQuestion"
     );
 
-    // The actual problem data is nested in the response
+    // Extract problem data from nested response structure
     const dailyData =
       response.data?.data?.activeDailyCodingChallengeQuestion?.question;
     if (!dailyData) {
       throw new Error("Invalid response from LeetCode API");
     }
 
-    // Convert HTML content to plain text
+    /**
+     * Removes HTML tags and converts HTML entities to plain text
+     * @param {string} html - HTML string to be cleaned
+     * @returns {string} Cleaned plain text
+     */
     const stripHtml = (html) => {
       return html
         .replace(/<[^>]*>/g, "") // Remove HTML tags
@@ -288,13 +309,17 @@ const getDailyProblem = async () => {
         .trim();
     };
 
-    // Parse example test cases from the exampleTestcases string
+    /**
+     * Parses example test cases from string format
+     * @param {string} exampleTests - Raw test cases string
+     * @returns {Array<Object>} Array of test case objects with input and expected output
+     */
     const parseTestCases = (exampleTests) => {
       try {
         const tests = exampleTests.split("\n").filter(Boolean);
         return tests.map((test) => ({
           input: test,
-          expected_output: test, // Since the API doesn't provide expected output, we'll use same for now
+          expected_output: test, // Using input as output since API doesn't provide expected output
         }));
       } catch (err) {
         console.error("Error parsing test cases:", err);
@@ -302,12 +327,12 @@ const getDailyProblem = async () => {
       }
     };
 
-    // Create new problem in database
+    // Create new daily problem in database with processed data
     const newProblem = await Problems.create({
       title: dailyData.title,
-      description: stripHtml(dailyData.content), // Clean HTML from content
+      description: stripHtml(dailyData.content),
       difficulty: dailyData.difficulty.toLowerCase(),
-      created_by: 1, // System user ID
+      created_by: 1, // System user ID for daily problems
       test_cases: parseTestCases(dailyData.exampleTestcases),
       metadata: {
         is_daily: true,

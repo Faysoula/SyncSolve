@@ -1,4 +1,27 @@
-// src/components/SignUp.jsx
+/**
+ * SignUp component for user registration.
+ * 
+ * @component
+ * @description Renders a registration form with fields for username, email, password,
+ * confirmation password, first name, and last name. Provides form validation,
+ * error handling, and success feedback.
+ * 
+ * @example
+ * return (
+ *   <SignUp />
+ * )
+ * 
+ * @returns {JSX.Element} A registration form with Material-UI components
+ * 
+ * @uses {useNavigate} For navigation after successful registration
+ * @uses {useAuth} For user authentication context
+ * @uses {useState} For managing component state
+ * @uses {useForm} Custom hook for form handling
+ * @uses {UserService} Service for user registration API calls
+ * @uses {AuthLayout} Layout component for authentication pages
+ * @uses {FormTextField} Custom form input component
+ * @uses {LoadingButton} Custom button component with loading state
+ */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Typography, Alert, Stack, Box, Button } from "@mui/material";

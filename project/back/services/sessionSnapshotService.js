@@ -2,6 +2,7 @@ const sessionSnapshots = require("../models/sessionSnapshots");
 const Session = require("../models/session");
 const { getSessionById } = require("./sessionService");
 
+// Create a new session snapshot
 const createSessionSnapshot = async (session_id, code_snapshot) => {
   try {
     const session = await getSessionById(session_id);
@@ -20,6 +21,7 @@ const createSessionSnapshot = async (session_id, code_snapshot) => {
   }
 };
 
+// Retrieve all session snapshots
 const getSessionSnapshots = async () => {
   try {
     const sessionSnaps = await sessionSnapshots.findAll();
@@ -29,6 +31,8 @@ const getSessionSnapshots = async () => {
   }
 };
 
+
+// Retrieve all session snapshots for a specific session
 const getSessionSnapshotsBySessionId = async (session_id) => {
   try {
     const sessionSnaps = await sessionSnapshots.findAll({
@@ -48,6 +52,7 @@ const getSessionSnapshotsBySessionId = async (session_id) => {
   }
 };
 
+// Retrieve a session snapshot by its ID
 const getSessionSnapshotById = async (snapshot_id) => {
   try {
     const sessionSnaps = await sessionSnapshots.findByPk(snapshot_id);
@@ -57,6 +62,7 @@ const getSessionSnapshotById = async (snapshot_id) => {
   }
 };
 
+// Update a session snapshot
 const updateSessionSnapshot = async (snapshot_id, code_snapshot) => {
   try {
     const sessionSnaps = await sessionSnapshots.findByPk(snapshot_id);
@@ -71,6 +77,7 @@ const updateSessionSnapshot = async (snapshot_id, code_snapshot) => {
   }
 };
 
+// Delete a session snapshot
 const deleteSessionSnapshot = async (snapshot_id) => {
   try {
     const sessionSnaps = await sessionSnapshots.findByPk(snapshot_id);

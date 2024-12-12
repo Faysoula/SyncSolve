@@ -1,5 +1,6 @@
 import socketService from "./socketService";
 
+// CallService class to handle WebRTC calls
 class CallService {
   constructor() {
     this.peerConnections = new Map();
@@ -27,6 +28,7 @@ class CallService {
     };
   }
 
+  // Create a new peer connection
   async createPeerConnection(peerId, localStream) {
     try {
       const peerConnection = new RTCPeerConnection(this.configuration);
@@ -61,6 +63,7 @@ class CallService {
     }
   }
 
+  // Create an offer to send to a peer 
   async createOffer(peerId, localStream) {
     try {
       const peerConnection = await this.createPeerConnection(
@@ -76,6 +79,7 @@ class CallService {
     }
   }
 
+  // Handle an offer from a peer
   async handleOffer(peerId, offer, localStream) {
     try {
       const peerConnection = await this.createPeerConnection(
@@ -94,6 +98,7 @@ class CallService {
     }
   }
 
+  // Handle an answer from a peer
   async handleAnswer(peerId, answer) {
     try {
       const peerConnection = this.peerConnections.get(peerId);
@@ -108,6 +113,7 @@ class CallService {
     }
   }
 
+  // Handle ICE
   async handleIceCandidate(peerId, candidate) {
     try {
       const peerConnection = this.peerConnections.get(peerId);
@@ -126,6 +132,7 @@ class CallService {
     }
   }
 
+  // Close a connection
   closeConnection(peerId) {
     const peerConnection = this.peerConnections.get(peerId);
     if (peerConnection) {
@@ -135,6 +142,7 @@ class CallService {
     }
   }
 
+  // Close all connections
   closeAllConnections() {
     this.peerConnections.forEach((connection, peerId) => {
       this.closeConnection(peerId);

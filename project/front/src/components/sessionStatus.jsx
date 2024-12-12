@@ -1,3 +1,13 @@
+
+/**
+ * A component that displays a session status chip/tag.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {string} props.sessionId - The ID of the current session
+ * @param {string} props.problemId - The ID of the problem being solved
+ * @returns {JSX.Element} A Material-UI Chip component showing session status
+ */
 import React from "react";
 import { Chip } from "@mui/material";
 import { Play } from "lucide-react";

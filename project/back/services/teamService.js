@@ -2,6 +2,7 @@ const Team = require("../models/team");
 const TeamMember = require("../models/TeamMember");
 const User = require("../models/user");
 
+// Create a new team
 const createTeam = async (team_name, creator_id) => {
   try {
     const user = await User.findByPk(creator_id);
@@ -9,6 +10,7 @@ const createTeam = async (team_name, creator_id) => {
       throw new Error("User not found");
     }
 
+    // Check if team name already exists
     const team = await Team.create({
       team_name,
     });
@@ -25,6 +27,7 @@ const createTeam = async (team_name, creator_id) => {
   }
 };
 
+// Retrieve all teams
 const getTeams = async () => {
   try {
     const teams = await Team.findAll();
@@ -34,12 +37,15 @@ const getTeams = async () => {
   }
 };
 
+// Retrieve a team by its name
 const getTeamByName = async (team_name) => {
   try {
+    // Include team members
     const team = await Team.findOne({
       where: {
         team_name,
       },
+      // Include team members and user details
       include: [
         {
           model: TeamMember,
@@ -62,6 +68,7 @@ const getTeamByName = async (team_name) => {
   }
 };
 
+// Retrieve all team members for a specific team
 const getTeamMembers = async (team_id) => {
   try {
     const teamMembers = await TeamMember.findAll({
@@ -77,6 +84,7 @@ const getTeamMembers = async (team_id) => {
   }
 };
 
+// Retrieve a team by its ID
 const getTeamById = async (team_id) => {
   try {
     const team = await Team.findByPk(team_id);
@@ -89,6 +97,7 @@ const getTeamById = async (team_id) => {
   }
 };
 
+// Update a team's name
 const updateTeamName = async (team_id, team_name) => {
   const [updatedRows] = await Team.update(
     { team_name },

@@ -4,6 +4,7 @@ const Session = require("../models/session");
 
 const SUPPORTED_LANGUAGES = ["Cpp", "Java", "Python"];
 
+// Create a new terminal session
 const createTerminalSession = async (session_id, language) => {
   try {
     if (!SUPPORTED_LANGUAGES.includes(language)) {
@@ -24,6 +25,7 @@ const createTerminalSession = async (session_id, language) => {
   }
 };
 
+// Retrieve all terminal sessions
 const getTerminalSessions = async () => {
   try {
     const terminalSessions = await TerminalSession.findAll({
@@ -40,8 +42,10 @@ const getTerminalSessions = async () => {
   }
 };
 
+// Retrieve a terminal session by its ID
 const getTerminalSessionsByid = async (terminal_id) => {
   try {
+    // Include session details
     const terminalSession = await TerminalSession.findByPk(terminal_id, {
       include: [
         {
@@ -56,12 +60,15 @@ const getTerminalSessionsByid = async (terminal_id) => {
   }
 };
 
+// Retrieve all terminal sessions for a specific session
 const getTerminalSessionsBySessionId = async (session_id) => {
   try {
+    // Include session details
     const terminalSessions = await TerminalSession.findAll({
       where: {
         session_id,
       },
+      // Include session details
       include: [
         {
           model: Session,
@@ -75,6 +82,7 @@ const getTerminalSessionsBySessionId = async (session_id) => {
   }
 };
 
+//  Update the last active time for a terminal session
 const updateLastActive = async (terminal_id) => {
   try {
     const terminalSession = await TerminalSession.findByPk(terminal_id);
@@ -90,6 +98,7 @@ const updateLastActive = async (terminal_id) => {
   }
 };
 
+// End a terminal session
 const deleteTerminalSession = async (terminal_id) => {
   try {
     const terminalSession = await TerminalSession.findByPk(terminal_id);

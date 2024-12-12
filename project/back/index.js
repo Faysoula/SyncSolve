@@ -19,6 +19,7 @@ const {
   Execution,
 } = require("./models/associations");
 
+// Routes
 const userRoutes = require("./routes/userRoutes");
 const problemRoutes = require("./routes/problemsRoutes");
 const teamRoutes = require("./routes/teamRoute");
@@ -31,14 +32,19 @@ const uploadRoutes = require("./routes/uploadRoute");
 const chatRoutes = require("./routes/chatRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 
+// Initialize express
 const app = express();
 
+// Initialize server
 const server = http.createServer(app);
 
+// Initialize socket
 initializeSocket(server);
 
+// Port
 const PORT = process.env.PORT || 3001;
 
+// Middlewares
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 app.use(
@@ -49,6 +55,7 @@ app.use(
   })
 );
 
+// Routes
 app.use("/api/users", userRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/teams", teamRoutes);
@@ -72,7 +79,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-server.listen(PORT, '0.0.0.0',() => {
+server.listen(PORT,() => {
   console.log(`====================================`);
   console.log(`Server running on port ${PORT}`);
   testConnection();

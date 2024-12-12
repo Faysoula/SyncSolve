@@ -13,9 +13,11 @@ import AddProblemContainer from "./components/problem-form/AddProblemContainer";
 import ProblemSolvingInterface from "./components/problemInterface";
 import TeamJoin from "./components/TeamJoin";
 
+// App component is the root component of the app
 function App() {
   return (
     <AuthProvider>
+      {/* ThemeProvider provides the theme to the entire app */}
       <ThemeProvider theme={theme}>
         <Box
           sx={{
@@ -26,6 +28,7 @@ function App() {
           }}
         >
           <Header />
+          {/* Box component is a div with some additional styles */}
           <Box sx={{ flex: 1, mt: 8 }}>
             <Routes>
               <Route path="/Register" element={<SignUp />} />

@@ -1,3 +1,20 @@
+/**
+ * A component that renders a call button with voice chat functionality.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {string} props.teamId - The ID of the team
+ * @param {string} props.sessionId - The ID of the current session
+ * 
+ * @returns {JSX.Element} A call button component with an optional call window
+ * 
+ * The component:
+ * - Displays a phone icon button that can start/join calls
+ * - Shows a green badge when there's an incoming call
+ * - Opens a call window when a call is active
+ * - Handles socket events for call starting and ending
+ * - Changes button color based on call status (purple for normal, green for incoming)
+ */
 import React, { useState, useEffect } from "react";
 import { IconButton, Badge } from "@mui/material";
 import { Phone } from "lucide-react";

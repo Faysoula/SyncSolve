@@ -1,3 +1,13 @@
+/**
+ * Custom hook to fetch and manage team data for a given user.
+ *
+ * @param {string} userId - The ID of the user whose team data is to be fetched.
+ * @returns {Object} An object containing the following properties:
+ * - teamData: The team data including team details, members, and user role.
+ * - loading: A boolean indicating whether the data is currently being loaded.
+ * - activeSession: The active session data (currently not used).
+ * - refreshTeamData: A function to manually refresh the team data.
+ */
 import { useState, useEffect } from "react";
 import TeamService from "../Services/teamService";
 

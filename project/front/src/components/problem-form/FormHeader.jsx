@@ -1,3 +1,12 @@
+
+/**
+ * FormHeader component displays a header for the form.
+ * It shows "Edit Problem" if the mode is "edit", otherwise it shows "Create New Problem".
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.mode - The mode of the form, either "edit" or "create".
+ * @returns {JSX.Element} The rendered component.
+ */
 import React from "react";
 import { Typography } from "@mui/material";
 

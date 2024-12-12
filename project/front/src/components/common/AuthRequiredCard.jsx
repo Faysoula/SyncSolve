@@ -1,3 +1,16 @@
+
+/**
+ * AuthRequiredCard component renders a card prompting the user to sign in or create an account.
+ * It uses Material-UI components for styling and layout.
+ *
+ * @component
+ * @example
+ * return (
+ *   <AuthRequiredCard />
+ * )
+ *
+ * @returns {JSX.Element} A card component with sign-in and create account options.
+ */
 import React from "react";
 import { Card, Stack, Typography, Button } from "@mui/material";
 import { LogIn } from "lucide-react";

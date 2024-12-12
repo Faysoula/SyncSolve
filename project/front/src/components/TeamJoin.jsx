@@ -1,3 +1,36 @@
+
+/**
+ * TeamJoin component handles the team joining process.
+ * It validates team membership, handles team transfers, and manages the joining flow.
+ * 
+ * @component
+ * @example
+ * return (
+ *   <TeamJoin />
+ * )
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires @mui/material
+ * @requires ../context/authContext
+ * @requires ../Services/teamService
+ * @requires ./team/TeamJoinComponents
+ * 
+ * @state {boolean} loading - Controls loading state while fetching data
+ * @state {string} error - Stores error messages
+ * @state {Object} team - Stores target team data
+ * @state {boolean} joining - Controls join process state
+ * @state {boolean} success - Indicates successful team join
+ * @state {Object} currentTeam - Stores user's current team data if exists
+ * @state {boolean} showWarningModal - Controls visibility of team transfer warning dialog
+ * 
+ * @hook {Object} useParams - Extracts teamId from URL parameters
+ * @hook {Function} useNavigate - Handles navigation between routes
+ * @hook {Object} useAuth - Provides user authentication context
+ * 
+ * @returns {JSX.Element} A component that displays team joining interface with loading state,
+ * error messages, success messages, and team transfer confirmation dialog
+ */
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";

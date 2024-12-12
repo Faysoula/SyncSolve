@@ -5,6 +5,34 @@ import { useAuth } from "../../context/authContext";
 import socketService from "../../Services/socketService";
 import ChatService from "../../Services/chatService";
 
+/**
+ * A Chat Window component that provides real-time messaging functionality for team communication.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {string} props.teamId - The unique identifier for the team chat
+ * @param {Function} props.onClose - Callback function to close the chat window
+ * 
+ * @example
+ * return (
+ *   <ChatWindow 
+ *     teamId="team123"
+ *     onClose={() => setShowChat(false)} 
+ *   />
+ * )
+ * 
+ * Features:
+ * - Real-time messaging using WebSocket
+ * - Typing indicators
+ * - Auto-scrolling to newest messages
+ * - User presence detection
+ * - Message history loading
+ * - Responsive UI with Material-UI components
+ * 
+ * @requires @mui/material
+ * @requires react
+ * @requires socket.io-client (via socketService)
+ */
 const ChatWindow = ({ teamId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");

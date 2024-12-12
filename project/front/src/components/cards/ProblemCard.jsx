@@ -1,3 +1,24 @@
+/**
+ * ProblemCard displays a coding problem with its details and handles problem session management
+ *
+ * @component
+ * @param {Object} props
+ * @param {Object} props.problem - Problem object containing title, description, difficulty, etc.
+ * @param {string} props.username - Username of problem creator
+ *
+ * Features:
+ * - Displays problem title, difficulty, and daily status
+ * - Shows active session status
+ * - Allows admin to start/switch sessions
+ * - Enables problem editing for creators
+ * - Handles team session management
+ *
+ * Examples:
+ * <ProblemCard
+ *   problem={problemData}
+ *   username="johndoe"
+ * />
+ */
 import React from "react";
 import {
   Card,

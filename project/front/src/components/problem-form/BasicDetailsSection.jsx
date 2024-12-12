@@ -1,3 +1,28 @@
+
+/**
+ * BasicDetailsSection component renders a form section for entering basic problem details.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object} props.formData - The form data containing problem details.
+ * @param {string} props.formData.title - The title of the problem.
+ * @param {string} props.formData.description - The description of the problem.
+ * @param {string} props.formData.difficulty - The difficulty level of the problem.
+ * @param {Array<string>} props.formData.tags - The tags associated with the problem.
+ * @param {Function} props.onChange - The function to handle changes in text fields.
+ * @param {Function} props.onTagsChange - The function to handle changes in tags.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
+
+/**
+ * TagsSelector component renders an Autocomplete input for selecting multiple tags.
+ *
+ * @param {Object} props - The component props.
+ * @param {Array<string>} props.tags - The selected tags.
+ * @param {Function} props.onTagsChange - The function to handle changes in tags.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
 import React from "react";
 import { TextField, MenuItem, Autocomplete, Chip } from "@mui/material";
 import { AVAILABLE_TAGS } from "../../utils/constants";

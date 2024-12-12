@@ -2,25 +2,29 @@ const TeamMember = require("../models/TeamMember");
 const Team = require("../models/team");
 const User = require("../models/user");
 
+// Add a new team member
 const addTeamMember = async (team_id, user_id, role) => {
   try {
     const newRole = role.toLowerCase();
     const team = await Team.findByPk(team_id);
+    // Check if team exists
     if (!team) {
       throw new Error("Team not found");
     }
-
+    // Check if user exists
     const user = await User.findByPk(user_id);
     if (!user) {
       throw new Error("User not found");
     }
 
+    // Check if user is already in the team
     const count = await TeamMember.count({
       where: {
         team_id,
       },
     });
 
+    // Check if team is full
     const existingmbr = await TeamMember.findOne({
       where: {
         team_id,
@@ -36,6 +40,7 @@ const addTeamMember = async (team_id, user_id, role) => {
       throw new Error("Team is full");
     }
 
+    // Check if team already has an admin
     if (newRole === "admin") {
       const countAdmin = await TeamMember.count({
         where: {
@@ -59,8 +64,10 @@ const addTeamMember = async (team_id, user_id, role) => {
   }
 };
 
+// Retrieve all team members for a specific team
 const getTeamMembers = async (team_id) => {
   try {
+    // Include user details
     const teamMembers = await TeamMember.findAll({
       where: {
         team_id,
@@ -79,8 +86,10 @@ const getTeamMembers = async (team_id) => {
   }
 };
 
+// Retrieve a team member by their ID
 const getTeamMemberById = async (user_id) => {
   try {
+    // Include team and user details
     const teamMembers = await TeamMember.findAll({
       where: { user_id },
       include: [
@@ -101,6 +110,7 @@ const getTeamMemberById = async (user_id) => {
   }
 };
 
+// Retrieve all team members for a specific user
 const getUserTeam = async (user_id) => {
   try {
     const teamMembers = await TeamMember.findAll({
@@ -123,8 +133,10 @@ const getUserTeam = async (user_id) => {
   }
 };
 
+// Update a team member's role
 const updateTeamMemberRole = async (team_member_id, role) => {
   try {
+    // Check if team member exists
     const [affectedrows] = await TeamMember.update(
       {
         role,
@@ -146,6 +158,7 @@ const updateTeamMemberRole = async (team_member_id, role) => {
   }
 };
 
+// Remove a team member
 const removeTeamMember = async (team_member_id) => {
   try {
     const teamMember = await TeamMember.findByPk(team_member_id);
