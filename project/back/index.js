@@ -6,6 +6,8 @@ const fs = require("fs");
 const initializeSocket = require("./utils/socket");
 const http = require("http");
 const { testConnection } = require("./config/db");
+const swaggerUi = require("swagger-ui-express");
+const specs = require("./config/swagger");
 require("dotenv").config();
 
 const {
@@ -56,6 +58,7 @@ app.use(
 );
 
 // Routes
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api/users", userRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/teams", teamRoutes);
