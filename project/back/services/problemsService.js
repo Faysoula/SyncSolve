@@ -225,6 +225,23 @@ const getDailyProblem = async () => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    await Problems.update(
+      {
+        metadata: db.literal(`
+      jsonb_set(metadata::jsonb, '{is_daily}', 'false'::jsonb, true)
+    `),
+      },
+      {
+        where: {
+          metadata: {
+            is_daily: true,
+          },
+          created_at: {
+            [Op.lt]: today,
+          },
+        },
+      }
+    );
 
     // First check for existing daily problem
     const existingProblem = await Problems.findOne({

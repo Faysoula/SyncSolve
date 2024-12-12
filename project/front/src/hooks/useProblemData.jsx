@@ -25,7 +25,7 @@ useEffect(() => {
         await Promise.all([
           UserService.getAllUsers(),
           ProblemService.getAllProblems(),
-          ProblemService.getDailyProblem().catch(() => null), // Handle failure gracefully
+          ProblemService.getDailyProblem().catch(() => null),
         ]);
 
       const userDataMap = usersResponse.data.users.reduce((acc, user) => {
@@ -37,12 +37,29 @@ useEffect(() => {
 
       let allProblems = problemsResponse.data.problems || [];
 
-      // Filter out any existing daily problems
-      allProblems = allProblems.filter((p) => !p.metadata?.is_daily);
+      // Filter out old daily problems to prevent duplicates
+      allProblems = allProblems.filter((p) => {
+        // Keep non-daily problems
+        if (!p.metadata?.is_daily) return true;
+
+        // Only keep the current daily problem
+        const problemDate = new Date(p.created_at);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return problemDate >= today;
+      });
 
       // Add new daily problem at the start if it exists
       if (dailyProblemResponse?.data) {
-        allProblems.unshift(dailyProblemResponse.data);
+        const dailyExists = allProblems.some(
+          (p) =>
+            p.metadata?.is_daily &&
+            p.created_at === dailyProblemResponse.data.created_at
+        );
+
+        if (!dailyExists) {
+          allProblems.unshift(dailyProblemResponse.data);
+        }
       }
 
       setProblems(allProblems);
